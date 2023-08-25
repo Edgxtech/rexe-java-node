@@ -22,6 +22,7 @@ import java.net.InetSocketAddress;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
+import java.text.ParseException;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.logging.Level;
@@ -47,11 +48,53 @@ public class Server {
                 blockStore : new TypeLimitedBlockstore(blockStore, config.datastore.allowedCodecs.codecs);
     }
 
-    public Server() throws Exception {
-        Path ipfsPath = getIPFSPath();
+    // CONCEPT IS TO EXTEND IPFS-JAVA-NODE
+    //   - Add PKI, and user id
+    //   - Add Distributed execution environment
+
+    // ALTERNATIVE is to extend PEERGOS
+    //   - Add Distributed execution environment
+    //   - Remove a bunch on stuff; social, email, etc... Allow them to be built on the DEE / DPs
+
+    // TODO,
+    // APIService needs to accept a custom call type (NDR/DP)
+    //      In Client, I make this call
+    // In APIService, it should be able to retrieve the referenced bytecode, take params and execute with params
+    //                it should be able to deploy new DPs, accepting bytecode and storing in local node
+    //                i.e. I write a DP in java, that updates a database entry (from input params), then compile it and deploy to the net
+    //                     later I call the update DB DP with table, id, new val
+
+    // I have a concept of a full node & light node/
+    // Some apps may use a DP on a full node; or its own light node; i.e. that runs on a mobile
+    //  e.g. messaging app options;
+    //      Central DP on full node that only routes messages to the known (replicated) DP or node closest to user
+    //      Central DP on full node that allows proxy routing; i.e. a message from a user (web browser) goes to the full node and is routed to the intended recipient DP, then proxied to user destination
+    //      Mobile app client with light node (that only provides idDHT for identity lookups), can request user locs from the network without any intermediary
+    //            ** In the messaging case; messages are stored on a node somewhere, that are delivered by the user/client needing to check for new messages
+
+    // DPs may be stateless or stateful
+    //   Nodes may be configured to allow replication of stateless only, or specified stateful DPs
+    //   If replicating stateful DPs they must be authorised from the developer.
+    //   Stateless: something that uses the global network state entirely
+    //   Statefull: something that requires DP state to function (private lists etc...)
+
+    // TODO, I NEED TO FIRST HAVE A ROUTINE THAT ADDS SOME CANNED DATA TO A LOCALNODE, THEN I RUN MULTIPLE SERVERS, AND BOOTSTRAP OFF A DIFFERENT LOCAL SERVER
+
+    public Server(Integer instance_id) throws Exception {
+        // For local testing; Allow each server to start as a seperate ipfs-node
+        Path ipfsPath;
+        if (instance_id != null) {
+            ipfsPath = Path.of(System.getenv("HOME"), ".ipfs" + instance_id);
+        } else {
+            ipfsPath = Path.of(System.getenv("HOME"), ".ipfs");
+        }
         Logging.init(ipfsPath);
-        Config config = readConfig(ipfsPath);
-        info("Starting Nabu version: " + APIService.CURRENT_VERSION);
+
+        /* NOTE: config is here: ~/.ipfs/config */
+        // Configs need to say what DPs are allowed on this node; specific pubkeys only (to function like a legacy webserver); specific types or all
+
+        Config config = readConfig(ipfsPath, instance_id);
+        LOG.fine("Starting Nabu version: " + APIService.CURRENT_VERSION);
 
         Path blocksPath = ipfsPath.resolve("blocks");
         File blocksDirectory = blocksPath.toFile();
@@ -76,6 +119,23 @@ public class Server {
         DatabaseRecordStore records = new DatabaseRecordStore(datastorePath.toString());
         ProviderStore providers = new RamProviderStore();
         Kademlia dht = new Kademlia(new KademliaEngine(ourPeerId, providers, records), false);
+
+        /// Additional datastores and DHTs for Identity and DPs
+
+        /* DP datastore and DHT ?? */
+        Path datastorePathDp = ipfsPath.resolve("dp-datastore").resolve("h2.datastore");
+        DatabaseRecordStore recordsDp = new DatabaseRecordStore(datastorePath.toString());
+        ProviderStore providersDp = new RamProviderStore();
+        Kademlia dpDht = new Kademlia(new KademliaEngine(ourPeerId, providersDp, recordsDp), false);
+
+        /* ID, user/client DHT */
+        /// OR PERHAPS IT ISNT A DHT, IT IS A REPLICATED PKI DATASTORE LIKE ON PEERGOS
+        ///  OR BUILD IT LIKE this PkiCache on peergos: https://github.com/Peergos/Peergos/blob/master/src/peergos/server/JdbcPkiCache.java
+        Path datastorePathId = ipfsPath.resolve("id-datastore").resolve("h2.datastore");
+        DatabaseRecordStore recordsId = new DatabaseRecordStore(datastorePath.toString());
+        ProviderStore providersId = new RamProviderStore();
+        Kademlia idDht = new Kademlia(new KademliaEngine(ourPeerId, providersId, recordsId), false);
+
         CircuitStopProtocol.Binding stop = new CircuitStopProtocol.Binding();
         CircuitHopProtocol.RelayManager relayManager = CircuitHopProtocol.RelayManager.limitTo(builder.getPrivateKey(), ourPeerId, 5);
         BlockRequestAuthoriser authoriser = (c, b, p, a) -> CompletableFuture.completedFuture(true);
@@ -90,6 +150,8 @@ public class Server {
         node.start().join();
         info("Node started and listening on " + node.listenAddresses());
         info("Starting bootstrap process");
+
+
         int connections = dht.bootstrapRoutingTable(node, config.bootstrap.getBootstrapAddresses(), addr -> !addr.contains("/wss/"));
         if (connections == 0)
             throw new IllegalStateException("No connected peers!");
@@ -124,21 +186,13 @@ public class Server {
         LOG.info(message);
         System.out.println(message);
     }
-    private Path getIPFSPath() {
-        String ipfsPath = System.getenv("IPFS_PATH");
-        if (ipfsPath == null) {
-            String home = System.getenv("HOME");
-            return Path.of(home, ".ipfs");
-        }
-        return Path.of(ipfsPath);
-    }
 
-    private Config readConfig(Path configPath) throws IOException {
+    private Config readConfig(Path configPath, Integer instance_id) throws IOException {
         Path configFilePath = configPath.resolve("config");
         File configFile = configFilePath.toFile();
         if (!configFile.exists()) {
-            info("Unable to find config file. Creating default config");
-            Config config = new Config();
+            info("Unable to find config file. Creating default config: "+configPath);
+            Config config = new Config(instance_id);
             Files.write(configFilePath, config.toString().getBytes(), StandardOpenOption.CREATE);
             return config;
         }
@@ -147,7 +201,17 @@ public class Server {
 
     public static void main(String[] args) {
         try {
-            new Server();
+            // I pass an instance ID just for testing, spinning up multiple instances with different configs on DEV ENV
+            if (args.length>0) {
+                int instance_id = Integer.parseInt(args[0]);
+                new Server(instance_id);
+            } else {
+                // Start as normal
+                new Server(null);
+            }
+
+        } catch (ParseException pe) {
+            LOG.severe("Invalid argument, must be an integer representing instance_id");
         } catch (Exception e) {
             LOG.log(Level.SEVERE, "SHUTDOWN", e);
         }

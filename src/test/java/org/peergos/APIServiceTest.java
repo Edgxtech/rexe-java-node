@@ -1,6 +1,8 @@
 package org.peergos;
 
+import com.google.gson.Gson;
 import io.ipfs.cid.Cid;
+import org.apache.commons.codec.binary.Hex;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -49,11 +51,20 @@ public class APIServiceTest {
         APIService service = new APIService(new RamBlockstore(), new BitswapBlockService(null, null), null);
         Cid cid1 = service.putBlock("Hello".getBytes(), Cid.Codec.Raw);
         Cid cid2= service.putBlock("world!".getBytes(), Cid.Codec.Raw);
+        Cid cid3= service.putBlock("test".getBytes(), Cid.Codec.DagCbor);
+        System.out.println("Cid3: "+new Gson().toJson(cid3));
+        String cidHex=new String(Hex.encodeHex(cid3.getHash()));
+        System.out.println("Cid3 Hash: "+cidHex); // Not correct CID format
+        //System.out.println("Cid3 Hash (CID .encode): "+Cid.fromHex(cidHex));
+
+
         List<Want> wants = new ArrayList<>();
         wants.add(new Want(cid1, Optional.of("auth")));
         wants.add(new Want(cid2, Optional.of("auth")));
+        wants.add(new Want(cid3, Optional.of("auth")));
         List<HashedBlock> blocks = service.getBlocks(wants, Collections.emptySet(), false);
-        Assert.assertTrue("blocks retrieved", blocks.size() == 2);
+        System.out.println("Blocks: "+new Gson().toJson(blocks));
+        Assert.assertTrue("blocks retrieved", blocks.size() == 3);
     }
 
     public class Tester {

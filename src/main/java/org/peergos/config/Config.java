@@ -18,8 +18,8 @@ public class Config {
     public final DatastoreSection datastore;
     public final IdentitySection identity;
 
-    public Config() {
-        Config config = defaultConfig();
+    public Config(Integer instance_id) {
+        Config config = defaultConfig(instance_id);
         this.addresses = config.addresses;
         this.bootstrap = config.bootstrap;
         this.datastore = config.datastore;
@@ -53,27 +53,51 @@ public class Config {
         return JsonHelper.pretty(configMap);
     }
 
-    public Config defaultConfig() {
+    /* NOTE: Once-off; first need to create an instance-0 config by running Server with null args
+    *        Need to remove bootstrap config validator and bootstrap nodes json creation */
+    public Config defaultConfig(Integer instance_id) {
+        if (instance_id==null) {
+            instance_id=0;
+        }
         HostBuilder builder = new HostBuilder().generateIdentity();
         PrivKey privKey = builder.getPrivateKey();
         PeerId peerId = builder.getPeerId();
 
-        List<MultiAddress> swarmAddresses = List.of(new MultiAddress("/ip4/0.0.0.0/tcp/4001"),
-                new MultiAddress("/ip6/::/tcp/4001"));
-        MultiAddress apiAddress = new MultiAddress("/ip4/127.0.0.1/tcp/5001");
-        MultiAddress gatewayAddress = new MultiAddress("/ip4/127.0.0.1/tcp/8080");
-        Optional<MultiAddress> proxyTargetAddress = Optional.of(new MultiAddress("/ip4/127.0.0.1/tcp/8000"));
 
-        Optional<String> allowTarget = Optional.of("http://localhost:8000");
-        List<MultiAddress> bootstrapNodes = List.of(
-                        "/dnsaddr/bootstrap.libp2p.io/p2p/QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN",
-                        "/dnsaddr/bootstrap.libp2p.io/p2p/QmQCU2EcMqAqQPR2i9bChDtGNJchTbq5TbXJJ16u19uLTa",
-                        "/dnsaddr/bootstrap.libp2p.io/p2p/QmbLHAnMoJPWSCR5Zhtx6BHJX9KiKNN6tpvbUcqanj75Nb",
-                        "/dnsaddr/bootstrap.libp2p.io/p2p/QmcZf59bWwK5XFi76CZX8cbJ4BhTzzA3gU1ZjYZcYW3dwt",
-                        "/ip4/104.131.131.82/tcp/4001/p2p/QmaCpDMGvV2BGHeYERUEnRQAwe3N8SzbUtfsmvsqQLuvuJ", // mars.i.ipfs.io
-                        "/ip4/104.131.131.82/tcp/4001/ipfs/QmaCpDMGvV2BGHeYERUEnRQAwe3N8SzbUtfsmvsqQLuvuJ").stream()
-                .map(MultiAddress::new)
-                .collect(Collectors.toList());
+        // ORIGINAL
+//        List<MultiAddress> swarmAddresses = List.of(new MultiAddress("/ip4/0.0.0.0/tcp/4001"),
+//                new MultiAddress("/ip6/::/tcp/4001"));
+//        MultiAddress apiAddress = new MultiAddress("/ip4/127.0.0.1/tcp/5001");
+//        MultiAddress gatewayAddress = new MultiAddress("/ip4/127.0.0.1/tcp/8080");
+//        Optional<MultiAddress> proxyTargetAddress = Optional.of(new MultiAddress("/ip4/127.0.0.1/tcp/8000"));
+//        Optional<String> allowTarget = Optional.of("http://localhost:8000");
+        List<MultiAddress> swarmAddresses = List.of(new MultiAddress("/ip4/0.0.0.0/tcp/400"+instance_id),
+                new MultiAddress("/ip6/::/tcp/400"+instance_id));
+        MultiAddress apiAddress = new MultiAddress("/ip4/127.0.0.1/tcp/500"+instance_id);
+        MultiAddress gatewayAddress = new MultiAddress("/ip4/127.0.0.1/tcp/808"+instance_id);
+        Optional<MultiAddress> proxyTargetAddress = Optional.of(new MultiAddress("/ip4/127.0.0.1/tcp/800"+instance_id));
+        Optional<String> allowTarget = Optional.of("http://localhost:800"+instance_id);
+
+        // Original
+//        List<MultiAddress> bootstrapNodes = List.of(
+//                        "/dnsaddr/bootstrap.libp2p.io/p2p/QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN",
+//                        "/dnsaddr/bootstrap.libp2p.io/p2p/QmQCU2EcMqAqQPR2i9bChDtGNJchTbq5TbXJJ16u19uLTa",
+//                        "/dnsaddr/bootstrap.libp2p.io/p2p/QmbLHAnMoJPWSCR5Zhtx6BHJX9KiKNN6tpvbUcqanj75Nb",
+//                        "/dnsaddr/bootstrap.libp2p.io/p2p/QmcZf59bWwK5XFi76CZX8cbJ4BhTzzA3gU1ZjYZcYW3dwt",
+//                        "/ip4/104.131.131.82/tcp/4001/p2p/QmaCpDMGvV2BGHeYERUEnRQAwe3N8SzbUtfsmvsqQLuvuJ", // mars.i.ipfs.io
+//                        "/ip4/104.131.131.82/tcp/4001/ipfs/QmaCpDMGvV2BGHeYERUEnRQAwe3N8SzbUtfsmvsqQLuvuJ").stream()
+//                .map(MultiAddress::new)
+//                .collect(Collectors.toList());
+
+        // IF this is instance0; nil bootstrap nodes (but I need to go add some data to it)
+        List<MultiAddress> bootstrapNodes = new ArrayList<>();
+        if (!instance_id.equals(0)) {
+            // BOOTSTRAP OFF INSTANCE 0 (PRE-GENERATED CONFIG TO GET PEER ID)
+            bootstrapNodes = List.of(
+                            "/ip4/127.0.0.1/tcp/4000/ipfs/12D3KooWKSc8mFAGfs8ga7VLA7evS3hRqwrk33qEg9SPDaEKFV1M").stream()
+                    .map(MultiAddress::new)
+                    .collect(Collectors.toList());
+        }
 
         Map<String, Object> blockChildMap = new LinkedHashMap<>();
         blockChildMap.put("path", "blocks");

@@ -18,11 +18,14 @@ public class APIService {
 
     private final Kademlia dht;
 
+    //private final Kademlia dpDht;
+
 
     public APIService(Blockstore store, BlockService remoteBlocks, Kademlia dht) {
         this.store = store;
         this.remoteBlocks = remoteBlocks;
         this.dht = dht;
+        //this.dpDht = dpDht;
     }
 
     public List<HashedBlock> getBlocks(List<Want> wants, Set<PeerId> peers, boolean addToLocal) {
@@ -71,4 +74,28 @@ public class APIService {
         List<PeerAddresses> providers = dht.findProviders(cid, node, numProviders).join();
         return providers;
     }
+
+    //// CUSTOM by TDE - For DRF
+    /// Might need to create a unique TYPE of CID, so they don't get confused with normal DATA CIDs
+
+    public Cid putDp(byte[] dp, Cid.Codec codec) {
+        return store.put(dp, codec).join();
+    }
+    public Boolean rmDp(Cid cid) {
+        return store.rm(cid).join();
+    }
+
+    public Boolean hasDp(Cid cid) {
+        return store.has(cid).join();
+    }
+
+    public Boolean bloomAddDp(Cid cid) {
+        return store.bloomAdd(cid).join();
+    }
+
+//    public List<PeerAddresses> findProvidersOfDp(Cid cid, Host node, int numProviders) {
+//        List<PeerAddresses> providers = dpDht.findProviders(cid, node, numProviders).join();
+//        return providers;
+//    }
+
 }

@@ -1,5 +1,7 @@
 package org.peergos;
 
+import com.google.gson.*;
+import io.ipfs.cid.Cid;
 import io.ipfs.multiaddr.*;
 import io.ipfs.multihash.Multihash;
 import io.libp2p.core.*;
@@ -7,12 +9,15 @@ import org.junit.*;
 import org.peergos.blockstore.*;
 import org.peergos.protocol.dht.*;
 
+import java.lang.reflect.Type;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.function.*;
 import java.util.stream.*;
 
 public class BootstrapTest {
+
+    final Gson gson = new GsonBuilder().registerTypeAdapter(String[].class, new MyDeserializer()).create();
 
     public static List<MultiAddress> BOOTSTRAP_NODES = List.of(
                     "/dnsaddr/bootstrap.libp2p.io/p2p/QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN",
@@ -40,14 +45,27 @@ public class BootstrapTest {
         Host node1 = builder1.build();
         node1.start().join();
         Multihash node1Id = Multihash.deserialize(node1.getPeerId().getBytes());
+        System.out.println("My node id: "+node1Id.toBase58());
 
         try {
             Kademlia dht = builder1.getWanDht().get();
+            //System.out.println("DHT (init): "+gson.toJson(dht));
+            System.out.println("DHT: "+dht.getProtocolDescriptor().toString() + dht.getProtocol().toString());
+
             Predicate<String> bootstrapAddrFilter = addr -> !addr.contains("/wss/"); // jvm-libp2p can't parse /wss addrs
             int connections = dht.bootstrapRoutingTable(node1, BOOTSTRAP_NODES, bootstrapAddrFilter);
             if (connections == 0)
                 throw new IllegalStateException("No connected peers!");
             dht.bootstrap(node1);
+
+            // INVESTIGATIONS BY TIM
+            //System.out.println("DHT: "+new Gson().toJson(dht));
+            Multihash block = Cid.decode("bafybeigdyrzt5sfp7udm7hu76uh7y26nf3efuylqabf3oclgtqy55fbzdi");
+            List<PeerAddresses> providers = dht.findProviders(block, node1, 10).join();
+            if (providers.isEmpty())
+                throw new IllegalStateException("Couldn't find provider of block!");
+            System.out.println("# Providers with test block: "+providers.size());
+            System.out.println("Providers with test block: "+new Gson().toJson(providers));
 
             // lookup ourselves in DHT to find our nearest nodes
             List<PeerAddresses> closestPeers = dht.findClosestPeers(node1Id, 20, node1);
@@ -56,6 +74,21 @@ public class BootstrapTest {
                         closestPeers.size() + " < " + connections);
         } finally {
             node1.stop();
+        }
+    }
+
+    public static class MyDeserializer implements JsonDeserializer<String[]> {
+        @Override
+        public String[] deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
+            System.out.println(json + ", " +typeOfT);
+            String child = context.deserialize(json, String.class);
+            return new String[] { child };
+            //if (typeOfT.equals(Java.time))
+//            if (json instanceof JsonArray) {
+//                return new Gson().fromJson(json, String[].class);
+//            }
+//            String child = context.deserialize(json, String.class);
+//            return new String[] { child };
         }
     }
 }

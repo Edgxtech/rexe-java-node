@@ -28,6 +28,8 @@ public class P2pHttpChatTest {
         Host node1 = builder1.build();
         HttpProtocol.Binding node2Http = new HttpProtocol.Binding((s, req, h) -> {
             System.out.println("Node 2 received: " + req);
+            System.out.println(s);
+            System.out.println(h);
             h.accept(replyOk);
         });
         HostBuilder builder2 = HostBuilder.build(10000 + new Random().nextInt(50000),
