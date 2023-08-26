@@ -56,6 +56,29 @@ public class Server {
     //   - Add Distributed execution environment
     //   - Remove a bunch on stuff; social, email, etc... Allow them to be built on the DEE / DPs
 
+    // ALTERNATIVE 2 is extend both
+    //   -extended-nabu; provides distributed filesystem and exec env
+    //   -extended-peergos; provides a normal app node, pki node; the extended-nabu as a submodule, and a mirror/replication node (which only provides an ipfs p2p and relay capability for FS and EE (exec env)
+    //        extendedpeergos becomes the NODE software;
+    //        extended-nabu (running provdes p2p; resource addressing
+    //   -Remove a bunch on stuff; social, email, etc... Allow them to be built on the DEE / DPs
+    //   -Remove tiered login and restricted access
+    //   - Remake the UI to provide a user and an admin UI; admin can edit priorities / monitor the network / add/remove users
+    //          Remove the embedded UI, make it as a flutter app interacting with an RPC API
+
+    // ALTERNATIVE 3 is merge both and extend to change the orientation to a Resources API and network
+    // Since DIFFERENCE I NEED TO IMPLEMENT:
+//    light-nodes; i.e. that run on phone devices
+//    full-nodes; that dont simply provide a gateway for login and mgt of ipfs data , social email etc..
+//    but expose the full Resources API; thus it provides pki + mirroring capy, but also is a proxy to the ipfs (DFS) & distrib exec env (DEE)
+//                * then why dont I just merge it all together??
+    // This would allow proper integration between resources API and ipfs node not simply as a submodule (that is constrained by ipfs itself) but a functional component within
+    //       This might also be important for when I need to provide intrinsic priorities data transport flows
+    // The so-called gateway server is removed for the function it provides (as an entry point to a node)
+    //       It is replaced with a Resources API (which is an entry point to the entire Resource network, just through that gateway as a stepping-in point
+    //       But then I add the http gateway back (in a different form), just as the admin app that allows management of the Resource network
+
+
     // TODO,
     // APIService needs to accept a custom call type (NDR/DP)
     //      In Client, I make this call
