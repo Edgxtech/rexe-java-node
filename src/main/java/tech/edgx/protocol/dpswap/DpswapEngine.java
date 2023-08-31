@@ -1,23 +1,31 @@
-package org.peergos.protocol.bitswap;
+package tech.edgx.protocol.dpswap;
 
-import com.google.protobuf.*;
-import io.ipfs.cid.*;
+import com.google.protobuf.ByteString;
+import io.ipfs.cid.Cid;
 import io.ipfs.multihash.Multihash;
-import io.libp2p.core.*;
+import io.libp2p.core.AddressBook;
+import io.libp2p.core.PeerId;
 import io.libp2p.core.Stream;
-import io.libp2p.core.multiformats.*;
-import org.peergos.*;
-import org.peergos.blockstore.*;
-import org.peergos.protocol.bitswap.pb.*;
+import io.libp2p.core.multiformats.Multiaddr;
+import org.peergos.BlockRequestAuthoriser;
+import org.peergos.Hash;
+import org.peergos.blockstore.Blockstore;
+import tech.edgx.model.dp.DpResult;
+import tech.edgx.model.dp.DpWant;
+import tech.edgx.protocol.dpswap.pb.MessageOuterClass;
+import tech.edgx.service.RuntimeService;
 
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.util.*;
-import java.util.concurrent.*;
-import java.util.function.*;
-import java.util.logging.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Consumer;
+import java.util.logging.Logger;
 
-public class BitswapEngine {
-    private static final Logger LOG = Logger.getLogger(BitswapEngine.class.getName());
+public class DpswapEngine {
+    private static final Logger LOG = Logger.getLogger(DpswapEngine.class.getName());
 
     private final Blockstore store;
     private final Set<PeerId> connections = new HashSet<>();
@@ -25,16 +33,17 @@ public class BitswapEngine {
     private AddressBook addressBook;
 
     /* filesystem specific */
-    private final ConcurrentHashMap<Want, CompletableFuture<HashedBlock>> localWants = new ConcurrentHashMap<>();
-    private final ConcurrentHashMap<Want, Boolean> persistBlocks = new ConcurrentHashMap<>();
-    private final ConcurrentHashMap<Want, PeerId> blockHaves = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<DpWant, CompletableFuture<DpResult>> localWants = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<DpWant, Boolean> persistBlocks = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<DpWant, PeerId> blockHaves = new ConcurrentHashMap<>();
 
     /* dp specific */
-    private final ConcurrentHashMap<Want, CompletableFuture<HashedBlock>> localDpWants = new ConcurrentHashMap<>();
-    private final ConcurrentHashMap<Want, Boolean> persistDpResults = new ConcurrentHashMap<>();
-    private final ConcurrentHashMap<Want, PeerId> dpResultHaves = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<DpWant, CompletableFuture<DpResult>> localDpWants = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<DpWant, Boolean> persistDpResults = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<DpWant, PeerId> dpResultHaves = new ConcurrentHashMap<>();
+    private final RuntimeService runtimeService = new RuntimeService();
 
-    public BitswapEngine(Blockstore store, BlockRequestAuthoriser authoriser) {
+    public DpswapEngine(Blockstore store, BlockRequestAuthoriser authoriser) {
         this.store = store;
         this.authoriser = authoriser;
     }
@@ -48,11 +57,11 @@ public class BitswapEngine {
         addressBook.addAddrs(peer, 0, addr);
     }
 
-    public CompletableFuture<HashedBlock> getWant(Want w, boolean addToBlockstore) {
-        CompletableFuture<HashedBlock> existing = localWants.get(w);
+    public CompletableFuture<DpResult> getWant(DpWant w, boolean addToBlockstore) {
+        CompletableFuture<DpResult> existing = localWants.get(w);
         if (existing != null)
             return existing;
-        CompletableFuture<HashedBlock> res = new CompletableFuture<>();
+        CompletableFuture<DpResult> res = new CompletableFuture<>();
         if (addToBlockstore)
             persistBlocks.put(w, true);
         localWants.put(w, res);
@@ -71,11 +80,11 @@ public class BitswapEngine {
         return connected;
     }
 
-    public Set<Want> getWants() {
+    public Set<DpWant> getWants() {
         return localWants.keySet();
     }
 
-    public Map<Want, PeerId> getHaves() {
+    public Map<DpWant, PeerId> getHaves() {
         return blockHaves;
     }
 
@@ -110,13 +119,18 @@ public class BitswapEngine {
                 boolean wantBlock = e.getWantType().getNumber() == 0;
                 if (wantBlock) {
                     Optional<byte[]> block = store.get(c).join();
+
+                    // TODO, perform the computation here and return result instead of returning the block
+                    // From the message DpWant, get the functionname and params
+                    //runtimeService.runDp(cid, bytecode, functionName, params);
+
                     if (block.isPresent() && authoriser.allowRead(c, block.get(), sourcePeerId, auth.orElse("")).join()) {
                         MessageOuterClass.Message.Block blockP = MessageOuterClass.Message.Block.newBuilder()
                                 .setPrefix(ByteString.copyFrom(prefixBytes(c)))
                                 .setData(ByteString.copyFrom(block.get()))
                                 .build();
                         int blockSize = blockP.getSerializedSize();
-                        if (blockSize + messageSize > Bitswap.MAX_MESSAGE_SIZE) {
+                        if (blockSize + messageSize > Dpswap.MAX_MESSAGE_SIZE) {
                             buildAndSendMessages(wants, presences, blocks, source::writeAndFlush);
                             wants = new ArrayList<>();
                             presences = new ArrayList<>();
@@ -154,7 +168,7 @@ public class BitswapEngine {
             }
         }
 
-        LOG.info("Bitswap received " + msg.getWantlist().getEntriesCount() + " wants, " + msg.getPayloadCount() +
+        LOG.info("Dpswap received " + msg.getWantlist().getEntriesCount() + " wants, " + msg.getPayloadCount() +
                 " blocks and " + msg.getBlockPresencesCount() + " presences from " + sourcePeerId);
         for (MessageOuterClass.Message.Block block : msg.getPayloadList()) {
             byte[] cidPrefix = block.getPrefix().toByteArray();
@@ -162,6 +176,7 @@ public class BitswapEngine {
                     Optional.empty() :
                     Optional.of(block.getAuth().toStringUtf8());
             byte[] data = block.getData().toByteArray();
+
             ByteArrayInputStream bin = new ByteArrayInputStream(cidPrefix);
             try {
                 long version = Cid.readVarint(bin);
@@ -173,17 +188,20 @@ public class BitswapEngine {
                 } else {
                     byte[] hash = Hash.sha256(data);
                     Cid c = new Cid(version, codec, type, hash);
-                    Want w = new Want(c, auth);
-                    CompletableFuture<HashedBlock> waiter = localWants.get(w);
+                    DpWant w = new DpWant(c, auth, "", null);
+
+
+                    CompletableFuture<DpResult> waiter = localWants.get(w);
                     if (waiter != null) {
                         if (persistBlocks.containsKey(w)) {
                             store.put(data, codec);
                             persistBlocks.remove(w);
                         }
-                        waiter.complete(new HashedBlock(c, data));
+                        String dataString = new String(data);
+                        waiter.complete(new DpResult(c, dataString));
                         localWants.remove(w);
                     } else
-                        LOG.info("Received block we don't want: " + c);
+                        LOG.info("Received dpresult we don't want: " + c);
                 }
             } catch (IOException e) {
                 e.printStackTrace();
@@ -194,7 +212,7 @@ public class BitswapEngine {
         for (MessageOuterClass.Message.BlockPresence blockPresence : msg.getBlockPresencesList()) {
             Cid c = Cid.cast(blockPresence.getCid().toByteArray());
             Optional<String> auth = blockPresence.getAuth().isEmpty() ? Optional.empty() : Optional.of(blockPresence.getAuth().toStringUtf8());
-            Want w = new Want(c, auth);
+            DpWant w = new DpWant(c, auth, "", null);
             boolean have = blockPresence.getType().getNumber() == 0;
             if (have && localWants.containsKey(w)) {
                 blockHaves.put(w, source.remotePeerId());
@@ -217,7 +235,7 @@ public class BitswapEngine {
         for (int i=0; i < wants.size(); i++) {
             MessageOuterClass.Message.Wantlist.Entry want = wants.get(i);
             int wantSize = want.getSerializedSize();
-            if (wantSize + messageSize > Bitswap.MAX_MESSAGE_SIZE) {
+            if (wantSize + messageSize > Dpswap.MAX_MESSAGE_SIZE) {
                 sender.accept(builder.build());
                 builder = MessageOuterClass.Message.newBuilder();
                 messageSize = 0;
@@ -228,7 +246,7 @@ public class BitswapEngine {
         for (int i=0; i < presences.size(); i++) {
             MessageOuterClass.Message.BlockPresence presence = presences.get(i);
             int presenceSize = presence.getSerializedSize();
-            if (presenceSize + messageSize > Bitswap.MAX_MESSAGE_SIZE) {
+            if (presenceSize + messageSize > Dpswap.MAX_MESSAGE_SIZE) {
                 sender.accept(builder.build());
                 builder = MessageOuterClass.Message.newBuilder();
                 messageSize = 0;
@@ -239,7 +257,7 @@ public class BitswapEngine {
         for (int i=0; i < blocks.size(); i++) {
             MessageOuterClass.Message.Block block = blocks.get(i);
             int blockSize = block.getSerializedSize();
-            if (blockSize + messageSize > Bitswap.MAX_MESSAGE_SIZE) {
+            if (blockSize + messageSize > Dpswap.MAX_MESSAGE_SIZE) {
                 sender.accept(builder.build());
                 builder = MessageOuterClass.Message.newBuilder();
                 messageSize = 0;

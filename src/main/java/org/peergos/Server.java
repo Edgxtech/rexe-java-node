@@ -15,6 +15,9 @@ import org.peergos.protocol.circuit.CircuitHopProtocol;
 import org.peergos.protocol.circuit.CircuitStopProtocol;
 import org.peergos.protocol.dht.*;
 import org.peergos.util.Logging;
+import tech.edgx.protocol.dpswap.Dpswap;
+import tech.edgx.protocol.dpswap.DpswapEngine;
+import tech.edgx.service.DpswapDpResultService;
 
 import java.io.File;
 import java.io.IOException;
@@ -72,6 +75,7 @@ public class Server {
 //    full-nodes; that dont simply provide a gateway for login and mgt of ipfs data , social email etc..
 //    but expose the full Resources API; thus it provides pki + mirroring capy, but also is a proxy to the ipfs (DFS) & distrib exec env (DEE)
 //                * then why dont I just merge it all together??
+    // Also need to make use of the ipfs p2p net for the Exec env.
     // This would allow proper integration between resources API and ipfs node not simply as a submodule (that is constrained by ipfs itself) but a functional component within
     //       This might also be important for when I need to provide intrinsic priorities data transport flows
     // The so-called gateway server is removed for the function it provides (as an entry point to a node)
@@ -128,6 +132,8 @@ public class Server {
         } else if (blocksDirectory.isFile()) {
             throw new IllegalStateException("Unable to create blocks directory");
         }
+        // NOTE: this builds either a FileBlockstore, FilteredBlockstore (bloom filter), or codec type limited
+        //        In prod. But for dev tests I just use the RAM blockstore type
         Blockstore blockStore = buildBlockStore(config, blocksPath);
 
         List<MultiAddress> swarmAddresses = config.addresses.getSwarmAddresses();
@@ -145,19 +151,19 @@ public class Server {
 
         /// Additional datastores and DHTs for Identity and DPs
 
-        /* DP datastore and DHT ?? */
-        Path datastorePathDp = ipfsPath.resolve("dp-datastore").resolve("h2.datastore");
-        DatabaseRecordStore recordsDp = new DatabaseRecordStore(datastorePath.toString());
-        ProviderStore providersDp = new RamProviderStore();
-        Kademlia dpDht = new Kademlia(new KademliaEngine(ourPeerId, providersDp, recordsDp), false);
+//        /* DP datastore and DHT ?? */
+//        Path datastorePathDp = ipfsPath.resolve("dp-datastore").resolve("h2.datastore");
+//        DatabaseRecordStore recordsDp = new DatabaseRecordStore(datastorePath.toString());
+//        ProviderStore providersDp = new RamProviderStore();
+//        Kademlia dpDht = new Kademlia(new KademliaEngine(ourPeerId, providersDp, recordsDp), false);
 
         /* ID, user/client DHT */
         /// OR PERHAPS IT ISNT A DHT, IT IS A REPLICATED PKI DATASTORE LIKE ON PEERGOS
         ///  OR BUILD IT LIKE this PkiCache on peergos: https://github.com/Peergos/Peergos/blob/master/src/peergos/server/JdbcPkiCache.java
-        Path datastorePathId = ipfsPath.resolve("id-datastore").resolve("h2.datastore");
-        DatabaseRecordStore recordsId = new DatabaseRecordStore(datastorePath.toString());
-        ProviderStore providersId = new RamProviderStore();
-        Kademlia idDht = new Kademlia(new KademliaEngine(ourPeerId, providersId, recordsId), false);
+//        Path datastorePathId = ipfsPath.resolve("id-datastore").resolve("h2.datastore");
+//        DatabaseRecordStore recordsId = new DatabaseRecordStore(datastorePath.toString());
+//        ProviderStore providersId = new RamProviderStore();
+//        Kademlia idDht = new Kademlia(new KademliaEngine(ourPeerId, providersId, recordsId), false);
 
         CircuitStopProtocol.Binding stop = new CircuitStopProtocol.Binding();
         CircuitHopProtocol.RelayManager relayManager = CircuitHopProtocol.RelayManager.limitTo(builder.getPrivateKey(), ourPeerId, 5);
@@ -167,6 +173,8 @@ public class Server {
                 new AutonatProtocol.Binding(),
                 new CircuitHopProtocol.Binding(relayManager, stop),
                 new Bitswap(new BitswapEngine(blockStore, authoriser)),
+                // FOR NOW USING THE SAME BLOCK STORE TO STORE DPs as if they are blocks
+                new Dpswap(new DpswapEngine(blockStore, authoriser)),
                 dht));
 
         Host node = builder.build();
@@ -188,7 +196,13 @@ public class Server {
         info("Starting RPC API server at: localhost:" + localAPIAddress.getPort());
         HttpServer apiServer = HttpServer.create(localAPIAddress, maxConnectionQueue);
 
-        APIService service = new APIService(blockStore, new BitswapBlockService(node, builder.getBitswap().get()), dht);
+        APIService service = new APIService(
+                blockStore,
+                new BitswapBlockService(node, builder.getBitswap().get()),
+                dht,
+                new DpswapDpResultService(node, builder.getDpswap().get()),
+                new RamBlockstore() // TODO, IN PROD THIS SHOULD BE A MORE PERMANENT STORE; FILESTORE, FILTER STORE
+                );
         apiServer.createContext(APIService.API_URL, new APIHandler(service, node));
         apiServer.setExecutor(Executors.newFixedThreadPool(handlerThreads));
         apiServer.start();

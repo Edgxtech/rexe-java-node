@@ -20,6 +20,8 @@ import org.peergos.protocol.autonat.*;
 import org.peergos.protocol.bitswap.*;
 import org.peergos.protocol.circuit.*;
 import org.peergos.protocol.dht.*;
+import tech.edgx.protocol.dpswap.Dpswap;
+
 import java.util.*;
 
 public class HostBuilder {
@@ -56,6 +58,13 @@ public class HostBuilder {
         return protocols.stream()
                 .filter(p -> p instanceof Bitswap)
                 .map(p -> (Bitswap)p)
+                .findFirst();
+    }
+
+    public Optional<Dpswap> getDpswap() {
+        return protocols.stream()
+                .filter(p -> p instanceof Dpswap)
+                .map(p -> (Dpswap)p)
                 .findFirst();
     }
 

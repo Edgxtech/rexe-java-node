@@ -99,6 +99,13 @@ public class NabuClient {
         return retrieve("block/get?arg=" + hash + authArg);
     }
 
+    public byte[] computeDp(Multihash hash, Optional<String> auth, String functionName, Object[] params) throws IOException {
+        String authArg = auth.isPresent() ? "&auth=" + auth.get() : "";
+        // TODO, convert params to comma seperated
+        return retrieve("block/get?arg=" + hash + "&fn="+functionName+"&params=1,3"+ authArg);
+    }
+
+
     public void removeBlock(Multihash hash) throws IOException {
         retrieve("block/rm?arg=" + hash);
     }
@@ -118,6 +125,19 @@ public class NabuClient {
     public Cid putBlock(byte[] data, Optional<String> format) throws IOException {
         String fmt = format.map(f -> "&format=" + f).orElse("");
         Multipart m = new Multipart(protocol +"://" + host + ":" + port + apiVersion+"block/put?stream-channels=true" + fmt, "UTF-8");
+        try {
+            m.addFilePart("file", Paths.get(""), new NamedStreamable.ByteArrayWrapper(data));
+            String res = m.finish();
+            LinkedHashMap<String, String> obj = (LinkedHashMap<String, String>)JSONParser.parse(res);
+            return Cid.decode(obj.get("Hash"));
+        } catch (IOException e) {
+            throw new RuntimeException(e.getMessage(), e);
+        }
+    }
+
+    public Cid putDp(byte[] data, Optional<String> format) throws IOException {
+        String fmt = format.map(f -> "&format=" + f).orElse("");
+        Multipart m = new Multipart(protocol +"://" + host + ":" + port + apiVersion+"dp/put?stream-channels=true" + fmt, "UTF-8");
         try {
             m.addFilePart("file", Paths.get(""), new NamedStreamable.ByteArrayWrapper(data));
             String res = m.finish();

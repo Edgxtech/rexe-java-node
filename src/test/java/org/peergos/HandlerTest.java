@@ -17,6 +17,7 @@ import org.peergos.net.APIHandler;
 import org.peergos.protocol.dht.Kademlia;
 import org.peergos.protocol.dht.RamProviderStore;
 import org.peergos.protocol.dht.RamRecordStore;
+import tech.edgx.service.DpswapDpResultService;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -46,7 +47,7 @@ public class HandlerTest {
 
             apiServer = HttpServer.create(localAPIAddress, 500);
             Blockstore blocks = new TypeLimitedBlockstore(new RamBlockstore(), Set.of(Cid.Codec.Raw));
-            APIService service = new APIService(blocks, new BitswapBlockService(null, null), null);
+            APIService service = new APIService(blocks, new BitswapBlockService(null, null), null, new DpswapDpResultService(null,null), new RamBlockstore());
             apiServer.createContext(APIService.API_URL, new APIHandler(service, null));
             apiServer.setExecutor(Executors.newFixedThreadPool(50));
             apiServer.start();
@@ -99,7 +100,7 @@ public class HandlerTest {
             InetSocketAddress localAPIAddress = new InetSocketAddress(apiAddress.getHost(), apiAddress.getPort());
 
             apiServer = HttpServer.create(localAPIAddress, 500);
-            APIService service = new APIService(new RamBlockstore(), new BitswapBlockService(null, null), dht);
+            APIService service = new APIService(new RamBlockstore(), new BitswapBlockService(null, null), dht,new DpswapDpResultService(null,null), new RamBlockstore());
             apiServer.createContext(APIService.API_URL, new APIHandler(service, node1));
             apiServer.setExecutor(Executors.newFixedThreadPool(50));
             apiServer.start();
@@ -124,7 +125,7 @@ public class HandlerTest {
             InetSocketAddress localAPIAddress = new InetSocketAddress(apiAddress.getHost(), apiAddress.getPort());
 
             apiServer = HttpServer.create(localAPIAddress, 500);
-            APIService service = new APIService(new RamBlockstore(), new BitswapBlockService(null, null), null);
+            APIService service = new APIService(new RamBlockstore(), new BitswapBlockService(null, null), null, new DpswapDpResultService(null,null), new RamBlockstore());
             apiServer.createContext(APIService.API_URL, new APIHandler(service, null));
             apiServer.setExecutor(Executors.newFixedThreadPool(50));
             apiServer.start();

@@ -8,6 +8,8 @@ import org.peergos.*;
 import org.peergos.util.*;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
+import tech.edgx.model.dp.DpResult;
+import tech.edgx.model.dp.DpWant;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -35,6 +37,10 @@ public class APIHandler implements HttpHandler {
     public static final String REFS_LOCAL = "refs/local";
     public static final String BLOOM_ADD = "bloom/add";
     public static final String HAS = "block/has";
+    // ADDED
+    /// ACTUALLY DOES IT BELONG HERE?, SHOULD BE MORE OF AN IPNS LAYER API I NEED TO PROVIDE FOR EXECUTING DPs
+    public static final String EXEC = "dp/exec";
+    public static final String PUT_DP = "dp/put";
 
     public static final String FIND_PROVS = "dht/findprovs";
 
@@ -219,6 +225,60 @@ public class APIHandler implements HttpHandler {
                     entry.put("Responses", responses);
                     sb.append(JSONParser.toString(entry) + "\n");
                     replyBytes(httpExchange, sb.toString().getBytes());
+                    break;
+                }
+                // CUSTOM
+                // ONLY DIFFERENCE IS THAT I NEED TO TRACK WHAT IS A DP AND WHAT ISNT
+                case PUT_DP: { // https://docs.ipfs.tech/reference/kubo/rpc/#api-v0-block-put
+                    List<String> format = params.get("format");
+                    Optional<String> formatOpt = format !=null && format.size() == 1 ? Optional.of(format.get(0)) : Optional.empty();
+                    if (formatOpt.isEmpty()) {
+                        throw new APIException("argument \"format\" is required");
+                    }
+                    String reqFormat = formatOpt.get().toLowerCase();
+                    String boundary = httpExchange.getRequestHeaders().get("Content-Type")
+                            .stream()
+                            .filter(s -> s.contains("boundary="))
+                            .map(s -> s.substring(s.indexOf("=") + 1))
+                            .findAny()
+                            .get();
+                    List<byte[]> data = MultipartReceiver.extractFiles(httpExchange.getRequestBody(), boundary);
+                    if (data.size() != 1) {
+                        throw new APIException("Multiple input not supported");
+                    }
+                    byte[] block = data.get(0);
+                    if (block.length >  1024 * 1024 * 2) { //todo what should the limit be?
+                        throw new APIException("Block too large");
+                    }
+                    LOG.info("Putting DP");
+                    Cid cid = service.putDp(block, Cid.Codec.lookupIPLDName(reqFormat));
+                    Map res = new HashMap<>();
+                    res.put("Hash", cid.toString());
+                    replyJson(httpExchange, JSONParser.toString(res));
+                    break;
+                }
+                // CUSTOM
+                case EXEC: {
+                    if (args == null || args.size() != 1) {
+                        throw new APIException("arguments \"cid\",functionName and params are required\n");
+                    }
+                    Optional<String> auth = Optional.ofNullable(params.get("auth")).map(a -> a.get(0));
+                    Set<PeerId> peers = Optional.ofNullable(params.get("peers"))
+                            .map(p -> p.stream().map(PeerId::fromBase58).collect(Collectors.toSet()))
+                            .orElse(Collections.emptySet());
+                    boolean addToBlockstore = Optional.ofNullable(params.get("persist"))
+                            .map(a -> Boolean.parseBoolean(a.get(0)))
+                            .orElse(true);
+                    List<DpResult> dpResults = service.computeDp(List.of(new DpWant(Cid.decode(args.get(0)), auth, args.get(1),args.get(2).split(","))), peers, addToBlockstore);
+                    if (! dpResults.isEmpty()) {
+                        replyJson(httpExchange, dpResults.get(0).result);
+                    } else {
+                        try {
+                            httpExchange.sendResponseHeaders(400, 0);
+                        } catch (IOException ioe) {
+                            HttpUtil.replyError(httpExchange, ioe);
+                        }
+                    }
                     break;
                 }
                 default: {
