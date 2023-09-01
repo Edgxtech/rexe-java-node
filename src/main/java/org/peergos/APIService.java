@@ -1,15 +1,14 @@
 package org.peergos;
-import com.google.gson.Gson;
 import io.ipfs.cid.Cid;
 import io.libp2p.core.*;
 import org.peergos.blockstore.Blockstore;
 import org.peergos.protocol.dht.Kademlia;
 import org.peergos.util.Logging;
 import org.peergos.util.Version;
-import tech.edgx.model.dp.DpResult;
-import tech.edgx.model.dp.DpWant;
-import tech.edgx.service.DpResultService;
-import tech.edgx.service.RuntimeService;
+import tech.edgx.dee.model.dp.DpResult;
+import tech.edgx.dee.model.dp.DpWant;
+import tech.edgx.dee.service.DpResultService;
+import tech.edgx.dee.service.RuntimeService;
 
 import java.util.*;
 import java.util.logging.Logger;
@@ -96,12 +95,39 @@ public class APIService {
         return dpStore.put(dp, codec).join();
     }
 
+    // Retain ability to pull the deployed DP as a file if needed
+    public List<HashedBlock> getDp(List<Want> wants, Set<PeerId> peers, boolean addToLocal) {
+        List<HashedBlock> blocksFound = new ArrayList<>();
+
+        List<Want> local = new ArrayList<>();
+        List<Want> remote = new ArrayList<>();
+
+        for (Want w : wants) {
+            if (dpStore.has(w.cid).join())
+                local.add(w);
+            else
+                remote.add(w);
+        }
+        local.stream()
+                .map(w -> new HashedBlock(w.cid, dpStore.get(w.cid).join().get()))
+                .forEach(blocksFound::add);
+        if (remote.isEmpty())
+            return blocksFound;
+        return java.util.stream.Stream.concat(
+                        blocksFound.stream(),
+                        remoteBlocks.get(remote, peers, addToLocal).stream())
+                .collect(Collectors.toList());
+    }
+
     public Boolean rmDp(Cid cid) {
         return dpStore.rm(cid).join();
     }
 
     public Boolean hasDp(Cid cid) {
         return dpStore.has(cid).join();
+    }
+    public List<Cid> getRefsDp() {
+        return dpStore.refs().join();
     }
 
     public Boolean bloomAddDp(Cid cid) {
@@ -142,6 +168,7 @@ public class APIService {
     // Instruct the node hosting it to execute DP and return result
     // Still uses bitswap-like protocol to send and process Wants
     public List<DpResult> computeDp(List<DpWant> wants, Set<PeerId> peers, boolean addToLocal) {
+        LOG.info("Computing DP");
         List<DpResult> resultsComputed = new ArrayList<>();
         List<DpWant> local = new ArrayList<>();
         List<DpWant> remote = new ArrayList<>();
@@ -153,19 +180,30 @@ public class APIService {
                 // compute remotely
                 remote.add(w);
         }
-        LOG.fine("Computing DPs locally: "+new Gson().toJson(local));
-        LOG.fine("Computing DPs remote: "+new Gson().toJson(remote));
-        local.stream()
-                .map(w -> {
-                    try {
-                        LOG.fine("Executing: "+new Gson().toJson(w));
-                        return runtimeService.runDp(w.cid, store.get(w.cid).join().get(), w.functionName, w.params);
-                    } catch(Exception e) {
-                        LOG.fine("Failed to execute DP: "+w.cid.toString());
-                        return null;
-                    }
-                })
-                .forEach(resultsComputed::add);
+        LOG.info("Computing DPs locally, #: "+local.size());
+        LOG.info("Computing DPs remote, #: "+remote.size());
+        for (DpWant w : local) {
+            LOG.info("Executing: "+w.cid.toString()+", "+w.functionName);
+            try {
+                DpResult dpResult = runtimeService.runDp(w.cid, dpStore.get(w.cid).join().get(), w.functionName, w.params);
+                resultsComputed.add(dpResult);
+            } catch(Exception e) {
+                e.printStackTrace();
+                LOG.info("Failed to execute DP: "+w.cid.toString());
+                return null;
+            }
+        }
+//        local.stream()
+//                .map(w -> {
+//                    try {
+//                        LOG.info("Executing: "+new Gson().toJson(w));
+//                        return runtimeService.runDp(w.cid, dpStore.get(w.cid).join().get(), w.functionName, w.params);
+//                    } catch(Exception e) {
+//                        LOG.info("Failed to execute DP: "+w.cid.toString());
+//                        return null;
+//                    }
+//                })
+//                .forEach(resultsComputed::add);
         if (remote.isEmpty())
             return resultsComputed;
 

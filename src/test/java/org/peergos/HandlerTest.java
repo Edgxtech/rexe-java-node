@@ -17,7 +17,7 @@ import org.peergos.net.APIHandler;
 import org.peergos.protocol.dht.Kademlia;
 import org.peergos.protocol.dht.RamProviderStore;
 import org.peergos.protocol.dht.RamRecordStore;
-import tech.edgx.service.DpswapDpResultService;
+import tech.edgx.dee.service.DpswapDpResultService;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -25,7 +25,6 @@ import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 public class HandlerTest {
 

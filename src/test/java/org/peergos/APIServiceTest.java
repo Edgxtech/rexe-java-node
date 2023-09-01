@@ -10,7 +10,7 @@ import org.junit.Test;
 import org.peergos.blockstore.FileBlockstore;
 import org.peergos.blockstore.Blockstore;
 import org.peergos.blockstore.RamBlockstore;
-import tech.edgx.service.DpswapDpResultService;
+import tech.edgx.dee.service.DpswapDpResultService;
 
 import java.io.File;
 import java.io.IOException;

@@ -1,15 +1,15 @@
 package org.peergos.net;
 
+import com.google.gson.Gson;
 import io.ipfs.cid.Cid;
-import io.ipfs.multihash.Multihash;
 import io.libp2p.core.Host;
 import io.libp2p.core.PeerId;
 import org.peergos.*;
 import org.peergos.util.*;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
-import tech.edgx.model.dp.DpResult;
-import tech.edgx.model.dp.DpWant;
+import tech.edgx.dee.model.dp.DpResult;
+import tech.edgx.dee.model.dp.DpWant;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -39,8 +39,14 @@ public class APIHandler implements HttpHandler {
     public static final String HAS = "block/has";
     // ADDED
     /// ACTUALLY DOES IT BELONG HERE?, SHOULD BE MORE OF AN IPNS LAYER API I NEED TO PROVIDE FOR EXECUTING DPs
-    public static final String EXEC = "dp/exec";
+    public static final String GET_DP = "dp/get";
     public static final String PUT_DP = "dp/put";
+    public static final String EXEC = "dp/exec"; // Execute/compute the DP
+    public static final String RM_DP = "dp/rm";
+    public static final String STAT_DP = "dp/stat";
+    public static final String REFS_LOCAL_DP = "dp/refs/local";
+    public static final String BLOOM_ADD_DP = "dp/bloom/add";
+    public static final String HAS_DP = "dp/has";
 
     public static final String FIND_PROVS = "dht/findprovs";
 
@@ -227,8 +233,35 @@ public class APIHandler implements HttpHandler {
                     replyBytes(httpExchange, sb.toString().getBytes());
                     break;
                 }
-                // CUSTOM
-                // ONLY DIFFERENCE IS THAT I NEED TO TRACK WHAT IS A DP AND WHAT ISNT
+
+                /////////////////////////////////////
+                // START OF DP SPECIFIC
+                // CUSTOM - I AM TRACKING WHAT IS A DP AND WHAT ISNT BY USING A DP-dedicated BlockStore
+                /////////////////////////////////////
+
+                case GET_DP: { // https://docs.ipfs.tech/reference/kubo/rpc/#api-v0-block-get
+                    if (args == null || args.size() != 1) {
+                        throw new APIException("argument \"ipfs-path\" is required");
+                    }
+                    Optional<String> auth = Optional.ofNullable(params.get("auth")).map(a -> a.get(0));
+                    Set<PeerId> peers = Optional.ofNullable(params.get("peers"))
+                            .map(p -> p.stream().map(PeerId::fromBase58).collect(Collectors.toSet()))
+                            .orElse(Collections.emptySet());
+                    boolean addToBlockstore = Optional.ofNullable(params.get("persist"))
+                            .map(a -> Boolean.parseBoolean(a.get(0)))
+                            .orElse(true);
+                    List<HashedBlock> block = service.getDp(List.of(new Want(Cid.decode(args.get(0)), auth)), peers, addToBlockstore);
+                    if (! block.isEmpty()) {
+                        replyBytes(httpExchange, block.get(0).block);
+                    } else {
+                        try {
+                            httpExchange.sendResponseHeaders(400, 0);
+                        } catch (IOException ioe) {
+                            HttpUtil.replyError(httpExchange, ioe);
+                        }
+                    }
+                    break;
+                }
                 case PUT_DP: { // https://docs.ipfs.tech/reference/kubo/rpc/#api-v0-block-put
                     List<String> format = params.get("format");
                     Optional<String> formatOpt = format !=null && format.size() == 1 ? Optional.of(format.get(0)) : Optional.empty();
@@ -259,19 +292,41 @@ public class APIHandler implements HttpHandler {
                 }
                 // CUSTOM
                 case EXEC: {
+                    LOG.info("COMPUTE, params: "+new Gson().toJson(params));
+                    List<String> fn = params.get("fn");
                     if (args == null || args.size() != 1) {
-                        throw new APIException("arguments \"cid\",functionName and params are required\n");
+                        throw new APIException("arguments \"cid\" required\n");
+                    }
+                    if (fn == null || fn.size() != 1) {
+                        throw new APIException("\"functionName\" required\n");
                     }
                     Optional<String> auth = Optional.ofNullable(params.get("auth")).map(a -> a.get(0));
+                    Optional<Object[]> fnParamsOpt = Optional.empty();
+                    if (params.get("params")!=null) {
+                        List<String> fnParams = params.get("params").stream()
+                                .flatMap(p -> Arrays.stream(p.split(",")))
+                                .collect(Collectors.toList());
+                        LOG.info("Function PARAMS Rx: "+new Gson().toJson(fnParams));
+                        if (fnParams != null && !fnParams.isEmpty()) {
+                            fnParamsOpt = Optional.ofNullable(fnParams.toArray());
+                        }
+                    }
                     Set<PeerId> peers = Optional.ofNullable(params.get("peers"))
                             .map(p -> p.stream().map(PeerId::fromBase58).collect(Collectors.toSet()))
                             .orElse(Collections.emptySet());
                     boolean addToBlockstore = Optional.ofNullable(params.get("persist"))
                             .map(a -> Boolean.parseBoolean(a.get(0)))
                             .orElse(true);
-                    List<DpResult> dpResults = service.computeDp(List.of(new DpWant(Cid.decode(args.get(0)), auth, args.get(1),args.get(2).split(","))), peers, addToBlockstore);
-                    if (! dpResults.isEmpty()) {
-                        replyJson(httpExchange, dpResults.get(0).result);
+                    LOG.info("COMPUTE, params2: "+new Gson().toJson(params));
+                    List<DpResult> dpResults = service.computeDp(
+                            List.of(new DpWant(Cid.decode(args.get(0)), auth, fn.get(0), fnParamsOpt))
+                            , peers
+                            , addToBlockstore);
+                    LOG.info("Retrieved result: "+new Gson().toJson(dpResults));
+                    if (dpResults != null && !dpResults.isEmpty()) {
+                        Map res = new HashMap<>();
+                        res.put("Result", dpResults.get(0).result);
+                        replyJson(httpExchange, JSONParser.toString(res));
                     } else {
                         try {
                             httpExchange.sendResponseHeaders(400, 0);
@@ -279,6 +334,73 @@ public class APIHandler implements HttpHandler {
                             HttpUtil.replyError(httpExchange, ioe);
                         }
                     }
+                    break;
+                }
+                case RM_DP: { // https://docs.ipfs.tech/reference/kubo/rpc/#api-v0-block-rm
+                    if (args == null || args.size() != 1) {
+                        throw new APIException("argument \"cid\" is required\n");
+                    }
+                    Cid cid = Cid.decode(args.get(0));
+                    boolean deleted = service.rmDp(cid);
+                    if (deleted) {
+                        Map res = new HashMap<>();
+                        res.put("Error", "");
+                        res.put("Hash", cid.toString());
+                        replyJson(httpExchange, JSONParser.toString(res));
+                    } else {
+                        try {
+                            httpExchange.sendResponseHeaders(400, 0);
+                        } catch (IOException ioe) {
+                            HttpUtil.replyError(httpExchange, ioe);
+                        }
+                    }
+                    break;
+                }
+                case STAT_DP: { // https://docs.ipfs.tech/reference/kubo/rpc/#api-v0-block-stat
+                    if (args == null || args.size() != 1) {
+                        throw new APIException("argument \"cid\" is required\n");
+                    }
+                    Optional<String> auth = Optional.ofNullable(params.get("auth")).map(a -> a.get(0));
+                    List<HashedBlock> block = service.getDp(List.of(new Want(Cid.decode(args.get(0)), auth)), Collections.emptySet(), false);
+                    if (! block.isEmpty()) {
+                        Map res = new HashMap<>();
+                        res.put("Size", block.get(0).block.length);
+                        replyJson(httpExchange, JSONParser.toString(res));
+                    } else {
+                        try {
+                            httpExchange.sendResponseHeaders(400, 0);
+                        } catch (IOException ioe) {
+                            HttpUtil.replyError(httpExchange, ioe);
+                        }
+                    }
+                    break;
+                }
+                case REFS_LOCAL_DP: { // https://docs.ipfs.tech/reference/kubo/rpc/#api-v0-refs-local
+                    List<Cid> refs = service.getRefsDp();
+                    StringBuilder sb = new StringBuilder();
+                    for (Cid cid : refs) {
+                        Map<String, String> entry = new HashMap<>();
+                        entry.put("Ref", cid.toString());
+                        entry.put("Err", "");
+                        sb.append(JSONParser.toString(entry));
+                    }
+                    replyBytes(httpExchange, sb.toString().getBytes());
+                    break;
+                }
+                case HAS_DP: {
+                    if (args == null || args.size() != 1) {
+                        throw new APIException("argument \"ipfs-path\" is required");
+                    }
+                    boolean has = service.hasDp(Cid.decode(args.get(0)));
+                    replyBytes(httpExchange, has ? "true".getBytes() : "false".getBytes());
+                    break;
+                }
+                case BLOOM_ADD_DP: {
+                    if (args == null || args.size() != 1) {
+                        throw new APIException("argument \"cid\" is required\n");
+                    }
+                    Boolean added = service.bloomAddDp(Cid.decode(args.get(0)));
+                    replyBytes(httpExchange, added.toString().getBytes());
                     break;
                 }
                 default: {

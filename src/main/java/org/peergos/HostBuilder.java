@@ -20,7 +20,7 @@ import org.peergos.protocol.autonat.*;
 import org.peergos.protocol.bitswap.*;
 import org.peergos.protocol.circuit.*;
 import org.peergos.protocol.dht.*;
-import tech.edgx.protocol.dpswap.Dpswap;
+import tech.edgx.dee.protocol.dpswap.Dpswap;
 
 import java.util.*;
 

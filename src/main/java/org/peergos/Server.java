@@ -15,9 +15,9 @@ import org.peergos.protocol.circuit.CircuitHopProtocol;
 import org.peergos.protocol.circuit.CircuitStopProtocol;
 import org.peergos.protocol.dht.*;
 import org.peergos.util.Logging;
-import tech.edgx.protocol.dpswap.Dpswap;
-import tech.edgx.protocol.dpswap.DpswapEngine;
-import tech.edgx.service.DpswapDpResultService;
+import tech.edgx.dee.protocol.dpswap.Dpswap;
+import tech.edgx.dee.protocol.dpswap.DpswapEngine;
+import tech.edgx.dee.service.DpswapDpResultService;
 
 import java.io.File;
 import java.io.IOException;
