@@ -4,12 +4,13 @@ import com.sun.net.httpserver.HttpServer;
 import io.ipfs.cid.Cid;
 import io.ipfs.multiaddr.MultiAddress;
 import org.junit.Assert;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.peergos.*;
 import org.peergos.blockstore.RamBlockstore;
 import org.peergos.net.APIHandler;
 import tech.edgx.dee.client.DpClient;
-import tech.edgx.dee.service.DpswapDpResultService;
+import tech.edgx.dee.service.CptswapResultService;
 import tech.edgx.dee.util.Helpers;
 import tech.edgx.dee.util.HexUtil;
 
@@ -22,23 +23,32 @@ import java.util.concurrent.Executors;
 
 public class DpTest {
 
-    @Test
-    public void computeDpTest() {
+    static DpClient dpClient;
+
+    @BeforeClass
+    public static void setUp() {
         HttpServer apiServer = null;
         try {
             MultiAddress apiAddress = new MultiAddress("/ip4/127.0.0.1/tcp/8123");
             InetSocketAddress localAPIAddress = new InetSocketAddress(apiAddress.getHost(), apiAddress.getPort());
 
             apiServer = HttpServer.create(localAPIAddress, 500);
-            APIService service = new APIService(new RamBlockstore(), new BitswapBlockService(null, null), null, new DpswapDpResultService(null,null), new RamBlockstore());
+            APIService service = new APIService(new RamBlockstore(), new BitswapBlockService(null, null), null, new CptswapResultService(null, null), new RamBlockstore());
             apiServer.createContext(APIService.API_URL, new APIHandler(service, null));
             apiServer.setExecutor(Executors.newFixedThreadPool(50));
             apiServer.start();
 
-            DpClient dpClient = new DpClient(apiAddress.getHost(), apiAddress.getPort(), "/api/v0/", false);
+            dpClient = new DpClient(apiAddress.getHost(), apiAddress.getPort(), "/api/v0/", false);
             String version = dpClient.version();
             Assert.assertTrue("version", version != null);
+        }
+        catch (Exception e) {e.printStackTrace();}
+    }
 
+    @Test
+    public void computeDpTestAddFunction() {
+        try {
+            //System.out.println("DpClient: "+new Gson().toJson(dpClient));
             String testDpName = "src/main/resources/TestDp.jar";
             File jarFile = new File(testDpName);
             Helpers.printJarInfo(jarFile);
@@ -48,43 +58,39 @@ public class DpTest {
             boolean has = dpClient.hasBlock(addedHash, Optional.empty());
             Assert.assertTrue("has block as expected", has);
 
-            //String result = dpClient.compute(addedHash, Optional.empty(), "getTestVal", Optional.empty());
-            String result = dpClient.compute(addedHash, Optional.empty(), "add", Optional.of(new String[]{"1.3","67"}));
+            String result = dpClient.compute(addedHash, Optional.empty(), "add", Optional.of(new String[]{"1.12312","3.232432"}));
             print("DP compute result: "+result);
 
-            dpClient.removeBlock(addedHash);
-            List<Cid> localRefsAfter = dpClient.listBlockstore();
-            Assert.assertTrue("local ref size after rm", localRefsAfter.size() == 0);
-
-            boolean have = dpClient.hasBlock(addedHash, Optional.empty());
-            Assert.assertTrue("does not have block as expected", !have);
         } catch (IOException ioe) {
             ioe.printStackTrace();
             Assert.assertTrue("IOException", false);
-        } finally {
-            if (apiServer != null) {
-                apiServer.stop(1);
-            }
+        }
+    }
+
+    @Test
+    public void computeDpTestHellowWorldNoParams() {
+        try {
+            String testDpName = "src/main/resources/TestDp.jar";
+            File jarFile = new File(testDpName);
+            Helpers.printJarInfo(jarFile);
+            byte[] bytecode = Files.readAllBytes(jarFile.toPath());
+            Cid addedHash = dpClient.put(bytecode, Optional.of("raw"));
+
+            boolean has = dpClient.hasBlock(addedHash, Optional.empty());
+            Assert.assertTrue("has block as expected", has);
+
+            String result = dpClient.compute(addedHash, Optional.empty(), "getTestVal", Optional.empty());
+            print("DP compute result: "+result);
+
+        } catch (IOException ioe) {
+            ioe.printStackTrace();
+            Assert.assertTrue("IOException", false);
         }
     }
 
     @Test
     public void putAndRemoveDpTest() {
-        HttpServer apiServer = null;
         try {
-            MultiAddress apiAddress = new MultiAddress("/ip4/127.0.0.1/tcp/8123");
-            InetSocketAddress localAPIAddress = new InetSocketAddress(apiAddress.getHost(), apiAddress.getPort());
-
-            apiServer = HttpServer.create(localAPIAddress, 500);
-            APIService service = new APIService(new RamBlockstore(), new BitswapBlockService(null, null), null, new DpswapDpResultService(null,null), new RamBlockstore());
-            apiServer.createContext(APIService.API_URL, new APIHandler(service, null));
-            apiServer.setExecutor(Executors.newFixedThreadPool(50));
-            apiServer.start();
-
-            DpClient dpClient = new DpClient(apiAddress.getHost(), apiAddress.getPort(), "/api/v0/", false);
-            String version = dpClient.version();
-            Assert.assertTrue("version", version != null);
-
             String testDpName = "src/main/resources/TestDp.jar";
             File jarFile = new File(testDpName);
             Helpers.printJarInfo(jarFile);
@@ -117,10 +123,6 @@ public class DpTest {
         } catch (IOException ioe) {
             ioe.printStackTrace();
             Assert.assertTrue("IOException", false);
-        } finally {
-            if (apiServer != null) {
-                apiServer.stop(1);
-            }
         }
     }
 

@@ -1,5 +1,6 @@
 package org.peergos.protocol.dht;
 
+import com.google.gson.Gson;
 import com.google.protobuf.*;
 import com.offbynull.kademlia.*;
 import io.ipfs.cid.*;
@@ -47,6 +48,7 @@ public class KademliaEngine {
         int k = 20;
         List<Node> nodes = router.find(Id.create(Hash.sha256(key), 256), k, false);
         System.out.println("Nodes: " + nodes.size());
+        System.out.println("AddressBook: " + new Gson().toJson(addressBook));
         return nodes.stream()
                 .map(n -> {
                     List<MultiAddress> addrs = addressBook.getAddrs(PeerId.fromBase58(n.getLink())).join()

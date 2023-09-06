@@ -1,11 +1,11 @@
-package tech.edgx.dee.protocol.dpswap;
+package tech.edgx.dee.protocol.cptswap;
 
 import kotlin.Unit;
-import tech.edgx.dee.protocol.dpswap.pb.MessageOuterClass;
+import tech.edgx.dee.protocol.cptswap.pb.MessageOuterClass;
 
 import java.util.concurrent.CompletableFuture;
 
-public interface DpswapController {
+public interface CptswapController {
 
     void send(MessageOuterClass.Message msg);
 

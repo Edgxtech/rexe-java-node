@@ -1,0 +1,208 @@
+package tech.edgx.dee.protocol.cptswap;
+
+import com.google.gson.Gson;
+import com.google.protobuf.ByteString;
+import io.ipfs.multihash.Multihash;
+import io.libp2p.core.AddressBook;
+import io.libp2p.core.Host;
+import io.libp2p.core.PeerId;
+import io.libp2p.core.multiformats.Multiaddr;
+import io.libp2p.core.multistream.StrictProtocolBinding;
+import org.bouncycastle.oer.its.HashedData;
+import org.peergos.AddressBookConsumer;
+import org.peergos.HashedBlock;
+import org.peergos.PeerAddresses;
+import org.peergos.Want;
+//import org.peergos.protocol.bitswap.BitswapController;
+//import org.peergos.protocol.bitswap.pb.MessageOuterClass;
+import org.peergos.protocol.dht.Kademlia;
+import tech.edgx.dee.model.dp.DpResult;
+import tech.edgx.dee.model.dp.DpWant;
+import tech.edgx.dee.protocol.cptswap.pb.MessageOuterClass;
+//import tech.edgx.dee.util.SwapType;
+
+import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ForkJoinPool;
+import java.util.function.Consumer;
+import java.util.logging.Logger;
+import java.util.stream.Collectors;
+
+public class Cptswap extends StrictProtocolBinding<CptswapController> implements AddressBookConsumer {
+    private static final Logger LOG = Logger.getLogger(Cptswap.class.getName());
+    public static int MAX_MESSAGE_SIZE = 2*1024*1024;
+
+    private final CptswapEngine engine;
+    private AddressBook addrs;
+
+    public Cptswap(CptswapEngine engine) {
+        super("/ipfs/bitswap/1.2.0", new CptswapProtocol(engine));
+        this.engine = engine;
+    }
+
+    public void setAddressBook(AddressBook addrs) {
+        engine.setAddressBook(addrs);
+        this.addrs = addrs;
+    }
+
+    public List<CompletableFuture<DpResult>> compute(List<DpWant> wants,
+                                                     Host us,
+                                                     Set<PeerId> peers,
+                                                     boolean addToBlockstore) {
+        LOG.info("Requesting compute wants from network, #: "+wants.size());
+        if (wants.isEmpty())
+            return Collections.emptyList();
+        List<CompletableFuture<DpResult>> results = new ArrayList<>();
+        for (DpWant w : wants) {
+            if (w.cid.getType() == Multihash.Type.id)
+                continue;
+            CompletableFuture<DpResult> res = engine.computeWant(w); //, addToBlockstore
+            results.add(res);
+        }
+        sendDpWants(us, peers);
+        ForkJoinPool.commonPool().execute(() -> {
+            while (engine.hasWants()) {
+                try {Thread.sleep(5_000);} catch (InterruptedException e) {}
+                sendDpWants(us, peers);
+            }
+        });
+        return results;
+    }
+
+//    public CompletableFuture<HashedBlock> get(DpWant hash,
+//                                           Host us,
+//                                           Set<PeerId> peers,
+//                                           boolean addToBlockstore) {
+//        return get(List.of(hash), us, peers, addToBlockstore).get(0);
+//    }
+
+    public List<CompletableFuture<HashedBlock>> get(List<Want> wants,
+                                                    Host us,
+                                                    Set<PeerId> peers,
+                                                    boolean addToBlockstore) {
+        LOG.info("Requesting get wants from network, #: "+wants.size());
+        if (wants.isEmpty())
+            return Collections.emptyList();
+        List<CompletableFuture<HashedBlock>> results = new ArrayList<>();
+        for (Want w : wants) {
+            if (w.cid.getType() == Multihash.Type.id)
+                continue;
+            CompletableFuture<HashedBlock> res = engine.getWant(w, addToBlockstore);
+            results.add(res);
+        }
+        sendWants(us, peers);
+        ForkJoinPool.commonPool().execute(() -> {
+            while (engine.hasWants()) {
+                try {Thread.sleep(5_000);} catch (InterruptedException e) {}
+                sendWants(us, peers);
+            }
+        });
+        return results;
+    }
+
+//    public void sendWants(Host us, Set<PeerId> peers) {
+//        Set<Want> wants = engine.getWants();
+//        LOG.info("Broadcast wants: " + wants.size());
+//        Map<Want, PeerId> haves = engine.getHaves();
+//        List<org.peergos.protocol.bitswap.pb.MessageOuterClass.Message.Wantlist.Entry> wantsProto = wants.stream()
+//                .map(want -> org.peergos.protocol.bitswap.pb.MessageOuterClass.Message.Wantlist.Entry.newBuilder()
+//                        //.setWantType(
+//                        .setWantType(haves.containsKey(want) ?
+//                                org.peergos.protocol.bitswap.pb.MessageOuterClass.Message.Wantlist.WantType.Block :
+//                                MessageOuterClass.Message.Wantlist.WantType.Have)
+//                        .setBlock(ByteString.copyFrom(want.cid.toBytes()))
+//                        .setAuth(ByteString.copyFrom(want.auth.orElse("").getBytes()))
+//                        .build())
+//                .collect(Collectors.toList());
+//        // broadcast to all connected peers if none are supplied
+//        Set<PeerId> connected = peers.isEmpty() ? engine.getConnected() : peers;
+//        engine.buildAndSendMessages(wantsProto, Collections.emptyList(), Collections.emptyList(),
+//                msg -> connected.forEach(peer -> dialPeer(us, peer, c -> {
+//                    c.send(msg);
+//                })));
+//    }
+
+    public void sendWants(Host us, Set<PeerId> peers) {
+        Set<Want> wants = engine.getWants();
+        LOG.info("Broadcast wants: " + wants.size());
+        Map<Want, PeerId> haves = engine.getHaves();
+        List<MessageOuterClass.Message.Wantlist.Entry> wantsProto = wants.stream()
+                .map(want -> MessageOuterClass.Message.Wantlist.Entry.newBuilder()
+                        .setWantType(haves.containsKey(want) ?
+                                MessageOuterClass.Message.Wantlist.WantType.Block :
+                                MessageOuterClass.Message.Wantlist.WantType.Have)
+                        .setBlock(ByteString.copyFrom(want.cid.toBytes()))
+                        .setAuth(ByteString.copyFrom(want.auth.orElse("").getBytes()))
+                        .build())
+                .collect(Collectors.toList());
+        // broadcast to all connected peers if none are supplied
+        Set<PeerId> connected = peers.isEmpty() ? engine.getConnected() : peers;
+        LOG.info("Engine connected peers: "+new Gson().toJson(engine.getConnected()));
+        LOG.info("Broad casting to peers: "+new Gson().toJson(peers));
+
+
+        // DIAL peer and perform the specified action which is to send messages,
+        //  namely the Wants list wrapped in the MessageOuterClass
+        engine.buildAndSendMessages(wantsProto,
+                Collections.emptyList(),
+                Collections.emptyList(),
+                Collections.emptyList(),
+                msg -> connected.forEach(peer -> dialPeer(us, peer, c -> {
+                    c.send(msg);
+                })));
+    }
+
+    public void sendDpWants(Host us, Set<PeerId> peers) {
+        Set<DpWant> wants = engine.getDpWants();
+        LOG.info("Broadcast DP wants: " + wants.size());
+        //Map<DpWant, PeerId> haves = engine.getHaves();
+        List<MessageOuterClass.Message.Wantlist.Entry> wantsProto = wants.stream()
+                .map(want -> MessageOuterClass.Message.Wantlist.Entry.newBuilder()
+//                        .setWantType(haves.containsKey(want) ?
+//                                MessageOuterClass.Message.Wantlist.WantType.Block :
+//                                MessageOuterClass.Message.Wantlist.WantType.Have)
+                        .setWantType(tech.edgx.dee.protocol.cptswap.pb.MessageOuterClass.Message.Wantlist.WantType.Dp)
+//                        .setWantType(swapType.equals(SwapType.block) ?
+//                                haves.containsKey(want) ?
+//                                        tech.edgx.dee.protocol.cptswap.pb.MessageOuterClass.Message.Wantlist.WantType.Block :
+//                                        tech.edgx.dee.protocol.cptswap.pb.MessageOuterClass.Message.Wantlist.WantType.Have :
+//                                tech.edgx.dee.protocol.cptswap.pb.MessageOuterClass.Message.Wantlist.WantType.Dp)
+                        .setBlock(ByteString.copyFrom(want.cid.toBytes()))
+                        .setAuth(ByteString.copyFrom(want.auth.orElse("").getBytes()))
+                        .build())
+                .collect(Collectors.toList());
+        // broadcast to all connected peers if none are supplied
+        Set<PeerId> connected = peers.isEmpty() ? engine.getConnected() : peers;
+        engine.buildAndSendMessages(wantsProto, Collections.emptyList(), Collections.emptyList(), Collections.emptyList(),
+                msg -> connected.forEach(peer -> dialPeer(us, peer, c -> {
+                    c.send(msg);
+                })));
+    }
+
+    private void dialPeer(Host us, PeerId peer, Consumer<CptswapController> action) {
+        Multiaddr[] addr = addrs.get(peer).join().toArray(new Multiaddr[0]);
+        if (addr.length == 0)
+            throw new IllegalStateException("No addresses known for peer " + peer);
+        CptswapController controller = dial(us, peer, addr).getController().join();
+        action.accept(controller);
+    }
+
+    // Ref from bitswap test
+//    private static long findAndDialPeer(Multihash toFind, Kademlia dht1, Host node1) {
+//        long t1 = System.currentTimeMillis();
+//        List<PeerAddresses> closestPeers = dht1.findClosestPeers(toFind, 1, node1);
+//        long t2 = System.currentTimeMillis();
+//        Optional<PeerAddresses> matching = closestPeers.stream()
+//                .filter(p -> p.peerId.equals(toFind))
+//                .findFirst();
+//        if (matching.isEmpty())
+//            throw new IllegalStateException("Couldn't find node2 from kubo!");
+//        PeerAddresses peer = matching.get();
+//        Multiaddr[] addrs = peer.getPublicAddresses().stream().map(a -> Multiaddr.fromString(a.toString())).toArray(Multiaddr[]::new);
+//        dht1.dial(node1, PeerId.fromBase58(peer.peerId.toBase58()), addrs)
+//                .getController().join().closerPeers(toFind).join();
+//        System.out.println("Peer lookup took " + (t2-t1) + "ms");
+//        return t2 - t1;
+//    }
+
+}

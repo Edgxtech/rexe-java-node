@@ -1,5 +1,6 @@
 package org.peergos.protocol.dht;
 
+import com.google.gson.Gson;
 import com.offbynull.kademlia.*;
 import io.ipfs.multiaddr.*;
 import io.ipfs.multihash.Multihash;
@@ -101,6 +102,7 @@ public class Kademlia extends StrictProtocolBinding<KademliaController> implemen
         // lookup our own peer id to keep our nearest neighbours up-to-date,
         // and connect to all of them, so they know about our addresses
         List<PeerAddresses> closestToUs = findClosestPeers(Multihash.deserialize(us.getPeerId().getBytes()), 20, us);
+        LOG.info("NODES CLOSEST TO US: "+new Gson().toJson(closestToUs));
         int connectedClosest = 0;
         for (PeerAddresses peer : closestToUs) {
             if (connectTo(us, peer))

@@ -1,13 +1,14 @@
 package org.peergos.protocol.bitswap;
 
+import com.google.gson.Gson;
 import com.google.protobuf.*;
-import io.ipfs.cid.*;
 import io.ipfs.multihash.Multihash;
 import io.libp2p.core.*;
 import io.libp2p.core.multiformats.*;
 import io.libp2p.core.multistream.*;
 import org.peergos.*;
 import org.peergos.protocol.bitswap.pb.*;
+import tech.edgx.dee.util.SwapType;
 
 import java.util.*;
 import java.util.concurrent.*;
@@ -35,14 +36,16 @@ public class Bitswap extends StrictProtocolBinding<BitswapController> implements
     public CompletableFuture<HashedBlock> get(Want hash,
                                               Host us,
                                               Set<PeerId> peers,
-                                              boolean addToBlockstore) {
+                                              boolean addToBlockstore
+                                              ) { //SwapType swapType
         return get(List.of(hash), us, peers, addToBlockstore).get(0);
     }
 
     public List<CompletableFuture<HashedBlock>> get(List<Want> wants,
                                                     Host us,
                                                     Set<PeerId> peers,
-                                                    boolean addToBlockstore) {
+                                                    boolean addToBlockstore
+                                                    ) { //SwapType swapType
         if (wants.isEmpty())
             return Collections.emptyList();
         List<CompletableFuture<HashedBlock>> results = new ArrayList<>();
@@ -68,6 +71,7 @@ public class Bitswap extends StrictProtocolBinding<BitswapController> implements
         Map<Want, PeerId> haves = engine.getHaves();
         List<MessageOuterClass.Message.Wantlist.Entry> wantsProto = wants.stream()
                 .map(want -> MessageOuterClass.Message.Wantlist.Entry.newBuilder()
+                        //.setWantType(
                         .setWantType(haves.containsKey(want) ?
                                 MessageOuterClass.Message.Wantlist.WantType.Block :
                                 MessageOuterClass.Message.Wantlist.WantType.Have)
@@ -77,6 +81,10 @@ public class Bitswap extends StrictProtocolBinding<BitswapController> implements
                 .collect(Collectors.toList());
         // broadcast to all connected peers if none are supplied
         Set<PeerId> connected = peers.isEmpty() ? engine.getConnected() : peers;
+
+        LOG.info("Engine connected peers: "+new Gson().toJson(engine.getConnected()));
+        LOG.info("Broad casting to peers: "+new Gson().toJson(peers));
+
         engine.buildAndSendMessages(wantsProto, Collections.emptyList(), Collections.emptyList(),
                 msg -> connected.forEach(peer -> dialPeer(us, peer, c -> {
                     c.send(msg);

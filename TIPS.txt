@@ -1,0 +1,43 @@
+
+## MUST BE RUN WITH JAVA17
+* On Dev set like this
+export JAVA_HOME=`/usr/libexec/java_home -v 17`
+
+### GENERATING PROTOBUF STUBS
+pom.xml:
+        *** NOTE: I chose 3.6.1 b/c: protoc --version  >  libprotoc 3.6.1
+            Might need to try other versions
+        <protobuf.version>3.6.1</protobuf.version>
+        ...
+        <extensions>
+            <extension>
+                <groupId>kr.motd.maven</groupId>
+                <artifactId>os-maven-plugin</artifactId>
+                <version>1.6.1</version>
+            </extension>
+        </extensions>
+        ...
+                    <plugin>
+                        <groupId>org.xolstice.maven.plugins</groupId>
+                        <artifactId>protobuf-maven-plugin</artifactId>
+                        <version>0.5.1</version>
+                        <extensions>true</extensions>
+                        <configuration>
+                            <protocArtifact>com.google.protobuf:protoc:${protobuf.version}:exe:${os.detected.classifier}</protocArtifact>
+                            <protoSourceRoot>
+                                ${basedir}/src/main/proto/
+                            </protoSourceRoot>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <goals>
+                                    <goal>compile</goal>
+                                    <goal>test-compile</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+Put: src/main/proto/message.proto
+mvn protobuf:compile
+   > target/generated-sources/protobuf/java ... MessageOuterClass
+Copy MessageOuterClass to src/main/java/protocol/cptswap/pb/

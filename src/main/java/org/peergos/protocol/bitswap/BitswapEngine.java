@@ -1,5 +1,6 @@
 package org.peergos.protocol.bitswap;
 
+import com.google.gson.Gson;
 import com.google.protobuf.*;
 import io.ipfs.cid.*;
 import io.ipfs.multihash.Multihash;
@@ -19,7 +20,8 @@ import java.util.logging.*;
 public class BitswapEngine {
     private static final Logger LOG = Logger.getLogger(BitswapEngine.class.getName());
 
-    private final Blockstore store;
+    private final Blockstore blockStore;
+    //private final Blockstore dpStore;
     private final Set<PeerId> connections = new HashSet<>();
     private final BlockRequestAuthoriser authoriser;
     private AddressBook addressBook;
@@ -29,14 +31,15 @@ public class BitswapEngine {
     private final ConcurrentHashMap<Want, Boolean> persistBlocks = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<Want, PeerId> blockHaves = new ConcurrentHashMap<>();
 
-    /* dp specific */
-    private final ConcurrentHashMap<Want, CompletableFuture<HashedBlock>> localDpWants = new ConcurrentHashMap<>();
-    private final ConcurrentHashMap<Want, Boolean> persistDpResults = new ConcurrentHashMap<>();
-    private final ConcurrentHashMap<Want, PeerId> dpResultHaves = new ConcurrentHashMap<>();
+//    /* dp specific */
+//    private final ConcurrentHashMap<Want, CompletableFuture<HashedBlock>> localDpWants = new ConcurrentHashMap<>();
+//    private final ConcurrentHashMap<Want, Boolean> persistDpResults = new ConcurrentHashMap<>();
+//    private final ConcurrentHashMap<Want, PeerId> dpResultHaves = new ConcurrentHashMap<>();
 
-    public BitswapEngine(Blockstore store, BlockRequestAuthoriser authoriser) {
-        this.store = store;
+    public BitswapEngine(Blockstore blockStore, BlockRequestAuthoriser authoriser) { //, Blockstore dpStore) {
+        this.blockStore = blockStore;
         this.authoriser = authoriser;
+        //this.dpStore = dpStore;
     }
 
     public void setAddressBook(AddressBook addrs) {
@@ -93,6 +96,7 @@ public class BitswapEngine {
     }
 
     public void receiveMessage(MessageOuterClass.Message msg, Stream source) {
+        LOG.info("Rx Msg: "+new Gson().toJson(msg));
 
         List<MessageOuterClass.Message.BlockPresence> presences = new ArrayList<>();
         List<MessageOuterClass.Message.Block> blocks = new ArrayList<>();
@@ -107,9 +111,18 @@ public class BitswapEngine {
                 Optional<String> auth = e.getAuth().isEmpty() ? Optional.empty() : Optional.of(e.getAuth().toStringUtf8());
                 boolean isCancel = e.getCancel();
                 boolean sendDontHave = e.getSendDontHave();
+                //e.getWantType()
+                // Could either switch on the particular blockstore here depending on want type
+                //    Or keep same blockstore, and return DP as normal
+                //    The computeswapEngine.receiveMessage() will also use the same store, but will execute the runtime
+                //    Might be better keeping a separate blockstore so blocksizes and the protocol can be optimised??
+                //        Is it a bit like: data layer and a compute layer?
+                //        Could it be that some nodes just run ipfs data layer (incl put/get DPs)
+                //        Then other nodes can run just the compute layer; thus enhance scaling
+                //Blockstore store = e.getWantType().getNumber() == 2 ? dp
                 boolean wantBlock = e.getWantType().getNumber() == 0;
                 if (wantBlock) {
-                    Optional<byte[]> block = store.get(c).join();
+                    Optional<byte[]> block = blockStore.get(c).join();
                     if (block.isPresent() && authoriser.allowRead(c, block.get(), sourcePeerId, auth.orElse("")).join()) {
                         MessageOuterClass.Message.Block blockP = MessageOuterClass.Message.Block.newBuilder()
                                 .setPrefix(ByteString.copyFrom(prefixBytes(c)))
@@ -134,7 +147,7 @@ public class BitswapEngine {
                         messageSize += presence.getSerializedSize();
                     }
                 } else {
-                    boolean hasBlock = store.has(c).join();
+                    boolean hasBlock = blockStore.has(c).join();
                     if (hasBlock) {
                         MessageOuterClass.Message.BlockPresence presence = MessageOuterClass.Message.BlockPresence.newBuilder()
                                 .setCid(ByteString.copyFrom(c.toBytes()))
@@ -177,7 +190,7 @@ public class BitswapEngine {
                     CompletableFuture<HashedBlock> waiter = localWants.get(w);
                     if (waiter != null) {
                         if (persistBlocks.containsKey(w)) {
-                            store.put(data, codec);
+                            blockStore.put(data, codec);
                             persistBlocks.remove(w);
                         }
                         waiter.complete(new HashedBlock(c, data));

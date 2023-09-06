@@ -17,6 +17,7 @@ public class Config {
     public final BootstrapSection bootstrap;
     public final DatastoreSection datastore;
     public final IdentitySection identity;
+    public final Integer instance_id;
 
     public Config(Integer instance_id) {
         Config config = defaultConfig(instance_id);
@@ -24,23 +25,25 @@ public class Config {
         this.bootstrap = config.bootstrap;
         this.datastore = config.datastore;
         this.identity = config.identity;
+        this.instance_id = instance_id;
     }
 
-    private Config(AddressesSection addresses, BootstrapSection bootstrap, DatastoreSection datastore, IdentitySection identity) {
+    private Config(AddressesSection addresses, BootstrapSection bootstrap, DatastoreSection datastore, IdentitySection identity, Integer instance_id) {
         this.addresses = addresses;
         this.bootstrap = bootstrap;
         this.datastore = datastore;
         this.identity = identity;
+        this.instance_id = instance_id;
         validate(this);
     }
 
-    public static Config build(String contents) {
+    public static Config build(String contents, Integer instance_id) {
         Map<String, Object> json = (Map) JSONParser.parse(contents);
         AddressesSection addressesSection = Jsonable.parse(json, p -> AddressesSection.fromJson(p));
         BootstrapSection bootstrapSection = Jsonable.parse(json, p -> BootstrapSection.fromJson(p));
         DatastoreSection datastoreSection = Jsonable.parse(json, p -> DatastoreSection.fromJson(p));
         IdentitySection identitySection = Jsonable.parse(json, p -> IdentitySection.fromJson(p));
-        return new Config(addressesSection, bootstrapSection, datastoreSection, identitySection);
+        return new Config(addressesSection, bootstrapSection, datastoreSection, identitySection, instance_id);
     }
 
     @Override
@@ -119,7 +122,7 @@ public class Config {
         DatastoreSection datastoreSection = new DatastoreSection(blockMount, rootMount, filter, codecSet);
         BootstrapSection bootstrapSection = new BootstrapSection(bootstrapNodes);
         IdentitySection identity = new IdentitySection(privKey.bytes(), peerId);
-        return new Config(addressesSection, bootstrapSection, datastoreSection, identity);
+        return new Config(addressesSection, bootstrapSection, datastoreSection, identity, instance_id);
     }
 
     public void validate(Config config) {
@@ -127,7 +130,8 @@ public class Config {
         if (config.addresses.getSwarmAddresses().isEmpty()) {
             throw new IllegalStateException("Expecting Addresses/Swarm entries");
         }
-        if (config.bootstrap.getBootstrapAddresses().isEmpty()) {
+        // For local DEV environment, NODE0 is the genesis node doesnt require bootstrapping
+        if (config.instance_id!=0 && config.bootstrap.getBootstrapAddresses().isEmpty()) {
             throw new IllegalStateException("Expecting Bootstrap addresses");
         }
         Mount blockMount = config.datastore.blockMount;

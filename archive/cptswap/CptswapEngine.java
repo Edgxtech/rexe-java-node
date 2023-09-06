@@ -1,4 +1,4 @@
-package tech.edgx.dee.protocol.dpswap;
+package tech.edgx.dee.protocol.cptswap;
 
 import com.google.protobuf.ByteString;
 import io.ipfs.cid.Cid;
@@ -12,7 +12,7 @@ import org.peergos.Hash;
 import org.peergos.blockstore.Blockstore;
 import tech.edgx.dee.model.dp.DpResult;
 import tech.edgx.dee.model.dp.DpWant;
-import tech.edgx.dee.protocol.dpswap.pb.MessageOuterClass;
+import tech.edgx.dee.protocol.cptswap.pb.MessageOuterClass;
 import tech.edgx.dee.service.RuntimeService;
 
 import java.io.ByteArrayInputStream;
@@ -24,8 +24,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 import java.util.logging.Logger;
 
-public class DpswapEngine {
-    private static final Logger LOG = Logger.getLogger(DpswapEngine.class.getName());
+public class CptswapEngine {
+    private static final Logger LOG = Logger.getLogger(CptswapEngine.class.getName());
 
     private final Blockstore store;
     private final Set<PeerId> connections = new HashSet<>();
@@ -43,7 +43,7 @@ public class DpswapEngine {
     private final ConcurrentHashMap<DpWant, PeerId> dpResultHaves = new ConcurrentHashMap<>();
     private final RuntimeService runtimeService = new RuntimeService();
 
-    public DpswapEngine(Blockstore store, BlockRequestAuthoriser authoriser) {
+    public CptswapEngine(Blockstore store, BlockRequestAuthoriser authoriser) {
         this.store = store;
         this.authoriser = authoriser;
     }
@@ -118,27 +118,36 @@ public class DpswapEngine {
                 boolean sendDontHave = e.getSendDontHave();
                 boolean wantBlock = e.getWantType().getNumber() == 0;
                 if (wantBlock) {
-                    Optional<byte[]> block = store.get(c).join();
+                    Optional<byte[]> dp = store.get(c).join();
 
                     // TODO, perform the computation here and return result instead of returning the block
                     // From the message DpWant, get the functionname and params
                     //runtimeService.runDp(cid, bytecode, functionName, params);
 
-                    if (block.isPresent() && authoriser.allowRead(c, block.get(), sourcePeerId, auth.orElse("")).join()) {
-                        MessageOuterClass.Message.Block blockP = MessageOuterClass.Message.Block.newBuilder()
-                                .setPrefix(ByteString.copyFrom(prefixBytes(c)))
-                                .setData(ByteString.copyFrom(block.get()))
-                                .build();
-                        int blockSize = blockP.getSerializedSize();
-                        if (blockSize + messageSize > Dpswap.MAX_MESSAGE_SIZE) {
-                            buildAndSendMessages(wants, presences, blocks, source::writeAndFlush);
-                            wants = new ArrayList<>();
-                            presences = new ArrayList<>();
-                            blocks = new ArrayList<>();
-                            messageSize = 0;
+                    if (dp.isPresent() && authoriser.allowRead(c, dp.get(), sourcePeerId, auth.orElse("")).join()) {
+
+                        LOG.info("COMPUTING DP");
+                        try {
+                            runtimeService.runDp(c, dp.get(), "getTestVal", Optional.empty());
+                        } catch (Exception ex) {
+                            ex.printStackTrace();
+                            LOG.severe("Exception running DP");
                         }
-                        messageSize += blockSize;
-                        blocks.add(blockP);
+
+//                        MessageOuterClass.Message.Block blockP = MessageOuterClass.Message.Block.newBuilder()
+//                                .setPrefix(ByteString.copyFrom(prefixBytes(c)))
+//                                .setData(ByteString.copyFrom(block.get()))
+//                                .build();
+//                        int blockSize = blockP.getSerializedSize();
+//                        if (blockSize + messageSize > Cptswap.MAX_MESSAGE_SIZE) {
+//                            buildAndSendMessages(wants, presences, blocks, source::writeAndFlush);
+//                            wants = new ArrayList<>();
+//                            presences = new ArrayList<>();
+//                            blocks = new ArrayList<>();
+//                            messageSize = 0;
+//                        }
+//                        messageSize += blockSize;
+//                        blocks.add(blockP);
                     } else if (sendDontHave) {
                         MessageOuterClass.Message.BlockPresence presence = MessageOuterClass.Message.BlockPresence.newBuilder()
                                 .setCid(ByteString.copyFrom(c.toBytes()))
@@ -235,7 +244,7 @@ public class DpswapEngine {
         for (int i=0; i < wants.size(); i++) {
             MessageOuterClass.Message.Wantlist.Entry want = wants.get(i);
             int wantSize = want.getSerializedSize();
-            if (wantSize + messageSize > Dpswap.MAX_MESSAGE_SIZE) {
+            if (wantSize + messageSize > Cptswap.MAX_MESSAGE_SIZE) {
                 sender.accept(builder.build());
                 builder = MessageOuterClass.Message.newBuilder();
                 messageSize = 0;
@@ -246,7 +255,7 @@ public class DpswapEngine {
         for (int i=0; i < presences.size(); i++) {
             MessageOuterClass.Message.BlockPresence presence = presences.get(i);
             int presenceSize = presence.getSerializedSize();
-            if (presenceSize + messageSize > Dpswap.MAX_MESSAGE_SIZE) {
+            if (presenceSize + messageSize > Cptswap.MAX_MESSAGE_SIZE) {
                 sender.accept(builder.build());
                 builder = MessageOuterClass.Message.newBuilder();
                 messageSize = 0;
@@ -257,7 +266,7 @@ public class DpswapEngine {
         for (int i=0; i < blocks.size(); i++) {
             MessageOuterClass.Message.Block block = blocks.get(i);
             int blockSize = block.getSerializedSize();
-            if (blockSize + messageSize > Dpswap.MAX_MESSAGE_SIZE) {
+            if (blockSize + messageSize > Cptswap.MAX_MESSAGE_SIZE) {
                 sender.accept(builder.build());
                 builder = MessageOuterClass.Message.newBuilder();
                 messageSize = 0;

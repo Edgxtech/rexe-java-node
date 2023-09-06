@@ -10,7 +10,7 @@ import org.junit.Test;
 import org.peergos.blockstore.FileBlockstore;
 import org.peergos.blockstore.Blockstore;
 import org.peergos.blockstore.RamBlockstore;
-import tech.edgx.dee.service.DpswapDpResultService;
+import tech.edgx.dee.service.CptswapResultService;
 
 import java.io.File;
 import java.io.IOException;
@@ -49,7 +49,7 @@ public class APIServiceTest {
 
     @Test
     public void bulkGetTest() {
-        APIService service = new APIService(new RamBlockstore(), new BitswapBlockService(null, null), null, new DpswapDpResultService(null,null), new RamBlockstore());
+        APIService service = new APIService(new RamBlockstore(), new BitswapBlockService(null, null), null, new CptswapResultService(null,null), new RamBlockstore());
         Cid cid1 = service.putBlock("Hello".getBytes(), Cid.Codec.Raw);
         Cid cid2= service.putBlock("world!".getBytes(), Cid.Codec.Raw);
         Cid cid3= service.putBlock("test".getBytes(), Cid.Codec.DagCbor);
@@ -70,7 +70,7 @@ public class APIServiceTest {
 
     public class Tester {
         public static void runAPIServiceTest(Blockstore blocks) {
-            APIService service = new APIService(blocks, new BitswapBlockService(null, null), null, new DpswapDpResultService(null,null), new RamBlockstore());
+            APIService service = new APIService(blocks, new BitswapBlockService(null, null), null, new CptswapResultService(null,null), new RamBlockstore());
             Cid cid = Cid.decode("zdpuAwfJrGYtiGFDcSV3rDpaUrqCtQZRxMjdC6Eq9PNqLqTGg");
             Assert.assertFalse("cid found", service.hasBlock(cid));
             String text = "Hello world!";

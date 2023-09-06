@@ -1,8 +1,8 @@
 package org.peergos;
 
-import io.ipfs.cid.*;
 import io.libp2p.core.*;
 import org.peergos.protocol.bitswap.*;
+import tech.edgx.dee.util.SwapType;
 
 import java.util.*;
 import java.util.stream.*;
@@ -18,7 +18,7 @@ public class BitswapBlockService implements BlockService {
     }
 
     @Override
-    public List<HashedBlock> get(List<Want> hashes, Set<PeerId> peers, boolean addToBlockstore) {
+    public List<HashedBlock> get(List<Want> hashes, Set<PeerId> peers, boolean addToBlockstore) { //, SwapType swapType
         return bitswap.get(hashes, us, peers, addToBlockstore)
                 .stream()
                 .map(f -> f.join())

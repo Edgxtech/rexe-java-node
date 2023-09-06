@@ -237,6 +237,10 @@ public class APIHandler implements HttpHandler {
                 /////////////////////////////////////
                 // START OF DP SPECIFIC
                 // CUSTOM - I AM TRACKING WHAT IS A DP AND WHAT ISNT BY USING A DP-dedicated BlockStore
+                    // DIFFERENCE: Uses CptSWAP which is like Bitswap but handles computations
+                    //             Uses dedicated blockstore, not the same as used in the API calls above, that one
+                    //                 is isolated in intended to remain compat with IPFS, whereas Calls below may need
+                    //                 heavy customisations/difference network limits, encoding, etc...
                 /////////////////////////////////////
 
                 case GET_DP: { // https://docs.ipfs.tech/reference/kubo/rpc/#api-v0-block-get
@@ -319,9 +323,9 @@ public class APIHandler implements HttpHandler {
                             .orElse(true);
                     LOG.info("COMPUTE, params2: "+new Gson().toJson(params));
                     List<DpResult> dpResults = service.computeDp(
-                            List.of(new DpWant(Cid.decode(args.get(0)), auth, fn.get(0), fnParamsOpt))
-                            , peers
-                            , addToBlockstore);
+                            List.of(new DpWant(Cid.decode(args.get(0)), auth, fn.get(0), fnParamsOpt)),
+                            peers,
+                            addToBlockstore);
                     LOG.info("Retrieved result: "+new Gson().toJson(dpResults));
                     if (dpResults != null && !dpResults.isEmpty()) {
                         Map res = new HashMap<>();

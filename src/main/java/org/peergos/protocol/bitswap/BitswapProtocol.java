@@ -1,13 +1,18 @@
 package org.peergos.protocol.bitswap;
 
+import com.google.gson.Gson;
 import io.libp2p.core.*;
 import io.libp2p.protocol.*;
 import org.jetbrains.annotations.*;
+import org.peergos.APIService;
 import org.peergos.protocol.bitswap.pb.*;
 
 import java.util.concurrent.*;
+import java.util.logging.Logger;
 
 public class BitswapProtocol extends ProtobufProtocolHandler<BitswapController> {
+
+    private static final Logger LOG = Logger.getLogger(BitswapProtocol.class.getName());
 
     private final BitswapEngine engine;
 
@@ -20,6 +25,7 @@ public class BitswapProtocol extends ProtobufProtocolHandler<BitswapController> 
     @Override
     protected CompletableFuture<BitswapController> onStartInitiator(@NotNull Stream stream) {
         BitswapConnection conn = new BitswapConnection(stream);
+        LOG.info("onStartBitswap Initiator Protocol Connection: "+conn);
         engine.addConnection(stream.remotePeerId(), stream.getConnection().remoteAddress());
         stream.pushHandler(new MessageHandler(engine));
         return CompletableFuture.completedFuture(conn);
@@ -29,6 +35,7 @@ public class BitswapProtocol extends ProtobufProtocolHandler<BitswapController> 
     @Override
     protected CompletableFuture<BitswapController> onStartResponder(@NotNull Stream stream) {
         BitswapConnection conn = new BitswapConnection(stream);
+        LOG.info("onStartBitswap Responder Protocol Connection: "+conn);
         engine.addConnection(stream.remotePeerId(), stream.getConnection().remoteAddress());
         stream.pushHandler(new MessageHandler(engine));
         return CompletableFuture.completedFuture(conn);

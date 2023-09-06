@@ -1,16 +1,16 @@
-package tech.edgx.dee.protocol.dpswap;
+package tech.edgx.dee.protocol.cptswap;
 
 import io.libp2p.core.Stream;
 import kotlin.Unit;
-import tech.edgx.dee.protocol.dpswap.pb.MessageOuterClass;
+import tech.edgx.dee.protocol.cptswap.pb.MessageOuterClass;
 
 import java.util.concurrent.CompletableFuture;
 
-public class DpswapConnection implements DpswapController {
+public class CptswapConnection implements CptswapController {
 
     private final Stream conn;
 
-    public DpswapConnection(Stream conn) {
+    public CptswapConnection(Stream conn) {
         this.conn = conn;
     }
 

@@ -15,9 +15,9 @@ import org.peergos.protocol.circuit.CircuitHopProtocol;
 import org.peergos.protocol.circuit.CircuitStopProtocol;
 import org.peergos.protocol.dht.*;
 import org.peergos.util.Logging;
-import tech.edgx.dee.protocol.dpswap.Dpswap;
-import tech.edgx.dee.protocol.dpswap.DpswapEngine;
-import tech.edgx.dee.service.DpswapDpResultService;
+import tech.edgx.dee.protocol.cptswap.Cptswap;
+import tech.edgx.dee.protocol.cptswap.CptswapEngine;
+import tech.edgx.dee.service.CptswapResultService;
 
 import java.io.File;
 import java.io.IOException;
@@ -172,9 +172,13 @@ public class Server {
                 new Ping(),
                 new AutonatProtocol.Binding(),
                 new CircuitHopProtocol.Binding(relayManager, stop),
-                new Bitswap(new BitswapEngine(blockStore, authoriser)),
+                // Its one or the other here, b/c libp2p protobuf listener listens only from one
+                // AND I CANT FIGURE OUT HOW TO MODIFY.
+                // i.e. org.peergos.protocol.bitswap.BitswapProtocol onStartResponder
+                // then results in Cptswap: java.lang.ClassCastException: class org.peergos.protocol.bitswap.BitswapConnection cannot be cast to class tech.edgx.dee.protocol.cptswap.CptswapController
+                //new Bitswap(new BitswapEngine(blocks, authoriser)),
                 // FOR NOW USING THE SAME BLOCK STORE TO STORE DPs as if they are blocks
-                new Dpswap(new DpswapEngine(blockStore, authoriser)),
+                new Cptswap(new CptswapEngine(blockStore, authoriser)),
                 dht));
 
         Host node = builder.build();
@@ -184,8 +188,8 @@ public class Server {
 
 
         int connections = dht.bootstrapRoutingTable(node, config.bootstrap.getBootstrapAddresses(), addr -> !addr.contains("/wss/"));
-        if (connections == 0)
-            throw new IllegalStateException("No connected peers!");
+//        if (connections == 0)
+//            throw new IllegalStateException("No connected peers!");
         dht.bootstrap(node);
 
         MultiAddress apiAddress = config.addresses.apiAddress;
@@ -200,12 +204,18 @@ public class Server {
                 blockStore,
                 new BitswapBlockService(node, builder.getBitswap().get()),
                 dht,
-                new DpswapDpResultService(node, builder.getDpswap().get()),
+                new CptswapResultService(node, builder.getCptswap().get()),
                 new RamBlockstore() // TODO, IN PROD THIS SHOULD BE A MORE PERMANENT STORE; FILESTORE, FILTER STORE
                 );
         apiServer.createContext(APIService.API_URL, new APIHandler(service, node));
         apiServer.setExecutor(Executors.newFixedThreadPool(handlerThreads));
         apiServer.start();
+
+        int connectionsB = dht.bootstrapRoutingTable(node, config.bootstrap.getBootstrapAddresses(), addr -> !addr.contains("/wss/"));
+        LOG.info("BoostrapConnectionsB: "+connectionsB);
+
+//        Bitswap bitswap = builder.getBitswap().get();
+//        bitswap.
 
         Thread shutdownHook = new Thread(() -> {
             info("Stopping server...");
@@ -233,7 +243,7 @@ public class Server {
             Files.write(configFilePath, config.toString().getBytes(), StandardOpenOption.CREATE);
             return config;
         }
-        return Config.build(Files.readString(configFilePath));
+        return Config.build(Files.readString(configFilePath), instance_id);
     }
 
     public static void main(String[] args) {

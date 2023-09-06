@@ -18,6 +18,8 @@ message Message {
       WantType wantType = 4; // Note: defaults to enum 0, ie Block
       bool sendDontHave = 5; // Note: defaults to false
       bytes auth = 6;
+      bytes functionName = 7; // Only for WantType==2/DP
+      bytes params = 8; // Only for WantType==2/DP
 		}
 
     repeated Entry entries = 1; //[(gogoproto.nullable) = false];	// a list of wantlist entries
@@ -31,9 +33,11 @@ message Message {
   }
 
   message DpResult {
-    //bytes prefix = 1;		// CID prefix (cid version, multicodec and multihash prefix (type + length)
+    bytes prefix = 1;		// CID prefix (cid version, multicodec and multihash prefix (type + length)
     bytes data = 2;
-    //bytes auth = 3;
+    bytes auth = 3;
+    bytes functionName = 4;
+    bytes params = 5;
   }
 
   enum BlockPresenceType {
@@ -51,4 +55,5 @@ message Message {
   repeated Block payload = 3; //[(gogoproto.nullable) = false];		// used to send Blocks in bitswap 1.1.0
   repeated BlockPresence blockPresences = 4; //[(gogoproto.nullable) = false];
   int32 pendingBytes = 5;
+  repeated DpResult resultPayload = 6;
 }

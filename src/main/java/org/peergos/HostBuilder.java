@@ -20,7 +20,8 @@ import org.peergos.protocol.autonat.*;
 import org.peergos.protocol.bitswap.*;
 import org.peergos.protocol.circuit.*;
 import org.peergos.protocol.dht.*;
-import tech.edgx.dee.protocol.dpswap.Dpswap;
+import tech.edgx.dee.protocol.cptswap.Cptswap;
+import tech.edgx.dee.protocol.cptswap.CptswapEngine;
 
 import java.util.*;
 
@@ -54,6 +55,7 @@ public class HostBuilder {
                 .findFirst();
     }
 
+    // DEPRECATE THIS, SWITCH TO COMPUTESWAP
     public Optional<Bitswap> getBitswap() {
         return protocols.stream()
                 .filter(p -> p instanceof Bitswap)
@@ -61,10 +63,10 @@ public class HostBuilder {
                 .findFirst();
     }
 
-    public Optional<Dpswap> getDpswap() {
+    public Optional<Cptswap> getCptswap() {
         return protocols.stream()
-                .filter(p -> p instanceof Dpswap)
-                .map(p -> (Dpswap)p)
+                .filter(p -> p instanceof Cptswap)
+                .map(p -> (Cptswap)p)
                 .findFirst();
     }
 
@@ -130,7 +132,13 @@ public class HostBuilder {
                 new Ping(),
                 new AutonatProtocol.Binding(),
                 new CircuitHopProtocol.Binding(relayManager, stop),
-                new Bitswap(new BitswapEngine(blocks, authoriser)),
+                // Its one or the other here, b/c libp2p protobuf listener listens only from one
+                // AND I CANT FIGURE OUT HOW TO MODIFY.
+                // i.e. org.peergos.protocol.bitswap.BitswapProtocol onStartResponder
+                // then results in Cptswap: java.lang.ClassCastException: class org.peergos.protocol.bitswap.BitswapConnection cannot be cast to class tech.edgx.dee.protocol.cptswap.CptswapController
+                //new Bitswap(new BitswapEngine(blocks, authoriser)),
+                // FOR NOW USING THE SAME BLOCK STORE TO STORE DPs as if they are blocks
+                new Cptswap(new CptswapEngine(blocks, authoriser)),
                 dht));
     }
 
