@@ -6,7 +6,6 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.peergos.client.NabuClient;
-import tech.edgx.dee.client.DpClient;
 import tech.edgx.dee.util.Helpers;
 import tech.edgx.dee.util.HexUtil;
 

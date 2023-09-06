@@ -1,4 +1,4 @@
-package tech.edgx.dee.protocol.cptswap;
+package tech.edgx.dee.protocol.resswap;
 
 import com.google.gson.Gson;
 import com.google.protobuf.ByteString;
@@ -8,17 +8,14 @@ import io.libp2p.core.Host;
 import io.libp2p.core.PeerId;
 import io.libp2p.core.multiformats.Multiaddr;
 import io.libp2p.core.multistream.StrictProtocolBinding;
-import org.bouncycastle.oer.its.HashedData;
 import org.peergos.AddressBookConsumer;
 import org.peergos.HashedBlock;
-import org.peergos.PeerAddresses;
 import org.peergos.Want;
 //import org.peergos.protocol.bitswap.BitswapController;
 //import org.peergos.protocol.bitswap.pb.MessageOuterClass;
-import org.peergos.protocol.dht.Kademlia;
 import tech.edgx.dee.model.dp.DpResult;
 import tech.edgx.dee.model.dp.DpWant;
-import tech.edgx.dee.protocol.cptswap.pb.MessageOuterClass;
+import tech.edgx.dee.protocol.resswap.pb.MessageOuterClass;
 //import tech.edgx.dee.util.SwapType;
 
 import java.util.*;
@@ -28,15 +25,23 @@ import java.util.function.Consumer;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
-public class Cptswap extends StrictProtocolBinding<CptswapController> implements AddressBookConsumer {
-    private static final Logger LOG = Logger.getLogger(Cptswap.class.getName());
+// Should I call this Netswap?
+//  Swapping data and computational resources; wants, haves, blocks, compute results
+// Or call it, Resswap, ResourceSwap, Reswap, ReSwap - Resource Swap
+// PeerSwap
+// Since it now is the mechanism for exchanging Resources as I have defined.
+//    How to add streaming channels????
+//
+
+public class ResSwap extends StrictProtocolBinding<ResSwapController> implements AddressBookConsumer {
+    private static final Logger LOG = Logger.getLogger(ResSwap.class.getName());
     public static int MAX_MESSAGE_SIZE = 2*1024*1024;
 
-    private final CptswapEngine engine;
+    private final ResSwapEngine engine;
     private AddressBook addrs;
 
-    public Cptswap(CptswapEngine engine) {
-        super("/ipfs/bitswap/1.2.0", new CptswapProtocol(engine));
+    public ResSwap(ResSwapEngine engine) {
+        super("/drf/resswap/1.0.0", new ResSwapProtocol(engine));
         this.engine = engine;
     }
 
@@ -161,14 +166,17 @@ public class Cptswap extends StrictProtocolBinding<CptswapController> implements
 //                        .setWantType(haves.containsKey(want) ?
 //                                MessageOuterClass.Message.Wantlist.WantType.Block :
 //                                MessageOuterClass.Message.Wantlist.WantType.Have)
-                        .setWantType(tech.edgx.dee.protocol.cptswap.pb.MessageOuterClass.Message.Wantlist.WantType.Dp)
+                        .setWantType(tech.edgx.dee.protocol.resswap.pb.MessageOuterClass.Message.Wantlist.WantType.Dp)
 //                        .setWantType(swapType.equals(SwapType.block) ?
 //                                haves.containsKey(want) ?
-//                                        tech.edgx.dee.protocol.cptswap.pb.MessageOuterClass.Message.Wantlist.WantType.Block :
-//                                        tech.edgx.dee.protocol.cptswap.pb.MessageOuterClass.Message.Wantlist.WantType.Have :
-//                                tech.edgx.dee.protocol.cptswap.pb.MessageOuterClass.Message.Wantlist.WantType.Dp)
+//                                        tech.edgx.dee.protocol.resswap.pb.MessageOuterClass.Message.Wantlist.WantType.Block :
+//                                        tech.edgx.dee.protocol.resswap.pb.MessageOuterClass.Message.Wantlist.WantType.Have :
+//                                tech.edgx.dee.protocol.resswap.pb.MessageOuterClass.Message.Wantlist.WantType.Dp)
                         .setBlock(ByteString.copyFrom(want.cid.toBytes()))
                         .setAuth(ByteString.copyFrom(want.auth.orElse("").getBytes()))
+                        .setFunctionName(ByteString.copyFrom(want.functionName.getBytes()))
+                        //ByteString.copyFrom(want.params.orElse("").stream().reduce(p -> new String(p).getBytes()).
+                        .setParams(ByteString.copyFrom("".getBytes()))
                         .build())
                 .collect(Collectors.toList());
         // broadcast to all connected peers if none are supplied
@@ -179,11 +187,11 @@ public class Cptswap extends StrictProtocolBinding<CptswapController> implements
                 })));
     }
 
-    private void dialPeer(Host us, PeerId peer, Consumer<CptswapController> action) {
+    private void dialPeer(Host us, PeerId peer, Consumer<ResSwapController> action) {
         Multiaddr[] addr = addrs.get(peer).join().toArray(new Multiaddr[0]);
         if (addr.length == 0)
             throw new IllegalStateException("No addresses known for peer " + peer);
-        CptswapController controller = dial(us, peer, addr).getController().join();
+        ResSwapController controller = dial(us, peer, addr).getController().join();
         action.accept(controller);
     }
 

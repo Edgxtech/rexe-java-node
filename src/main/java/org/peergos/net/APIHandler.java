@@ -41,7 +41,7 @@ public class APIHandler implements HttpHandler {
     /// ACTUALLY DOES IT BELONG HERE?, SHOULD BE MORE OF AN IPNS LAYER API I NEED TO PROVIDE FOR EXECUTING DPs
     public static final String GET_DP = "dp/get";
     public static final String PUT_DP = "dp/put";
-    public static final String EXEC = "dp/exec"; // Execute/compute the DP
+    public static final String COMPUTE = "dp/compute"; // Execute/compute the DP
     public static final String RM_DP = "dp/rm";
     public static final String STAT_DP = "dp/stat";
     public static final String REFS_LOCAL_DP = "dp/refs/local";
@@ -243,59 +243,59 @@ public class APIHandler implements HttpHandler {
                     //                 heavy customisations/difference network limits, encoding, etc...
                 /////////////////////////////////////
 
-                case GET_DP: { // https://docs.ipfs.tech/reference/kubo/rpc/#api-v0-block-get
-                    if (args == null || args.size() != 1) {
-                        throw new APIException("argument \"ipfs-path\" is required");
-                    }
-                    Optional<String> auth = Optional.ofNullable(params.get("auth")).map(a -> a.get(0));
-                    Set<PeerId> peers = Optional.ofNullable(params.get("peers"))
-                            .map(p -> p.stream().map(PeerId::fromBase58).collect(Collectors.toSet()))
-                            .orElse(Collections.emptySet());
-                    boolean addToBlockstore = Optional.ofNullable(params.get("persist"))
-                            .map(a -> Boolean.parseBoolean(a.get(0)))
-                            .orElse(true);
-                    List<HashedBlock> block = service.getDp(List.of(new Want(Cid.decode(args.get(0)), auth)), peers, addToBlockstore);
-                    if (! block.isEmpty()) {
-                        replyBytes(httpExchange, block.get(0).block);
-                    } else {
-                        try {
-                            httpExchange.sendResponseHeaders(400, 0);
-                        } catch (IOException ioe) {
-                            HttpUtil.replyError(httpExchange, ioe);
-                        }
-                    }
-                    break;
-                }
-                case PUT_DP: { // https://docs.ipfs.tech/reference/kubo/rpc/#api-v0-block-put
-                    List<String> format = params.get("format");
-                    Optional<String> formatOpt = format !=null && format.size() == 1 ? Optional.of(format.get(0)) : Optional.empty();
-                    if (formatOpt.isEmpty()) {
-                        throw new APIException("argument \"format\" is required");
-                    }
-                    String reqFormat = formatOpt.get().toLowerCase();
-                    String boundary = httpExchange.getRequestHeaders().get("Content-Type")
-                            .stream()
-                            .filter(s -> s.contains("boundary="))
-                            .map(s -> s.substring(s.indexOf("=") + 1))
-                            .findAny()
-                            .get();
-                    List<byte[]> data = MultipartReceiver.extractFiles(httpExchange.getRequestBody(), boundary);
-                    if (data.size() != 1) {
-                        throw new APIException("Multiple input not supported");
-                    }
-                    byte[] block = data.get(0);
-                    if (block.length >  1024 * 1024 * 2) { //todo what should the limit be?
-                        throw new APIException("Block too large");
-                    }
-                    LOG.info("Putting DP");
-                    Cid cid = service.putDp(block, Cid.Codec.lookupIPLDName(reqFormat));
-                    Map res = new HashMap<>();
-                    res.put("Hash", cid.toString());
-                    replyJson(httpExchange, JSONParser.toString(res));
-                    break;
-                }
+//                case GET_DP: { // https://docs.ipfs.tech/reference/kubo/rpc/#api-v0-block-get
+//                    if (args == null || args.size() != 1) {
+//                        throw new APIException("argument \"ipfs-path\" is required");
+//                    }
+//                    Optional<String> auth = Optional.ofNullable(params.get("auth")).map(a -> a.get(0));
+//                    Set<PeerId> peers = Optional.ofNullable(params.get("peers"))
+//                            .map(p -> p.stream().map(PeerId::fromBase58).collect(Collectors.toSet()))
+//                            .orElse(Collections.emptySet());
+//                    boolean addToBlockstore = Optional.ofNullable(params.get("persist"))
+//                            .map(a -> Boolean.parseBoolean(a.get(0)))
+//                            .orElse(true);
+//                    List<HashedBlock> block = service.getBlocks(List.of(new Want(Cid.decode(args.get(0)), auth)), peers, addToBlockstore);
+//                    if (! block.isEmpty()) {
+//                        replyBytes(httpExchange, block.get(0).block);
+//                    } else {
+//                        try {
+//                            httpExchange.sendResponseHeaders(400, 0);
+//                        } catch (IOException ioe) {
+//                            HttpUtil.replyError(httpExchange, ioe);
+//                        }
+//                    }
+//                    break;
+//                }
+//                case PUT_DP: { // https://docs.ipfs.tech/reference/kubo/rpc/#api-v0-block-put
+//                    List<String> format = params.get("format");
+//                    Optional<String> formatOpt = format !=null && format.size() == 1 ? Optional.of(format.get(0)) : Optional.empty();
+//                    if (formatOpt.isEmpty()) {
+//                        throw new APIException("argument \"format\" is required");
+//                    }
+//                    String reqFormat = formatOpt.get().toLowerCase();
+//                    String boundary = httpExchange.getRequestHeaders().get("Content-Type")
+//                            .stream()
+//                            .filter(s -> s.contains("boundary="))
+//                            .map(s -> s.substring(s.indexOf("=") + 1))
+//                            .findAny()
+//                            .get();
+//                    List<byte[]> data = MultipartReceiver.extractFiles(httpExchange.getRequestBody(), boundary);
+//                    if (data.size() != 1) {
+//                        throw new APIException("Multiple input not supported");
+//                    }
+//                    byte[] block = data.get(0);
+//                    if (block.length >  1024 * 1024 * 2) { //todo what should the limit be?
+//                        throw new APIException("Block too large");
+//                    }
+//                    LOG.info("Putting DP");
+//                    Cid cid = service.putDp(block, Cid.Codec.lookupIPLDName(reqFormat));
+//                    Map res = new HashMap<>();
+//                    res.put("Hash", cid.toString());
+//                    replyJson(httpExchange, JSONParser.toString(res));
+//                    break;
+//                }
                 // CUSTOM
-                case EXEC: {
+                case COMPUTE: {
                     LOG.info("COMPUTE, params: "+new Gson().toJson(params));
                     List<String> fn = params.get("fn");
                     if (args == null || args.size() != 1) {
@@ -340,73 +340,73 @@ public class APIHandler implements HttpHandler {
                     }
                     break;
                 }
-                case RM_DP: { // https://docs.ipfs.tech/reference/kubo/rpc/#api-v0-block-rm
-                    if (args == null || args.size() != 1) {
-                        throw new APIException("argument \"cid\" is required\n");
-                    }
-                    Cid cid = Cid.decode(args.get(0));
-                    boolean deleted = service.rmDp(cid);
-                    if (deleted) {
-                        Map res = new HashMap<>();
-                        res.put("Error", "");
-                        res.put("Hash", cid.toString());
-                        replyJson(httpExchange, JSONParser.toString(res));
-                    } else {
-                        try {
-                            httpExchange.sendResponseHeaders(400, 0);
-                        } catch (IOException ioe) {
-                            HttpUtil.replyError(httpExchange, ioe);
-                        }
-                    }
-                    break;
-                }
-                case STAT_DP: { // https://docs.ipfs.tech/reference/kubo/rpc/#api-v0-block-stat
-                    if (args == null || args.size() != 1) {
-                        throw new APIException("argument \"cid\" is required\n");
-                    }
-                    Optional<String> auth = Optional.ofNullable(params.get("auth")).map(a -> a.get(0));
-                    List<HashedBlock> block = service.getDp(List.of(new Want(Cid.decode(args.get(0)), auth)), Collections.emptySet(), false);
-                    if (! block.isEmpty()) {
-                        Map res = new HashMap<>();
-                        res.put("Size", block.get(0).block.length);
-                        replyJson(httpExchange, JSONParser.toString(res));
-                    } else {
-                        try {
-                            httpExchange.sendResponseHeaders(400, 0);
-                        } catch (IOException ioe) {
-                            HttpUtil.replyError(httpExchange, ioe);
-                        }
-                    }
-                    break;
-                }
-                case REFS_LOCAL_DP: { // https://docs.ipfs.tech/reference/kubo/rpc/#api-v0-refs-local
-                    List<Cid> refs = service.getRefsDp();
-                    StringBuilder sb = new StringBuilder();
-                    for (Cid cid : refs) {
-                        Map<String, String> entry = new HashMap<>();
-                        entry.put("Ref", cid.toString());
-                        entry.put("Err", "");
-                        sb.append(JSONParser.toString(entry));
-                    }
-                    replyBytes(httpExchange, sb.toString().getBytes());
-                    break;
-                }
-                case HAS_DP: {
-                    if (args == null || args.size() != 1) {
-                        throw new APIException("argument \"ipfs-path\" is required");
-                    }
-                    boolean has = service.hasDp(Cid.decode(args.get(0)));
-                    replyBytes(httpExchange, has ? "true".getBytes() : "false".getBytes());
-                    break;
-                }
-                case BLOOM_ADD_DP: {
-                    if (args == null || args.size() != 1) {
-                        throw new APIException("argument \"cid\" is required\n");
-                    }
-                    Boolean added = service.bloomAddDp(Cid.decode(args.get(0)));
-                    replyBytes(httpExchange, added.toString().getBytes());
-                    break;
-                }
+//                case RM_DP: { // https://docs.ipfs.tech/reference/kubo/rpc/#api-v0-block-rm
+//                    if (args == null || args.size() != 1) {
+//                        throw new APIException("argument \"cid\" is required\n");
+//                    }
+//                    Cid cid = Cid.decode(args.get(0));
+//                    boolean deleted = service.rmDp(cid);
+//                    if (deleted) {
+//                        Map res = new HashMap<>();
+//                        res.put("Error", "");
+//                        res.put("Hash", cid.toString());
+//                        replyJson(httpExchange, JSONParser.toString(res));
+//                    } else {
+//                        try {
+//                            httpExchange.sendResponseHeaders(400, 0);
+//                        } catch (IOException ioe) {
+//                            HttpUtil.replyError(httpExchange, ioe);
+//                        }
+//                    }
+//                    break;
+//                }
+//                case STAT_DP: { // https://docs.ipfs.tech/reference/kubo/rpc/#api-v0-block-stat
+//                    if (args == null || args.size() != 1) {
+//                        throw new APIException("argument \"cid\" is required\n");
+//                    }
+//                    Optional<String> auth = Optional.ofNullable(params.get("auth")).map(a -> a.get(0));
+//                    List<HashedBlock> block = service.getDp(List.of(new Want(Cid.decode(args.get(0)), auth)), Collections.emptySet(), false);
+//                    if (! block.isEmpty()) {
+//                        Map res = new HashMap<>();
+//                        res.put("Size", block.get(0).block.length);
+//                        replyJson(httpExchange, JSONParser.toString(res));
+//                    } else {
+//                        try {
+//                            httpExchange.sendResponseHeaders(400, 0);
+//                        } catch (IOException ioe) {
+//                            HttpUtil.replyError(httpExchange, ioe);
+//                        }
+//                    }
+//                    break;
+//                }
+//                case REFS_LOCAL_DP: { // https://docs.ipfs.tech/reference/kubo/rpc/#api-v0-refs-local
+//                    List<Cid> refs = service.getRefsDp();
+//                    StringBuilder sb = new StringBuilder();
+//                    for (Cid cid : refs) {
+//                        Map<String, String> entry = new HashMap<>();
+//                        entry.put("Ref", cid.toString());
+//                        entry.put("Err", "");
+//                        sb.append(JSONParser.toString(entry));
+//                    }
+//                    replyBytes(httpExchange, sb.toString().getBytes());
+//                    break;
+//                }
+//                case HAS_DP: {
+//                    if (args == null || args.size() != 1) {
+//                        throw new APIException("argument \"ipfs-path\" is required");
+//                    }
+//                    boolean has = service.hasDp(Cid.decode(args.get(0)));
+//                    replyBytes(httpExchange, has ? "true".getBytes() : "false".getBytes());
+//                    break;
+//                }
+//                case BLOOM_ADD_DP: {
+//                    if (args == null || args.size() != 1) {
+//                        throw new APIException("argument \"cid\" is required\n");
+//                    }
+//                    Boolean added = service.bloomAddDp(Cid.decode(args.get(0)));
+//                    replyBytes(httpExchange, added.toString().getBytes());
+//                    break;
+//                }
                 default: {
                     httpExchange.sendResponseHeaders(404, 0);
                     break;

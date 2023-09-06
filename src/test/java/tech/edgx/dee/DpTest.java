@@ -9,8 +9,8 @@ import org.junit.Test;
 import org.peergos.*;
 import org.peergos.blockstore.RamBlockstore;
 import org.peergos.net.APIHandler;
-import tech.edgx.dee.client.DpClient;
-import tech.edgx.dee.service.CptswapResultService;
+import tech.edgx.dee.client.DrfClient;
+import tech.edgx.dee.service.ResourceServiceImpl;
 import tech.edgx.dee.util.Helpers;
 import tech.edgx.dee.util.HexUtil;
 
@@ -23,7 +23,7 @@ import java.util.concurrent.Executors;
 
 public class DpTest {
 
-    static DpClient dpClient;
+    static DrfClient drfClient;
 
     @BeforeClass
     public static void setUp() {
@@ -33,13 +33,13 @@ public class DpTest {
             InetSocketAddress localAPIAddress = new InetSocketAddress(apiAddress.getHost(), apiAddress.getPort());
 
             apiServer = HttpServer.create(localAPIAddress, 500);
-            APIService service = new APIService(new RamBlockstore(), new BitswapBlockService(null, null), null, new CptswapResultService(null, null), new RamBlockstore());
+            APIService service = new APIService(new RamBlockstore(),null, new ResourceServiceImpl(null, null), new RamBlockstore()); //new BitswapBlockService(null, null),
             apiServer.createContext(APIService.API_URL, new APIHandler(service, null));
             apiServer.setExecutor(Executors.newFixedThreadPool(50));
             apiServer.start();
 
-            dpClient = new DpClient(apiAddress.getHost(), apiAddress.getPort(), "/api/v0/", false);
-            String version = dpClient.version();
+            drfClient = new DrfClient(apiAddress.getHost(), apiAddress.getPort(), "/api/v0/", false);
+            String version = drfClient.version();
             Assert.assertTrue("version", version != null);
         }
         catch (Exception e) {e.printStackTrace();}
@@ -53,12 +53,12 @@ public class DpTest {
             File jarFile = new File(testDpName);
             Helpers.printJarInfo(jarFile);
             byte[] bytecode = Files.readAllBytes(jarFile.toPath());
-            Cid addedHash = dpClient.put(bytecode, Optional.of("raw"));
+            Cid addedHash = drfClient.put(bytecode, Optional.of("raw"));
 
-            boolean has = dpClient.hasBlock(addedHash, Optional.empty());
+            boolean has = drfClient.hasBlock(addedHash, Optional.empty());
             Assert.assertTrue("has block as expected", has);
 
-            String result = dpClient.compute(addedHash, Optional.empty(), "add", Optional.of(new String[]{"1.12312","3.232432"}));
+            String result = drfClient.compute(addedHash, Optional.empty(), "add", Optional.of(new String[]{"1.12312","3.232432"}));
             print("DP compute result: "+result);
 
         } catch (IOException ioe) {
@@ -74,12 +74,12 @@ public class DpTest {
             File jarFile = new File(testDpName);
             Helpers.printJarInfo(jarFile);
             byte[] bytecode = Files.readAllBytes(jarFile.toPath());
-            Cid addedHash = dpClient.put(bytecode, Optional.of("raw"));
+            Cid addedHash = drfClient.put(bytecode, Optional.of("raw"));
 
-            boolean has = dpClient.hasBlock(addedHash, Optional.empty());
+            boolean has = drfClient.hasBlock(addedHash, Optional.empty());
             Assert.assertTrue("has block as expected", has);
 
-            String result = dpClient.compute(addedHash, Optional.empty(), "getTestVal", Optional.empty());
+            String result = drfClient.compute(addedHash, Optional.empty(), "getTestVal", Optional.empty());
             print("DP compute result: "+result);
 
         } catch (IOException ioe) {
@@ -95,30 +95,30 @@ public class DpTest {
             File jarFile = new File(testDpName);
             Helpers.printJarInfo(jarFile);
             byte[] bytecode = Files.readAllBytes(jarFile.toPath());
-            Cid addedHash = dpClient.put(bytecode, Optional.of("raw"));
+            Cid addedHash = drfClient.put(bytecode, Optional.of("raw"));
 
-            int size  = dpClient.stat(addedHash);
+            int size  = drfClient.stat(addedHash);
             print("Size: "+size+", Orig size: "+jarFile.length());
             Assert.assertTrue("size as expected", size == jarFile.length());
 
-            boolean has = dpClient.hasBlock(addedHash, Optional.empty());
+            boolean has = drfClient.hasBlock(addedHash, Optional.empty());
             Assert.assertTrue("has block as expected", has);
 
-            boolean bloomAdd = dpClient.bloomAdd(addedHash);
+            boolean bloomAdd = drfClient.bloomAdd(addedHash);
             Assert.assertTrue("added to bloom filter", !bloomAdd); //RamBlockstore does not filter
 
-            byte[] data = dpClient.getBlock(addedHash, Optional.empty());
+            byte[] data = drfClient.getBlock(addedHash, Optional.empty());
             print("Recovered bytecode: "+HexUtil.encodeHexString(data));
             Assert.assertTrue("block is as expected", HexUtil.encodeHexString(bytecode).equals(HexUtil.encodeHexString(data)));
 
-            List<Cid> localRefs = dpClient.listBlockstore();
+            List<Cid> localRefs = drfClient.listBlockstore();
             Assert.assertTrue("local ref size", localRefs.size() == 1);
 
-            dpClient.removeBlock(addedHash);
-            List<Cid> localRefsAfter = dpClient.listBlockstore();
+            drfClient.removeBlock(addedHash);
+            List<Cid> localRefsAfter = drfClient.listBlockstore();
             Assert.assertTrue("local ref size after rm", localRefsAfter.size() == 0);
 
-            boolean have = dpClient.hasBlock(addedHash, Optional.empty());
+            boolean have = drfClient.hasBlock(addedHash, Optional.empty());
             Assert.assertTrue("does not have block as expected", !have);
         } catch (IOException ioe) {
             ioe.printStackTrace();

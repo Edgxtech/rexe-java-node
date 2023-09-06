@@ -1,6 +1,16 @@
 
+This error:
+INE: sun.net.www.MessageHeader@594942253 pairs: {null: HTTP/1.1 404 Not Found}{Date: Wed, 06 Sep 2023 05:23:26 GMT}{Transfer-encoding: chunked}
+
+java.lang.RuntimeException: IOException contacting IPFS daemon.
+
+Trailer: null
+   > MEANS the endpoint of the APIHandler doesnt-exist
+
+
+
 ## MUST BE RUN WITH JAVA17
-* On Dev set like this
+* On Dev set like this, must be done before any terminal action like mvn protobuf:compile
 export JAVA_HOME=`/usr/libexec/java_home -v 17`
 
 ### GENERATING PROTOBUF STUBS
@@ -40,4 +50,4 @@ pom.xml:
 Put: src/main/proto/message.proto
 mvn protobuf:compile
    > target/generated-sources/protobuf/java ... MessageOuterClass
-Copy MessageOuterClass to src/main/java/protocol/cptswap/pb/
+Copy MessageOuterClass to src/main/java/protocol/resSwap/pb/

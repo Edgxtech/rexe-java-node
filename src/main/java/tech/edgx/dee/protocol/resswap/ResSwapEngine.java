@@ -1,4 +1,4 @@
-package tech.edgx.dee.protocol.cptswap;
+package tech.edgx.dee.protocol.resswap;
 
 import com.google.gson.Gson;
 import com.google.protobuf.ByteString;
@@ -15,8 +15,10 @@ import org.peergos.Want;
 import org.peergos.blockstore.Blockstore;
 import tech.edgx.dee.model.dp.DpResult;
 import tech.edgx.dee.model.dp.DpWant;
-import tech.edgx.dee.protocol.cptswap.pb.MessageOuterClass;
+//import tech.edgx.dee.protocol.resswap.pb.MessageOuterClass;
+import tech.edgx.dee.protocol.resswap.pb.MessageOuterClass;
 import tech.edgx.dee.service.RuntimeService;
+import tech.edgx.dee.util.HexUtil;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -27,8 +29,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 import java.util.logging.Logger;
 
-public class CptswapEngine {
-    private static final Logger LOG = Logger.getLogger(CptswapEngine.class.getName());
+public class ResSwapEngine {
+    private static final Logger LOG = Logger.getLogger(ResSwapEngine.class.getName());
 
     private final Blockstore blockStore;
     private final Set<PeerId> connections = new HashSet<>();
@@ -46,7 +48,7 @@ public class CptswapEngine {
     private final ConcurrentHashMap<DpWant, PeerId> dpResultHaves = new ConcurrentHashMap<>();
     private final RuntimeService runtimeService = new RuntimeService();
 
-    public CptswapEngine(Blockstore blockStore, BlockRequestAuthoriser authoriser) {
+    public ResSwapEngine(Blockstore blockStore, BlockRequestAuthoriser authoriser) {
         this.blockStore = blockStore;
         this.authoriser = authoriser;
     }
@@ -131,6 +133,12 @@ public class CptswapEngine {
         int messageSize = 0;
         Multihash peerM = Multihash.deserialize(source.remotePeerId().getBytes());
         Cid sourcePeerId = new Cid(1, Cid.Codec.Libp2pKey, peerM.getType(), peerM.getHash());
+        LOG.info("ResSwap received " + msg.getWantlist().getEntriesCount() + " wants, " + msg.getPayloadCount() +
+                " blocks and " + msg.getResultPayloadCount() +" ComputeResults and " + msg.getBlockPresencesCount() +
+                " presences from " + sourcePeerId);
+        /*
+           RESPOND TO WANTS
+         */
         if (msg.hasWantlist()) {
             LOG.info("Msg Has wants");
             LOG.info("Msg Wants: "+new Gson().toJson(msg.getWantlist()));
@@ -150,7 +158,7 @@ public class CptswapEngine {
                                 .setData(ByteString.copyFrom(dp.get()))
                                 .build();
                         int blockSize = blockP.getSerializedSize();
-                        if (blockSize + messageSize > Cptswap.MAX_MESSAGE_SIZE) {
+                        if (blockSize + messageSize > ResSwap.MAX_MESSAGE_SIZE) {
                             buildAndSendMessages(wants, presences, blocks, dpResults, source::writeAndFlush);
                             wants = new ArrayList<>();
                             presences = new ArrayList<>();
@@ -195,7 +203,7 @@ public class CptswapEngine {
                                 Optional.empty() :
                                 Optional.of(new Object[]{e.getParams().toStringUtf8()});
                         LOG.fine("Pushing compute result for functionname: "+functionName);
-                        LOG.fine("Pushing compute result for params: "+functionName);
+                        LOG.fine("Pushing compute result for params: "+params);
 
                         try {
                             DpResult dpResult = runtimeService.runDp(c, dp.get(), "getTestVal", Optional.empty());
@@ -205,13 +213,17 @@ public class CptswapEngine {
                             // Response must contain functionname && params so reciver can lookup
                             // responses they are awaiting in localDpWantlist
                             MessageOuterClass.Message.DpResult dpResultP = MessageOuterClass.Message.DpResult.newBuilder()
+                                    // Instead of sending the prefix+data IOT get the CID hash, just send the CID hash
                                     .setPrefix(ByteString.copyFrom(prefixBytes(c)))
-                                    .setData(ByteString.copyFrom(dpResult.toString().getBytes()))
+                                    // Should be the result - not the block data
+                                    //.setData(ByteString.copyFrom(dp.get())) //dpResult.toString().getBytes()
+                                    .setData(ByteString.copyFrom(dpResult.result.getBytes()))
                                     .setFunctionName(e.getFunctionName())
                                     .setParams(e.getParams())
+                                    .setCidHash(ByteString.copyFrom(c.getHash()))
                                     .build();
                             int blockSize = dpResultP.getSerializedSize();
-                            if (blockSize + messageSize > Cptswap.MAX_MESSAGE_SIZE) {
+                            if (blockSize + messageSize > ResSwap.MAX_MESSAGE_SIZE) {
                                 buildAndSendMessages(wants, presences, blocks, dpResults, source::writeAndFlush);
                                 wants = new ArrayList<>();
                                 presences = new ArrayList<>();
@@ -241,8 +253,8 @@ public class CptswapEngine {
         /*
             RECEIVE BLOCKS (not necessarily just DPs) AS PER NORMAL BITSWAP PROTOCOL
          */
-        LOG.info("Cptswap received " + msg.getWantlist().getEntriesCount() + " wants, " + msg.getPayloadCount() +
-                " blocks and " + msg.getBlockPresencesCount() + " presences from " + sourcePeerId);
+//        LOG.info("ResSwap received " + msg.getWantlist().getEntriesCount() + " wants, " + msg.getPayloadCount() +
+//                " blocks and " + msg.getBlockPresencesCount() + " presences from " + sourcePeerId);
         for (MessageOuterClass.Message.Block block : msg.getPayloadList()) {
             byte[] cidPrefix = block.getPrefix().toByteArray();
             Optional<String> auth = block.getAuth().isEmpty() ?
@@ -293,14 +305,15 @@ public class CptswapEngine {
         /*
             RECEIVE COMPUTED RESULTS
          */
-        LOG.info("Cptswap received COMPUTE RESULTS" + msg.getWantlist().getEntriesCount() + " wants, " + msg.getResultPayloadCount() +
-                " dpResults and " + msg.getBlockPresencesCount() + " presences from " + sourcePeerId);
+//        LOG.info("ResSwap received COMPUTE RESULTS " + msg.getWantlist().getEntriesCount() + " wants, " + msg.getResultPayloadCount() +
+//                " dpResults and " + msg.getBlockPresencesCount() + " presences from " + sourcePeerId);
         for (MessageOuterClass.Message.DpResult dpResult : msg.getResultPayloadList()) {
             byte[] cidPrefix = dpResult.getPrefix().toByteArray();
             Optional<String> auth = dpResult.getAuth().isEmpty() ?
                     Optional.empty() :
                     Optional.of(dpResult.getAuth().toStringUtf8());
             byte[] data = dpResult.getData().toByteArray();
+            LOG.info("Received data: "+new String(data));
 
             ByteArrayInputStream bin = new ByteArrayInputStream(cidPrefix);
             try {
@@ -313,8 +326,11 @@ public class CptswapEngine {
                 if (type != Multihash.Type.sha2_256) {
                     Logger.getGlobal().info("Unsupported hash algorithm " + type.name());
                 } else {
-                    byte[] hash = Hash.sha256(data);
+                    // DIFFERENCE HERE IS THE Block/DATA is not sent, only the hash itself
+                    //byte[] hash = Hash.sha256(data);
+                    byte[] hash = dpResult.getCidHash().toByteArray();
                     Cid c = new Cid(version, codec, type, hash);
+                    LOG.info("received computation for DP: "+ c);
 
                     // TODO, want-provide protocol messaging needs to send the data & function & params????
                     String functionName = dpResult.getFunctionName().toStringUtf8();
@@ -322,18 +338,20 @@ public class CptswapEngine {
                     Optional<Object[]> params = dpResult.getParams().isEmpty() ?
                             Optional.empty() :
                             Optional.of(new Object[]{dpResult.getParams().toStringUtf8()});
-                    LOG.fine("Received compute result for functionname: "+functionName);
-                    LOG.fine("Received compute result for params: "+functionName);
+                    LOG.fine("Received compute result for request: "+c+", functionname: "+functionName + ", params: "+params +", auth: "+auth);
 
+                    // Just from the CIDHash sent, functionName and Params, I can lookup any localDpWants I had requested and match this receive result
                     DpWant w = new DpWant(c, auth, functionName, params);
 
                     CompletableFuture<DpResult> waiter = localDpWants.get(w);
                     if (waiter != null) {
+                        LOG.info("Received dpresult for dpwant: " + w.cid+", "+w.functionName+", "+w.params);
                         String dataString = new String(data);
                         waiter.complete(new DpResult(c, dataString));
                         localDpWants.remove(w);
+                        LOG.info("OK");
                     } else
-                        LOG.info("Received dpresult we don't want: " + c);
+                        LOG.info("Received dpresult we don't want: " + w);
                 }
             } catch (IOException e) {
                 e.printStackTrace();
@@ -358,7 +376,7 @@ public class CptswapEngine {
         for (int i=0; i < wants.size(); i++) {
             MessageOuterClass.Message.Wantlist.Entry want = wants.get(i);
             int wantSize = want.getSerializedSize();
-            if (wantSize + messageSize > Cptswap.MAX_MESSAGE_SIZE) {
+            if (wantSize + messageSize > ResSwap.MAX_MESSAGE_SIZE) {
                 sender.accept(builder.build());
                 builder = MessageOuterClass.Message.newBuilder();
                 messageSize = 0;
@@ -370,7 +388,7 @@ public class CptswapEngine {
         for (int i=0; i < presences.size(); i++) {
             MessageOuterClass.Message.BlockPresence presence = presences.get(i);
             int presenceSize = presence.getSerializedSize();
-            if (presenceSize + messageSize > Cptswap.MAX_MESSAGE_SIZE) {
+            if (presenceSize + messageSize > ResSwap.MAX_MESSAGE_SIZE) {
                 sender.accept(builder.build());
                 builder = MessageOuterClass.Message.newBuilder();
                 messageSize = 0;
@@ -381,7 +399,7 @@ public class CptswapEngine {
         for (int i=0; i < blocks.size(); i++) {
             MessageOuterClass.Message.Block block = blocks.get(i);
             int blockSize = block.getSerializedSize();
-            if (blockSize + messageSize > Cptswap.MAX_MESSAGE_SIZE) {
+            if (blockSize + messageSize > ResSwap.MAX_MESSAGE_SIZE) {
                 sender.accept(builder.build());
                 builder = MessageOuterClass.Message.newBuilder();
                 messageSize = 0;
@@ -392,7 +410,7 @@ public class CptswapEngine {
         for (int i=0; i < dpResults.size(); i++) {
             MessageOuterClass.Message.DpResult dpResult = dpResults.get(i);
             int blockSize = dpResult.getSerializedSize();
-            if (blockSize + messageSize > Cptswap.MAX_MESSAGE_SIZE) {
+            if (blockSize + messageSize > ResSwap.MAX_MESSAGE_SIZE) {
                 sender.accept(builder.build());
                 builder = MessageOuterClass.Message.newBuilder();
                 messageSize = 0;

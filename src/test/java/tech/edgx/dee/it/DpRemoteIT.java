@@ -1,11 +1,11 @@
-package tech.edgx.dee;
+package tech.edgx.dee.it;
 
 import io.ipfs.cid.Cid;
 import io.ipfs.multiaddr.MultiAddress;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import tech.edgx.dee.client.DpClient;
+import tech.edgx.dee.client.DrfClient;
 import tech.edgx.dee.util.Helpers;
 import tech.edgx.dee.util.HexUtil;
 
@@ -15,16 +15,16 @@ import java.nio.file.Files;
 import java.util.List;
 import java.util.Optional;
 
-public class DpRemoteTest {
+/* Must startup a cluster first,
+  use: ./start.sh 0, ./start.sh 1, ./start.sh 2
+  OR// Multirun -> '3-node cluster' config from IDE
+*/
+public class DpRemoteIT {
 
-    static DpClient dpClient0;
-    static DpClient dpClient1;
-    static DpClient dpClient2;
+    static DrfClient drfClient0;
+    static DrfClient drfClient1;
+    static DrfClient drfClient2;
 
-    /* Must startup a cluster first,
-      use: ./start.sh 0, ./start.sh 1, ./start.sh 2
-      OR// Multirun -> '3-node cluster' config from IDE
-    */
     @BeforeClass
     public static void setUp() {
         try {
@@ -33,9 +33,9 @@ public class DpRemoteTest {
             MultiAddress apiAddress0 = new MultiAddress("/ip4/127.0.0.1/tcp/5000");
             MultiAddress apiAddress1 = new MultiAddress("/ip4/127.0.0.1/tcp/5001");
             MultiAddress apiAddress2 = new MultiAddress("/ip4/127.0.0.1/tcp/5002");
-            dpClient0 = new DpClient(apiAddress0.getHost(), apiAddress0.getPort(), "/api/v0/", false);
-            dpClient1 = new DpClient(apiAddress1.getHost(), apiAddress1.getPort(), "/api/v0/", false);
-            dpClient2 = new DpClient(apiAddress2.getHost(), apiAddress2.getPort(), "/api/v0/", false);
+            drfClient0 = new DrfClient(apiAddress0.getHost(), apiAddress0.getPort(), "/api/v0/", false);
+            drfClient1 = new DrfClient(apiAddress1.getHost(), apiAddress1.getPort(), "/api/v0/", false);
+            drfClient2 = new DrfClient(apiAddress2.getHost(), apiAddress2.getPort(), "/api/v0/", false);
         }
         catch (Exception e) {e.printStackTrace();}
     }
@@ -46,11 +46,15 @@ public class DpRemoteTest {
         File jarFile = new File(testDpName);
         Helpers.printJarInfo(jarFile);
         byte[] bytecode = Files.readAllBytes(jarFile.toPath());
-        Cid addedHash = dpClient1.put(bytecode, Optional.of("raw"));
+        Cid addedHash = drfClient1.put(bytecode, Optional.of("raw"));
         System.out.println("Addedhash: "+addedHash.toString());
         //Cid addedHash = Cid.decode("bafkreidqixcn3e2d3d4zdbykpiqg4eouzcvrixzry7ejm43qqzib4tuxvy");
+
+        boolean bloomAdd = drfClient1.bloomAdd(addedHash);
+        Assert.assertTrue("added to bloom filter", !bloomAdd); //RamBlockstore does not filter
+
         // Pull from same node that has it stored
-        boolean has0 = dpClient1.hasBlock(addedHash, Optional.empty());
+        boolean has0 = drfClient1.hasBlock(addedHash, Optional.empty());
         Assert.assertTrue("has block as expected", has0);
     }
 
@@ -62,33 +66,33 @@ public class DpRemoteTest {
             File jarFile = new File(testDpName);
             Helpers.printJarInfo(jarFile);
             byte[] bytecode = Files.readAllBytes(jarFile.toPath());
-            Cid addedHash = dpClient1.put(bytecode, Optional.of("raw"));
+            Cid addedHash = drfClient1.put(bytecode, Optional.of("raw"));
             //Cid predeployedDpHash = Cid.decode("bafkreidqixcn3e2d3d4zdbykpiqg4eouzcvrixzry7ejm43qqzib4tuxvy");
 
             // Pull from same node that has it stored
-            boolean has0 = dpClient1.hasBlock(addedHash, Optional.empty());
+            boolean has0 = drfClient1.hasBlock(addedHash, Optional.empty());
             Assert.assertTrue("has block as expected", has0);
 
-            // Pull from a remote client
-            // TODO, test if it was pulled from REMOTE
-            boolean has1 = dpClient1.hasBlock(addedHash, Optional.empty());
-            Assert.assertTrue("has block as expected", has1);
+//            // Pull from a remote client
+//            // TODO, test if it was pulled from REMOTE
+//            boolean has1 = drfClient1.hasBlock(addedHash, Optional.empty());
+//            Assert.assertTrue("has block as expected", has1);
 
-            boolean bloomAdd = dpClient1.bloomAdd(addedHash);
+            boolean bloomAdd = drfClient1.bloomAdd(addedHash);
             Assert.assertTrue("added to bloom filter", !bloomAdd); //RamBlockstore does not filter
 
-            byte[] data = dpClient2.getBlock(addedHash, Optional.empty());
+            byte[] data = drfClient0.getBlock(addedHash, Optional.empty());
             print("Recovered bytecode: "+HexUtil.encodeHexString(data));
             Assert.assertTrue("block is as expected", HexUtil.encodeHexString(bytecode).equals(HexUtil.encodeHexString(data)));
 
-            List<Cid> localRefs = dpClient1.listBlockstore();
+            List<Cid> localRefs = drfClient1.listBlockstore();
             Assert.assertTrue("local ref size", localRefs.size() == 1);
 
-            dpClient1.removeBlock(addedHash);
-            List<Cid> localRefsAfter = dpClient1.listBlockstore();
+            drfClient1.removeBlock(addedHash);
+            List<Cid> localRefsAfter = drfClient1.listBlockstore();
             Assert.assertTrue("local ref size after rm", localRefsAfter.size() == 0);
 
-            boolean have = dpClient1.hasBlock(addedHash, Optional.empty());
+            boolean have = drfClient1.hasBlock(addedHash, Optional.empty());
             Assert.assertTrue("does not have block as expected", !have);
         } catch (IOException ioe) {
             ioe.printStackTrace();

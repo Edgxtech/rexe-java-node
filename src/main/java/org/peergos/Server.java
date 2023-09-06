@@ -9,15 +9,13 @@ import org.peergos.blockstore.*;
 import org.peergos.config.*;
 import org.peergos.net.APIHandler;
 import org.peergos.protocol.autonat.AutonatProtocol;
-import org.peergos.protocol.bitswap.Bitswap;
-import org.peergos.protocol.bitswap.BitswapEngine;
 import org.peergos.protocol.circuit.CircuitHopProtocol;
 import org.peergos.protocol.circuit.CircuitStopProtocol;
 import org.peergos.protocol.dht.*;
 import org.peergos.util.Logging;
-import tech.edgx.dee.protocol.cptswap.Cptswap;
-import tech.edgx.dee.protocol.cptswap.CptswapEngine;
-import tech.edgx.dee.service.CptswapResultService;
+import tech.edgx.dee.protocol.resswap.ResSwap;
+import tech.edgx.dee.protocol.resswap.ResSwapEngine;
+import tech.edgx.dee.service.ResourceServiceImpl;
 
 import java.io.File;
 import java.io.IOException;
@@ -172,13 +170,10 @@ public class Server {
                 new Ping(),
                 new AutonatProtocol.Binding(),
                 new CircuitHopProtocol.Binding(relayManager, stop),
-                // Its one or the other here, b/c libp2p protobuf listener listens only from one
-                // AND I CANT FIGURE OUT HOW TO MODIFY.
-                // i.e. org.peergos.protocol.bitswap.BitswapProtocol onStartResponder
-                // then results in Cptswap: java.lang.ClassCastException: class org.peergos.protocol.bitswap.BitswapConnection cannot be cast to class tech.edgx.dee.protocol.cptswap.CptswapController
-                //new Bitswap(new BitswapEngine(blocks, authoriser)),
+                // REPLACE Bitswap protocol with ResSwap which is bitswap extended with distributed computation capy
                 // FOR NOW USING THE SAME BLOCK STORE TO STORE DPs as if they are blocks
-                new Cptswap(new CptswapEngine(blockStore, authoriser)),
+                //new Bitswap(new BitswapEngine(blocks, authoriser)),
+                new ResSwap(new ResSwapEngine(blockStore, authoriser)),
                 dht));
 
         Host node = builder.build();
@@ -202,9 +197,9 @@ public class Server {
 
         APIService service = new APIService(
                 blockStore,
-                new BitswapBlockService(node, builder.getBitswap().get()),
+                //new BitswapBlockService(node, builder.getBitswap().get()),
                 dht,
-                new CptswapResultService(node, builder.getCptswap().get()),
+                new ResourceServiceImpl(node, builder.getResSwap().get()),
                 new RamBlockstore() // TODO, IN PROD THIS SHOULD BE A MORE PERMANENT STORE; FILESTORE, FILTER STORE
                 );
         apiServer.createContext(APIService.API_URL, new APIHandler(service, node));

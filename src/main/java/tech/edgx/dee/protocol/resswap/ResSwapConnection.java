@@ -1,17 +1,17 @@
-package tech.edgx.dee.protocol.cptswap;
+package tech.edgx.dee.protocol.resswap;
 
 import io.libp2p.core.Stream;
 import kotlin.Unit;
 //import org.peergos.protocol.bitswap.pb.MessageOuterClass;
-import tech.edgx.dee.protocol.cptswap.pb.MessageOuterClass;
+import tech.edgx.dee.protocol.resswap.pb.MessageOuterClass;
 
 import java.util.concurrent.CompletableFuture;
 
-public class CptswapConnection implements CptswapController {
+public class ResSwapConnection implements ResSwapController {
 
     private final Stream conn;
 
-    public CptswapConnection(Stream conn) {
+    public ResSwapConnection(Stream conn) {
         this.conn = conn;
     }
 

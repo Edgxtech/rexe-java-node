@@ -6,9 +6,8 @@ import org.peergos.protocol.dht.Kademlia;
 import org.peergos.util.Version;
 import tech.edgx.dee.model.dp.DpResult;
 import tech.edgx.dee.model.dp.DpWant;
-import tech.edgx.dee.service.ComputeService;
+import tech.edgx.dee.service.ResourceService;
 import tech.edgx.dee.service.RuntimeService;
-import tech.edgx.dee.util.SwapType;
 
 import java.util.*;
 import java.util.logging.Logger;
@@ -24,23 +23,24 @@ public class APIService {
     private final Kademlia dht;
 
     private final Blockstore blockStore;
-    private final BlockService blockService;
+    //private final BlockService blockService; // Replaced by ComputeService
 
     // I think there is enough likelihood that Programs may need to be stored in a different way to blocks
     //   i.e. in-memory vs filesystem
     //        in-memory perhaps for dynamic COD
     // Thus keeping them seperate
     private final Blockstore dpStore;
-    private final ComputeService computeService;
+    // TODO, this should be named NetworkService??
+    private final ResourceService resourceService;
     private final RuntimeService runtimeService;
 
-    public APIService(Blockstore blockStore, BlockService blockService, Kademlia dht, ComputeService computeService, Blockstore dpStore) {
+    public APIService(Blockstore blockStore, Kademlia dht, ResourceService resourceService, Blockstore dpStore) { // BlockService blockService,
         this.blockStore = blockStore;
-        this.blockService = blockService;
+        //this.blockService = blockService;
         this.dht = dht;
 
         this.dpStore = dpStore;
-        this.computeService = computeService;
+        this.resourceService = resourceService;
         this.runtimeService = new RuntimeService();
     }
 
@@ -65,7 +65,7 @@ public class APIService {
             return blocksFound;
         return java.util.stream.Stream.concat(
                         blocksFound.stream(),
-                        blockService.get(remote, peers, addToLocal).stream()) //, swapType
+                        resourceService.get(remote, peers, addToLocal).stream()) //, swapType
                 .collect(Collectors.toList());
     }
     
@@ -93,59 +93,59 @@ public class APIService {
         return providers;
     }
 
-    //// CUSTOM by TDE - For DRF
-    /// Might need to create a unique TYPE of CID, so they don't get confused with normal DATA CIDs
-    // Or a way to know if a CID is a DP or not
-    public Cid putDp(byte[] dp, Cid.Codec codec) {
-        // PUT into dp specific Store
-        LOG.info("Putting dp...");
-        return dpStore.put(dp, codec).join();
-    }
-
-    // Retain ability to pull the deployed DP as a file if needed
-    // MORE OF AN ADMIN FEATURE
-    public List<HashedBlock> getDp(List<Want> wants, Set<PeerId> peers, boolean addToLocal) {
-
-        // INSTEAD OF IMPLEMENTING THE WHOLE PROTOCOL FOR WHAT IS JUST A SEPERATE STORE,
-        // RE-USE THE API METHODS ABOVE, AWARE THAT IT IS REQUESTING FROM A DIFFERENT STORE
-
-        List<HashedBlock> blocksFound = new ArrayList<>();
-
-        List<Want> local = new ArrayList<>();
-        List<Want> remote = new ArrayList<>();
-
-        for (Want w : wants) {
-            if (dpStore.has(w.cid).join())
-                local.add(w);
-            else
-                remote.add(w);
-        }
-        local.stream()
-                .map(w -> new HashedBlock(w.cid, dpStore.get(w.cid).join().get()))
-                .forEach(blocksFound::add);
-        if (remote.isEmpty())
-            return blocksFound;
-        LOG.fine("NOT FOUND LOCALLY, requesting remote");
-        return java.util.stream.Stream.concat(
-                        blocksFound.stream(),
-                        computeService.get(remote, peers, addToLocal).stream())
-                .collect(Collectors.toList());
-    }
-
-    public Boolean rmDp(Cid cid) {
-        return dpStore.rm(cid).join();
-    }
-
-    public Boolean hasDp(Cid cid) {
-        return dpStore.has(cid).join();
-    }
-    public List<Cid> getRefsDp() {
-        return dpStore.refs().join();
-    }
-
-    public Boolean bloomAddDp(Cid cid) {
-        return dpStore.bloomAdd(cid).join();
-    }
+//    //// CUSTOM by TDE - For DRF
+//    /// Might need to create a unique TYPE of CID, so they don't get confused with normal DATA CIDs
+//    // Or a way to know if a CID is a DP or not
+//    public Cid putDp(byte[] dp, Cid.Codec codec) {
+//        // PUT into dp specific Store
+//        LOG.info("Putting dp...");
+//        return dpStore.put(dp, codec).join();
+//    }
+//
+//    // Retain ability to pull the deployed DP as a file if needed
+//    // MORE OF AN ADMIN FEATURE
+//    public List<HashedBlock> getDp(List<Want> wants, Set<PeerId> peers, boolean addToLocal) {
+//
+//        // INSTEAD OF IMPLEMENTING THE WHOLE PROTOCOL FOR WHAT IS JUST A SEPERATE STORE,
+//        // RE-USE THE API METHODS ABOVE, AWARE THAT IT IS REQUESTING FROM A DIFFERENT STORE
+//
+//        List<HashedBlock> blocksFound = new ArrayList<>();
+//
+//        List<Want> local = new ArrayList<>();
+//        List<Want> remote = new ArrayList<>();
+//
+//        for (Want w : wants) {
+//            if (dpStore.has(w.cid).join())
+//                local.add(w);
+//            else
+//                remote.add(w);
+//        }
+//        local.stream()
+//                .map(w -> new HashedBlock(w.cid, dpStore.get(w.cid).join().get()))
+//                .forEach(blocksFound::add);
+//        if (remote.isEmpty())
+//            return blocksFound;
+//        LOG.fine("NOT FOUND LOCALLY, requesting remote");
+//        return java.util.stream.Stream.concat(
+//                        blocksFound.stream(),
+//                        resourceService.get(remote, peers, addToLocal).stream())
+//                .collect(Collectors.toList());
+//    }
+//
+//    public Boolean rmDp(Cid cid) {
+//        return dpStore.rm(cid).join();
+//    }
+//
+//    public Boolean hasDp(Cid cid) {
+//        return dpStore.has(cid).join();
+//    }
+//    public List<Cid> getRefsDp() {
+//        return dpStore.refs().join();
+//    }
+//
+//    public Boolean bloomAddDp(Cid cid) {
+//        return dpStore.bloomAdd(cid).join();
+//    }
 
     // Instruct the node hosting it to execute DP and return result
     // Still uses bitswap-like protocol to send and process Wants
@@ -155,7 +155,7 @@ public class APIService {
         List<DpWant> local = new ArrayList<>();
         List<DpWant> remote = new ArrayList<>();
         for (DpWant w : wants) {
-            if (dpStore.has(w.cid).join())
+            if (blockStore.has(w.cid).join())
                 // compute locally
                 local.add(w);
             else
@@ -167,7 +167,7 @@ public class APIService {
         for (DpWant w : local) {
             LOG.info("Executing: "+w.cid.toString()+", "+w.functionName);
             try {
-                DpResult dpResult = runtimeService.runDp(w.cid, dpStore.get(w.cid).join().get(), w.functionName, w.params);
+                DpResult dpResult = runtimeService.runDp(w.cid, blockStore.get(w.cid).join().get(), w.functionName, w.params);
                 resultsComputed.add(dpResult);
             } catch(Exception e) {
                 e.printStackTrace();
@@ -182,7 +182,7 @@ public class APIService {
         return java.util.stream.Stream.concat(
                         resultsComputed.stream(),
                         // This begins the sendWants, listen for received msgs incl blocks and fulfil the wants when rx'd
-                        computeService.compute(remote, peers, addToLocal).stream()) // equiv to remoteBlocks[BlocksService].get()
+                        resourceService.compute(remote, peers, addToLocal).stream()) // equiv to remoteBlocks[BlocksService].get()
                 .collect(Collectors.toList());
     }
 

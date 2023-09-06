@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package bitswap.message.pb;
+package tech.edgx.dee.protocol.resswap.pb;
 
 message Message {
 
@@ -34,10 +34,11 @@ message Message {
 
   message DpResult {
     bytes prefix = 1;		// CID prefix (cid version, multicodec and multihash prefix (type + length)
-    bytes data = 2;
+    bytes data = 2; // Contains the output of the DP
     bytes auth = 3;
     bytes functionName = 4;
     bytes params = 5;
+    bytes cidHash = 6;
   }
 
   enum BlockPresenceType {

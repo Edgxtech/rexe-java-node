@@ -1,7 +1,7 @@
-package tech.edgx.dee.protocol.cptswap;
+package tech.edgx.dee.protocol.resswap;
 
 import io.ipfs.cid.Cid;
-import tech.edgx.dee.protocol.cptswap.pb.MessageOuterClass;
+import tech.edgx.dee.protocol.resswap.pb.MessageOuterClass;
 
 public class MessageAndNode {
     public final MessageOuterClass.Message msg;

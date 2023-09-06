@@ -16,21 +16,21 @@ import java.util.*;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
-public class DpClient extends ClientCommon {
+public class DrfClient extends ClientCommon {
     private static final Logger LOG = Logging.LOG();
 
-    public DpClient(String host, int port) {
+    public DrfClient(String host, int port) {
         super(host, port);
     }
 
-    public DpClient(String host, int port, String version, boolean ssl) {
+    public DrfClient(String host, int port, String version, boolean ssl) {
         super(host, port, version, DEFAULT_CONNECT_TIMEOUT_MILLIS, DEFAULT_READ_TIMEOUT_MILLIS, ssl);
     }
 
     public Cid put(byte[] data, Optional<String> format) throws IOException {
         LOG.fine("Putting data.....");
         String fmt = format.map(f -> "&format=" + f).orElse("");
-        Multipart m = new Multipart(protocol +"://" + host + ":" + port + apiVersion+"dp/put?stream-channels=true" + fmt, "UTF-8");
+        Multipart m = new Multipart(protocol +"://" + host + ":" + port + apiVersion+"block/put?stream-channels=true" + fmt, "UTF-8");
         try {
             m.addFilePart("file", Paths.get(""), new NamedStreamable.ByteArrayWrapper(data));
             String res = m.finish();
@@ -45,7 +45,7 @@ public class DpClient extends ClientCommon {
         String authArg = auth.isPresent() ? "&auth=" + auth.get() : "";
         String fnParamsArg = params.isPresent() ? "&params=" + StringUtils.join(params.get(),",") : "";
         LOG.info("FunctionPARAMS arg: "+fnParamsArg);
-        Map<String, String> res = retrieveMap("dp/exec?arg=" + hash + "&fn="+functionName + fnParamsArg + authArg);
+        Map<String, String> res = retrieveMap("dp/compute?arg=" + hash + "&fn="+functionName + fnParamsArg + authArg);
         return res.get("Result");
     }
 
@@ -56,7 +56,7 @@ public class DpClient extends ClientCommon {
     //    public static final String HAS_DP = "dp/has";
 
     public List<Cid> listBlockstore() throws IOException {
-        String jsonStream = new String(retrieve("dp/refs/local"));
+        String jsonStream = new String(retrieve("block/refs/local"));
         return JSONParser.parseStream(jsonStream).stream()
                 .map(m -> (String) (((Map) m).get("Ref")))
                 .map(Cid::decode)
@@ -65,20 +65,20 @@ public class DpClient extends ClientCommon {
 
     public boolean hasBlock(Multihash hash, Optional<String> auth) throws IOException {
         String authArg = auth.isPresent() ? "&auth=" + auth.get() : "";
-        return "true".equals(new String(retrieve("dp/has?arg=" + hash + authArg)));
+        return "true".equals(new String(retrieve("block/has?arg=" + hash + authArg)));
     }
 
     public boolean bloomAdd(Multihash hash) throws IOException {
-        return "true".equals(new String(retrieve("dp/bloom/add?arg=" + hash)));
+        return "true".equals(new String(retrieve("bloom/add?arg=" + hash)));
     }
 
     public byte[] getBlock(Multihash hash, Optional<String> auth) throws IOException {
         String authArg = auth.isPresent() ? "&auth=" + auth.get() : "";
-        return retrieve("dp/get?arg=" + hash + authArg);
+        return retrieve("block/get?arg=" + hash + authArg);
     }
 
     public void removeBlock(Multihash hash) throws IOException {
-        retrieve("dp/rm?arg=" + hash);
+        retrieve("block/rm?arg=" + hash);
     }
 
     public List<Cid> putBlocks(List<byte[]> data) throws IOException {
@@ -95,7 +95,7 @@ public class DpClient extends ClientCommon {
 
     public Cid putBlock(byte[] data, Optional<String> format) throws IOException {
         String fmt = format.map(f -> "&format=" + f).orElse("");
-        Multipart m = new Multipart(protocol +"://" + host + ":" + port + apiVersion+"dp/put?stream-channels=true" + fmt, "UTF-8");
+        Multipart m = new Multipart(protocol +"://" + host + ":" + port + apiVersion+"block/put?stream-channels=true" + fmt, "UTF-8");
         try {
             m.addFilePart("file", Paths.get(""), new NamedStreamable.ByteArrayWrapper(data));
             String res = m.finish();
@@ -107,12 +107,12 @@ public class DpClient extends ClientCommon {
     }
 
     public int stat(Multihash hash) throws IOException {
-        Map<String, Integer> res = retrieveMap("dp/stat?arg=" + hash);
+        Map<String, Integer> res = retrieveMap("block/stat?arg=" + hash);
         return res.get("Size");
     }
 
     public List<PeerAddresses> findProviders(Multihash hash) throws IOException {
-        List<Map<String, Object>> results = getAndParseStream("dp/dht/findprovs?arg=" + hash).stream()
+        List<Map<String, Object>> results = getAndParseStream("block/dht/findprovs?arg=" + hash).stream()
                 .map(x -> (Map<String, Object>) x)
                 .collect(Collectors.toList());
         List<PeerAddresses> providers = new ArrayList<>();
