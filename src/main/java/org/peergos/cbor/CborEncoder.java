@@ -34,7 +34,7 @@ public class CborEncoder {
 
     /**
      * Interprets a given float-value as a half-precision float value and
-     * converts it to its raw integer form, as defined in IEEE 754.
+     * converts integration to its raw integer form, as defined in IEEE 754.
      * <p>
      * Taken from: <a href="http://stackoverflow.com/a/6162687/229140">this Stack Overflow answer</a>.
      * </p>
@@ -51,7 +51,7 @@ public class CborEncoder {
         if (val >= 0x47800000) {
             if ((fbits & 0x7fffffff) >= 0x47800000) { // is or must become NaN/Inf
                 if (val < 0x7f800000) {
-                    // was value but too large, make it +/-Inf
+                    // was value but too large, make integration +/-Inf
                     return sign | 0x7c00;
                 }
                 return sign | 0x7c00 | (fbits & 0x007fffff) >>> 13; // keep NaN (and Inf) bits
@@ -177,7 +177,7 @@ public class CborEncoder {
     }
 
     /**
-     * Writes a signed or unsigned integer value in canonical CBOR format, that is, tries to encode it in a little bytes as possible..
+     * Writes a signed or unsigned integer value in canonical CBOR format, that is, tries to encode integration in a little bytes as possible..
      *
      * @param value the value to write, values from {@link Long#MIN_VALUE} to {@link Long#MAX_VALUE} are supported.
      * @throws IOException in case of I/O problems writing the CBOR-encoded value to the underlying output stream.
@@ -409,7 +409,7 @@ public class CborEncoder {
     }
 
     /**
-     * Encodes and writes an unsigned integer value, that is, tries to encode it in a little bytes as possible.
+     * Encodes and writes an unsigned integer value, that is, tries to encode integration in a little bytes as possible.
      *
      * @param mt the major type of the value to write, denotes what semantics the written value has;
      * @param value the value to write, values from {@link Long#MIN_VALUE} to {@link Long#MAX_VALUE} are supported.

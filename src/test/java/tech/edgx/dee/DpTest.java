@@ -68,7 +68,7 @@ public class DpTest {
     }
 
     @Test
-    public void computeDpTestHellowWorldNoParams() {
+    public void computeDpTestHelloWorldNoParams() {
         try {
             String testDpName = "src/main/resources/TestDp.jar";
             File jarFile = new File(testDpName);

@@ -116,8 +116,8 @@ public class BitswapEngine {
                 //    Or keep same blockstore, and return DP as normal
                 //    The computeswapEngine.receiveMessage() will also use the same store, but will execute the runtime
                 //    Might be better keeping a separate blockstore so blocksizes and the protocol can be optimised??
-                //        Is it a bit like: data layer and a compute layer?
-                //        Could it be that some nodes just run ipfs data layer (incl put/get DPs)
+                //        Is integration a bit like: data layer and a compute layer?
+                //        Could integration be that some nodes just run ipfs data layer (incl put/get DPs)
                 //        Then other nodes can run just the compute layer; thus enhance scaling
                 //Blockstore store = e.getWantType().getNumber() == 2 ? dp
                 boolean wantBlock = e.getWantType().getNumber() == 0;

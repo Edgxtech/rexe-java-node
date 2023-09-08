@@ -56,6 +56,7 @@ public class RuntimeService {
                     .collect(Collectors.toList());
             Object[] params = optParams.get();
             LOG.info("# param in method: "+parameterTypes.size()+", # param provided: "+params.length);
+            LOG.info("Prams: "+new Gson().toJson(params));
             Iterator<Class> paramTypesIterator = parameterTypes.iterator();
             Iterator<Object> paramsIterator = Arrays.stream(params).iterator();
             List<Object> __params = new ArrayList<>();
@@ -63,7 +64,9 @@ public class RuntimeService {
                 Object newObj = parseObjectFromString(paramsIterator.next().toString(), paramTypesIterator.next());
                 __params.add(newObj);
             }
+            LOG.info("Prams: "+__params.size());
             Object[] myparams = __params.toArray(new Object[__params.size()]);
+            LOG.info("Prams: "+myparams.length);
             Method method = dpClass.getDeclaredMethod(functionName, parameterTypes.toArray(new Class[parameterTypes.size()]));
             result = method.invoke(instance, myparams);
             // Can throw java.lang.IllegalArgumentException: wrong number of arguments

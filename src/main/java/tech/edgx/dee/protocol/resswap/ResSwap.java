@@ -27,9 +27,9 @@ import java.util.stream.Collectors;
 
 // Should I call this Netswap?
 //  Swapping data and computational resources; wants, haves, blocks, compute results
-// Or call it, Resswap, ResourceSwap, Reswap, ReSwap - Resource Swap
+// Or call integration, Resswap, ResourceSwap, Reswap, ReSwap - Resource Swap
 // PeerSwap
-// Since it now is the mechanism for exchanging Resources as I have defined.
+// Since integration now is the mechanism for exchanging Resources as I have defined.
 //    How to add streaming channels????
 //
 
@@ -41,8 +41,15 @@ public class ResSwap extends StrictProtocolBinding<ResSwapController> implements
     private AddressBook addrs;
 
     public ResSwap(ResSwapEngine engine) {
-        super("/drf/resswap/1.0.0", new ResSwapProtocol(engine));
+        // TODO, how can I edit this and have my other nodes connect?
+        // IF RUNNING SOME TESTS that bootstrap off the internet, MUST USE /ipfs/bitswap/1.2.0
+        //super("/drf/resswap/1.0.0", new ResSwapProtocol(engine));
+        super("/ipfs/bitswap/1.2.0", new ResSwapProtocol(engine));
         this.engine = engine;
+    }
+
+    public ResSwapEngine getResSwapEngine() {
+        return this.engine;
     }
 
     public void setAddressBook(AddressBook addrs) {
@@ -142,9 +149,10 @@ public class ResSwap extends StrictProtocolBinding<ResSwapController> implements
                 .collect(Collectors.toList());
         // broadcast to all connected peers if none are supplied
         Set<PeerId> connected = peers.isEmpty() ? engine.getConnected() : peers;
-        LOG.info("Engine connected peers: "+new Gson().toJson(engine.getConnected()));
-        LOG.info("Broad casting to peers: "+new Gson().toJson(peers));
+        LOG.info("Engine connected peers: "+new Gson().toJson(engine.getConnected())+", Provided peers: "+new Gson().toJson(peers));
+        LOG.info("Broad casting to: "+new Gson().toJson(connected));
 
+        LOG.info("Requesting: "+new Gson().toJson(wantsProto));
 
         // DIAL peer and perform the specified action which is to send messages,
         //  namely the Wants list wrapped in the MessageOuterClass
@@ -160,13 +168,14 @@ public class ResSwap extends StrictProtocolBinding<ResSwapController> implements
     public void sendDpWants(Host us, Set<PeerId> peers) {
         Set<DpWant> wants = engine.getDpWants();
         LOG.info("Broadcast DP wants: " + wants.size());
+
         //Map<DpWant, PeerId> haves = engine.getHaves();
         List<MessageOuterClass.Message.Wantlist.Entry> wantsProto = wants.stream()
                 .map(want -> MessageOuterClass.Message.Wantlist.Entry.newBuilder()
 //                        .setWantType(haves.containsKey(want) ?
 //                                MessageOuterClass.Message.Wantlist.WantType.Block :
 //                                MessageOuterClass.Message.Wantlist.WantType.Have)
-                        .setWantType(tech.edgx.dee.protocol.resswap.pb.MessageOuterClass.Message.Wantlist.WantType.Dp)
+                        .setWantType(MessageOuterClass.Message.Wantlist.WantType.Dp)
 //                        .setWantType(swapType.equals(SwapType.block) ?
 //                                haves.containsKey(want) ?
 //                                        tech.edgx.dee.protocol.resswap.pb.MessageOuterClass.Message.Wantlist.WantType.Block :
@@ -176,9 +185,12 @@ public class ResSwap extends StrictProtocolBinding<ResSwapController> implements
                         .setAuth(ByteString.copyFrom(want.auth.orElse("").getBytes()))
                         .setFunctionName(ByteString.copyFrom(want.functionName.getBytes()))
                         //ByteString.copyFrom(want.params.orElse("").stream().reduce(p -> new String(p).getBytes()).
-                        .setParams(ByteString.copyFrom("".getBytes()))
+                        //.setParams(ByteString.copyFrom("".getBytes()))
+                        //.setParams(ByteAr.copyFrom(want.params.get().))
+                        .addAllParams(Arrays.stream(want.params.get()).map(p -> ByteString.copyFrom(p.toString().getBytes())).collect(Collectors.toList()))
                         .build())
                 .collect(Collectors.toList());
+        LOG.info("Sending wants: "+new Gson().toJson(wantsProto));
         // broadcast to all connected peers if none are supplied
         Set<PeerId> connected = peers.isEmpty() ? engine.getConnected() : peers;
         engine.buildAndSendMessages(wantsProto, Collections.emptyList(), Collections.emptyList(), Collections.emptyList(),

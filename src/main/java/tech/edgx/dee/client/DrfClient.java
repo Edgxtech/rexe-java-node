@@ -49,14 +49,8 @@ public class DrfClient extends ClientCommon {
         return res.get("Result");
     }
 
-    //     public static final String RM_DP = "dp/rm";
-    //    public static final String STAT_DP = "dp/stat";
-    //    public static final String REFS_LOCAL_DP = "dp/refs/local";
-    //    public static final String BLOOM_ADD_DP = "dp/bloom/add";
-    //    public static final String HAS_DP = "dp/has";
-
     public List<Cid> listBlockstore() throws IOException {
-        String jsonStream = new String(retrieve("block/refs/local"));
+        String jsonStream = new String(retrieve("refs/local"));
         return JSONParser.parseStream(jsonStream).stream()
                 .map(m -> (String) (((Map) m).get("Ref")))
                 .map(Cid::decode)

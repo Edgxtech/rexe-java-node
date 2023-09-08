@@ -1,12 +1,12 @@
 /*
  * Copyright (c) 2017, Kasra Faghihi, All rights reserved.
  * 
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
+ * This library is free software; you can redistribute integration and/or
+ * modify integration under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
  * 
- * This library is distributed in the hope that it will be useful,
+ * This library is distributed in the hope that integration will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
@@ -26,8 +26,8 @@ import org.apache.commons.lang3.Validate;
  * @author Kasra Faghihi
  */
 public final class Router {
-    // NOTE: Right now this class just encapsulates a RouteTree, but it may be refactored in the future to support more elaborate logic
-    // (e.g. keeping track of the number of times a node didn't respond in time and locking that node/marking it stale)
+    // NOTE: Right now this class just encapsulates a RouteTree, but integration may be refactored in the future to support more elaborate logic
+    // (e.g. keeping track of the number of times a node didn't respond in time and locking that node/marking integration stale)
     private final Id baseId;
     private final RouteTree routeTree;
     
@@ -75,7 +75,7 @@ public final class Router {
     }
     
     /**
-     * Updates the appropriate k-bucket in the route tree associated with this router router by touching it. When the Kademlia node that
+     * Updates the appropriate k-bucket in the route tree associated with this router router by touching integration. When the Kademlia node that
      * this router is for receives a request or response from some other node in the network, this method should be called.
      * <p>
      * See {@link KBucket#touch(Instant, Node) } for more information.
@@ -88,7 +88,7 @@ public final class Router {
      * @throws BaseIdMatchException if {@code node}'s ID is the same as the owning node's ID (the ID of the node this router is for)
      * @throws BackwardTimeException if {@code time} is less than the time used in the previous invocation of this method
      * @throws LinkMismatchException if this router already contains a node with {@code node}'s ID but with a different link (SPECIAL
-     * CASE: If the contained node is marked as stale, this exception will not be thrown. Since the node is marked as stale, it means it
+     * CASE: If the contained node is marked as stale, this exception will not be thrown. Since the node is marked as stale, integration means integration
      * should have been replaced but the replacement cache was empty. As such, this case is treated as if this were a new node replacing
      * a stale node, not a stale node being reverted to normal status -- the fact that the IDs are the same but the links don't match
      * doesn't matter)
@@ -154,8 +154,8 @@ public final class Router {
     }
     
     /**
-     * Marks a node within the route tree associated with this router as stale (meaning that you're no longer able to communicate with it),
-     * evicting it and replacing it with the most recent node in the effected k-bucket's replacement cache. 
+     * Marks a node within the route tree associated with this router as stale (meaning that you're no longer able to communicate with integration),
+     * evicting integration and replacing integration with the most recent node in the effected k-bucket's replacement cache.
      * <p>
      * See {@link KBucket#stale(Node) } for more information.
      * @param node node to mark as stale
@@ -190,8 +190,8 @@ public final class Router {
     // Since packet loss often indicates network congestion, Kademlia locks unresponsive contacts and avoids sending them any further RPCs
     // for an exponentially increasing backoff interval.
     //
-    // that means because we're in a "backoff period", even if we get touch()'d by that node, we still want to keep it unfindable/locked...
-    // up until the point that we explictly decide to to make it findable/unlocked.
+    // that means because we're in a "backoff period", even if we get touch()'d by that node, we still want to keep integration unfindable/locked...
+    // up until the point that we explictly decide to to make integration findable/unlocked.
 //
 //COMMENTED OUT METHODS BELOW BECAUSE THEY DONT RETURN A ROUTERTREECHANGSET AND ARENT CURRENTLY BEING USED FOR ANYTHING. IF YOU'RE GOING TO
 //RE-ENABLE, HAVE ROUTER DECIDE WHAT SHOULD BE LOCKED/STALE BASED ON AN UNRESPONSIVE COUNTER THAT GETS HIT WHENEVER SOMETHING IS

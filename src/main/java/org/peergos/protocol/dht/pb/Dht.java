@@ -788,7 +788,7 @@ public final class Dht {
 
     /**
      * <pre>
-     * defines what type of message it is.
+     * defines what type of message integration is.
      * </pre>
      *
      * <code>.org.peergos.dht.pb.Message.MessageType type = 1;</code>
@@ -796,7 +796,7 @@ public final class Dht {
     int getTypeValue();
     /**
      * <pre>
-     * defines what type of message it is.
+     * defines what type of message integration is.
      * </pre>
      *
      * <code>.org.peergos.dht.pb.Message.MessageType type = 1;</code>
@@ -2207,7 +2207,7 @@ public final class Dht {
     private int type_;
     /**
      * <pre>
-     * defines what type of message it is.
+     * defines what type of message integration is.
      * </pre>
      *
      * <code>.org.peergos.dht.pb.Message.MessageType type = 1;</code>
@@ -2217,7 +2217,7 @@ public final class Dht {
     }
     /**
      * <pre>
-     * defines what type of message it is.
+     * defines what type of message integration is.
      * </pre>
      *
      * <code>.org.peergos.dht.pb.Message.MessageType type = 1;</code>
@@ -2895,7 +2895,7 @@ public final class Dht {
       private int type_ = 0;
       /**
        * <pre>
-       * defines what type of message it is.
+       * defines what type of message integration is.
        * </pre>
        *
        * <code>.org.peergos.dht.pb.Message.MessageType type = 1;</code>
@@ -2905,7 +2905,7 @@ public final class Dht {
       }
       /**
        * <pre>
-       * defines what type of message it is.
+       * defines what type of message integration is.
        * </pre>
        *
        * <code>.org.peergos.dht.pb.Message.MessageType type = 1;</code>
@@ -2917,7 +2917,7 @@ public final class Dht {
       }
       /**
        * <pre>
-       * defines what type of message it is.
+       * defines what type of message integration is.
        * </pre>
        *
        * <code>.org.peergos.dht.pb.Message.MessageType type = 1;</code>
@@ -2929,7 +2929,7 @@ public final class Dht {
       }
       /**
        * <pre>
-       * defines what type of message it is.
+       * defines what type of message integration is.
        * </pre>
        *
        * <code>.org.peergos.dht.pb.Message.MessageType type = 1;</code>
@@ -2945,7 +2945,7 @@ public final class Dht {
       }
       /**
        * <pre>
-       * defines what type of message it is.
+       * defines what type of message integration is.
        * </pre>
        *
        * <code>.org.peergos.dht.pb.Message.MessageType type = 1;</code>

@@ -1,4 +1,4 @@
-package tech.edgx.dee;
+package tech.edgx.dee.scratchpad;
 
 import org.junit.Test;
 import tech.edgx.dee.util.Helpers;

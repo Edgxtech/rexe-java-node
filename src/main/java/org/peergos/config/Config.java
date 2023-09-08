@@ -92,7 +92,7 @@ public class Config {
 //                .map(MultiAddress::new)
 //                .collect(Collectors.toList());
 
-        // IF this is instance0; nil bootstrap nodes (but I need to go add some data to it)
+        // IF this is instance0; nil bootstrap nodes (but I need to go add some data to integration)
         List<MultiAddress> bootstrapNodes = new ArrayList<>();
         if (!instance_id.equals(0)) {
             // BOOTSTRAP OFF INSTANCE 0 (PRE-GENERATED CONFIG TO GET PEER ID)

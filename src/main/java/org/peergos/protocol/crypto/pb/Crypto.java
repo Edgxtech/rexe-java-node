@@ -1310,7 +1310,7 @@ public final class Crypto {
 
     /**
      * <pre>
-     * payload_type encodes the type of payload, so that it can be deserialized
+     * payload_type encodes the type of payload, so that integration can be deserialized
      * deterministically.
      * </pre>
      *
@@ -1341,9 +1341,9 @@ public final class Crypto {
   /**
    * <pre>
    * Envelope encloses a signed payload produced by a peer, along with the public
-   * key of the keypair it was signed with so that it can be statelessly validated
+   * key of the keypair integration was signed with so that integration can be statelessly validated
    * by the receiver.
-   * The payload is prefixed with a byte string that determines the type, so it
+   * The payload is prefixed with a byte string that determines the type, so integration
    * can be deserialized deterministically. Often, this byte string is a
    * multicodec.
    * </pre>
@@ -1489,7 +1489,7 @@ public final class Crypto {
     private com.google.protobuf.ByteString payloadType_;
     /**
      * <pre>
-     * payload_type encodes the type of payload, so that it can be deserialized
+     * payload_type encodes the type of payload, so that integration can be deserialized
      * deterministically.
      * </pre>
      *
@@ -1724,9 +1724,9 @@ public final class Crypto {
     /**
      * <pre>
      * Envelope encloses a signed payload produced by a peer, along with the public
-     * key of the keypair it was signed with so that it can be statelessly validated
+     * key of the keypair integration was signed with so that integration can be statelessly validated
      * by the receiver.
-     * The payload is prefixed with a byte string that determines the type, so it
+     * The payload is prefixed with a byte string that determines the type, so integration
      * can be deserialized deterministically. Often, this byte string is a
      * multicodec.
      * </pre>
@@ -2068,7 +2068,7 @@ public final class Crypto {
       private com.google.protobuf.ByteString payloadType_ = com.google.protobuf.ByteString.EMPTY;
       /**
        * <pre>
-       * payload_type encodes the type of payload, so that it can be deserialized
+       * payload_type encodes the type of payload, so that integration can be deserialized
        * deterministically.
        * </pre>
        *
@@ -2079,7 +2079,7 @@ public final class Crypto {
       }
       /**
        * <pre>
-       * payload_type encodes the type of payload, so that it can be deserialized
+       * payload_type encodes the type of payload, so that integration can be deserialized
        * deterministically.
        * </pre>
        *
@@ -2096,7 +2096,7 @@ public final class Crypto {
       }
       /**
        * <pre>
-       * payload_type encodes the type of payload, so that it can be deserialized
+       * payload_type encodes the type of payload, so that integration can be deserialized
        * deterministically.
        * </pre>
        *

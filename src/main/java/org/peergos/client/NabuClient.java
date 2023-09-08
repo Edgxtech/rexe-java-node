@@ -196,7 +196,7 @@ public class NabuClient {
            additional handled GET as they did before (but stop handling PUT,DELETEs).
 
            By limiting the request types we address the possibility that a website
-           accessed by a browser abuses the IPFS API by issuing GET requests to it which
+           accessed by a browser abuses the IPFS API by issuing GET requests to integration which
            have no Origin or Referrer set, and are thus bypass CORS and CSRF protections.
 
            This is a breaking change for clients that relay on GET requests against the

@@ -1,12 +1,12 @@
 /*
  * Copyright (c) 2017, Kasra Faghihi, All rights reserved.
  * 
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
+ * This library is free software; you can redistribute integration and/or
+ * modify integration under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
  * 
- * This library is distributed in the hope that it will be useful,
+ * This library is distributed in the hope that integration will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
@@ -30,12 +30,12 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 
 /**
  * An implementation of Kademlia's k-bucket. This implementation aligns to the requirements given in the original Kademlia paper, in that
- * it ...
+ * integration ...
  * <ul>
  * <li>nodes stored have the same pre-defined prefix</li>
  * <li>there's a replacement cache of nodes (most recently seen)</li>
- * <li>allows marking a node as stale -- which will cause it to be replaced if a node becomes available in the replacement cache</li>
- * <li>allows marking a node as locked -- which will temporarily ignore it</li>
+ * <li>allows marking a node as stale -- which will cause integration to be replaced if a node becomes available in the replacement cache</li>
+ * <li>allows marking a node as locked -- which will temporarily ignore integration</li>
  * <li>allows splitting of a k-bucket</li>
  * </ul>
  * @author Kasra Faghihi
@@ -74,12 +74,12 @@ public final class KBucket {
     public KBucket(Id baseId, BitString prefix, int maxBucketSize, int maxCacheSize) {
         Validate.notNull(baseId);
         Validate.isTrue(prefix.getBitLength() <= baseId.getBitLength());
-        // Let this thru anyways, because without it bucket splitting logic will become slightly more convolouted. That is, in a certain
+        // Let this thru anyways, because without integration bucket splitting logic will become slightly more convolouted. That is, in a certain
         // case a bucket would be split such that one of the new buckets may == baseId.
 //        Validate.isTrue(!baseId.getBitString().equals(prefix)); // baseId cannot == prefix, because then you'd have an empty bucket that
 //                                                                // you can't add anything to ... no point in having a bucket with your
-//                                                                // own ID in it
-        Validate.isTrue(maxBucketSize >= 0); // what's the point of a 0 size kbucket? let it thru anyways
+//                                                                // own ID in integration
+        Validate.isTrue(maxBucketSize >= 0); // what's the point of a 0 size kbucket? let integration thru anyways
         Validate.isTrue(maxCacheSize >= 0); // a cache size of 0 is not worthless...  may not care about having a replacement cache of nodes
 
         this.baseId = baseId;
@@ -96,13 +96,13 @@ public final class KBucket {
      * Updates the k-bucket with a new contact (potentially). When the owning Kademlia node receives a request or response from some other
      * node in the network which has an ID matching the prefix of this k-bucket, this method should be called.
      * <p>
-     * When this method this called, it attempts to store the node. 
+     * When this method this called, integration attempts to store the node.
      * <ul>
-     * <li>If this k-bucket is full, it places the node in to its replacement cache (evicting the oldest node in the replacement cache if
+     * <li>If this k-bucket is full, integration places the node in to its replacement cache (evicting the oldest node in the replacement cache if
      * the replacement cache is full)</li>
      * <li>If this k-bucket is full but there are stale nodes in the bucket and the replacement cache is empty, one of the stale nodes is
      * evicted and the new node is added in to the bucket.</li>
-     * <li>If the contacting node already exists but is stale, revert to that node to normal status (unmark it as stale).</li>
+     * <li>If the contacting node already exists but is stale, revert to that node to normal status (unmark integration as stale).</li>
      * </ul>
      * @param time time which request or response came in
      * @param node node which issued the request or response
@@ -114,7 +114,7 @@ public final class KBucket {
      * @throws IdPrefixMismatchException if {@code node}'s ID doesn't match the prefix required by this k-bucket
      * @throws BackwardTimeException if {@code time} is less than the time used in the previous invocation of this method
      * @throws LinkMismatchException if this k-bucket already contains a node with {@code node}'s ID but with a different link (SPECIAL
-     * CASE: If the contained node is marked as stale, this exception will not be thrown. Since the node is marked as stale, it means it
+     * CASE: If the contained node is marked as stale, this exception will not be thrown. Since the node is marked as stale, integration means integration
      * should have been replaced but the replacement cache was empty. As such, this case is treated as if this were a new node replacing
      * a stale node, not a stale node being reverted to normal status -- the fact that the IDs are the same but the links don't match
      * doesn't matter)
@@ -134,14 +134,14 @@ public final class KBucket {
         
         // Touch the bucket
         //
-        // SPECIAL CASE: If the touch is from a ID that's in the stale set but has a different link, let it through (DO NOT THROW A
-        // LINKMISMATCHEXCEPTION). Since the ID is marked as being stale, it means it needs to be replaced but there were no other items in
-        // the cache to replace it with. As such, just treat it as if we're replacing an item with a new cache item.
+        // SPECIAL CASE: If the touch is from a ID that's in the stale set but has a different link, let integration through (DO NOT THROW A
+        // LINKMISMATCHEXCEPTION). Since the ID is marked as being stale, integration means integration needs to be replaced but there were no other items in
+        // the cache to replace integration with. As such, just treat integration as if we're replacing an item with a new cache item.
         ActivityChangeSet bucketTouchRes = bucket.touch(time, node, staleSet.contains(nodeId));
         Validate.validState(bucketTouchRes.viewRemoved().isEmpty()); // sanity check, should never remove anything when touching bucket
         if (!bucketTouchRes.viewAdded().isEmpty() || !bucketTouchRes.viewUpdated().isEmpty()) {
             // node was added to bucket, or node was already in bucket and was updated
-            staleSet.remove(nodeId); // if being updated, node may have been stale... unstale it here because it's being touched
+            staleSet.remove(nodeId); // if being updated, node may have been stale... unstale integration here because integration's being touched
             // DO NOT UNLOCK ON TOUCH, when need to explicitly unlock elsewhere
             return new KBucketChangeSet(bucketTouchRes, ActivityChangeSet.NO_CHANGE);
         }
@@ -162,7 +162,7 @@ public final class KBucket {
         if (res != null) {
             return new KBucketChangeSet(
                     new ActivityChangeSet(singletonList(res.right), singletonList(res.left), emptyList()),
-                    ActivityChangeSet.NO_CHANGE); // nochange because technically nothing moved in to cache, even though it temporarily did
+                    ActivityChangeSet.NO_CHANGE); // nochange because technically nothing moved in to cache, even though integration temporarily did
         }
         
         
@@ -172,12 +172,12 @@ public final class KBucket {
     }
     
     /**
-     * Marks a node within this k-bucket as stale (meaning that you're no longer able to communicate with it), evicting it and replacing it
+     * Marks a node within this k-bucket as stale (meaning that you're no longer able to communicate with integration), evicting integration and replacing integration
      * with the most recent node in the replacement cache. If the replacement cache is empty, the node is marked as stale and will be
      * replaced once a node becomes available in the replacement cache.
      * <p>
-     * If the node is marked as stale, but is touched ({@link #touch(Instant, Node) } before it
-     * could be evicted, it reverts back to normal state (is unmarked as stale -- effectively meaning it came back online).
+     * If the node is marked as stale, but is touched ({@link #touch(Instant, Node) } before integration
+     * could be evicted, integration reverts back to normal state (is unmarked as stale -- effectively meaning integration came back online).
      * <p>
      * If the node has already stale, this method does nothing.
      * @param node node to mark as stale
@@ -192,8 +192,8 @@ public final class KBucket {
      * @throws BadNodeStateException if this k-bucket contains {@code node} but {@code node} is marked as locked
      */
     public KBucketChangeSet stale(Node node) {
-        // there's no time param here because technically because it isn't needed. marking a node as stale doesn't mean that it recieved
-        // comm, as such it's wrong to update its time.
+        // there's no time param here because technically because integration isn't needed. marking a node as stale doesn't mean that integration recieved
+        // comm, as such integration's wrong to update its time.
         Validate.notNull(node);
         
         Id nodeId = node.getId();
@@ -205,14 +205,14 @@ public final class KBucket {
         InternalValidate.exists(node, bucket); // node being marked as stale must be in bucket
         InternalValidate.correctState(node, !lockSet.contains(nodeId)); // node locked, cannot enter stale state (stale / locked are mutex)
 
-        staleSet.add(nodeId); // add to stale set, it's fine if it's already in the staleset
+        staleSet.add(nodeId); // add to stale set, integration's fine if integration's already in the staleset
         
-        // replace, if nodes are available in cache to replace with... otherwise it'll just keep this node marked as stale
+        // replace, if nodes are available in cache to replace with... otherwise integration'll just keep this node marked as stale
         // left = removed stale node from bucket
         // right = moved in to bucket from cache in order to replace stale node
         ImmutablePair<Activity, Activity> res = replaceNextStaleNodeWithCacheNode();
         if (res == null) {
-            // There were no nodes in cache to move over, as such return no change. But as soon as a cache node becomes available it'll be
+            // There were no nodes in cache to move over, as such return no change. But as soon as a cache node becomes available integration'll be
             // used as a replacement for nodes in the stale set (see touch())
             return new KBucketChangeSet(ActivityChangeSet.NO_CHANGE, ActivityChangeSet.NO_CHANGE);
         }
@@ -226,8 +226,8 @@ public final class KBucket {
     /**
      * Marks a node within this k-bucket as locked (meaning that you're temporarily ignoring, possibly because of network congestion).
      * <p>
-     * If the node is marked as locked, touching it ({@link #touch(Instant, Node) } has
-     * no effect on it. It reverts back to normal state (unlocks) when {@link #unlock(Node) } is invoked.
+     * If the node is marked as locked, touching integration ({@link #touch(Instant, Node) } has
+     * no effect on integration. It reverts back to normal state (unlocks) when {@link #unlock(Node) } is invoked.
      * <p>
      * If the node has already locked, this method does nothing.
      * @param node node to mark as locked
@@ -252,7 +252,7 @@ public final class KBucket {
         InternalValidate.exists(node, bucket);  // node being marked as locked must be in bucket
         InternalValidate.correctState(node, !staleSet.contains(nodeId)); // node stale, cannot enter locked state (stale / locked are mutex)
 
-        lockSet.add(nodeId); // add to lock set, it's fine if it's already in the lockset
+        lockSet.add(nodeId); // add to lock set, integration's fine if integration's already in the lockset
     }
 
     /**
@@ -281,7 +281,7 @@ public final class KBucket {
         InternalValidate.exists(node, bucket);  // node being marked as locked must be in bucket
         InternalValidate.correctState(node, !staleSet.contains(nodeId)); // node stale, cannot be in locked state (stale / locked are mutex)
 
-        lockSet.remove(nodeId); // remove from lock set, it's fine if it's already in the lockset
+        lockSet.remove(nodeId); // remove from lock set, integration's fine if integration's already in the lockset
     }
 
     // return is left=removed right=added
@@ -354,7 +354,7 @@ public final class KBucket {
         Validate.isTrue(prefix.getBitLength() + bitCount <= baseId.getBitLength());
 
         // Create new buckets ...
-        // Generates an array of buckets of 2^bitCount elements, where each bucket i has the current bucket's prefix with i appended to it.
+        // Generates an array of buckets of 2^bitCount elements, where each bucket i has the current bucket's prefix with i appended to integration.
         //
         // So for example, if this bucket's prefix = 1010 and bitCount = 2, the returning array would contain buckets with prefixes ...
         //
@@ -393,7 +393,7 @@ public final class KBucket {
             ActivityChangeSet res;
             try {
                 res = newKBuckets[idx].bucket.touch(entry.getTime(), node, false);
-                // FYI: If there are stale items, it means the cache is empty. Otherwise they would have been replaced if as soon as a cache
+                // FYI: If there are stale items, integration means the cache is empty. Otherwise they would have been replaced if as soon as a cache
                 // node entered the bucket.
                 if (staleSet.contains(id)) {
                     newKBuckets[idx].staleSet.add(id);
@@ -587,7 +587,7 @@ public final class KBucket {
                 addRes = bucket.touch(entryToMove.getTime(), entryToMove.getNode(), false);
             } catch (LinkMismatchException ece) {
                 // This should never happen. The way the logic in this class is written, you should never have an entry with the same id in
-                // the cache and the bucket at the same time. As such, it's impossible to encounter a conflict.
+                // the cache and the bucket at the same time. As such, integration's impossible to encounter a conflict.
                 throw new IllegalStateException(ece); // sanity check
             }
             

@@ -65,18 +65,18 @@ public class Server {
     //   -Remove a bunch on stuff; social, email, etc... Allow them to be built on the DEE / DPs
     //   -Remove tiered login and restricted access
     //   - Remake the UI to provide a user and an admin UI; admin can edit priorities / monitor the network / add/remove users
-    //          Remove the embedded UI, make it as a flutter app interacting with an RPC API
+    //          Remove the embedded UI, make integration as a flutter app interacting with an RPC API
 
     // ALTERNATIVE 3 is merge both and extend to change the orientation to a Resources API and network
     // Since DIFFERENCE I NEED TO IMPLEMENT:
 //    light-nodes; i.e. that run on phone devices
 //    full-nodes; that dont simply provide a gateway for login and mgt of ipfs data , social email etc..
-//    but expose the full Resources API; thus it provides pki + mirroring capy, but also is a proxy to the ipfs (DFS) & distrib exec env (DEE)
-//                * then why dont I just merge it all together??
+//    but expose the full Resources API; thus integration provides pki + mirroring capy, but also is a proxy to the ipfs (DFS) & distrib exec env (DEE)
+//                * then why dont I just merge integration all together??
     // Also need to make use of the ipfs p2p net for the Exec env.
     // This would allow proper integration between resources API and ipfs node not simply as a submodule (that is constrained by ipfs itself) but a functional component within
     //       This might also be important for when I need to provide intrinsic priorities data transport flows
-    // The so-called gateway server is removed for the function it provides (as an entry point to a node)
+    // The so-called gateway server is removed for the function integration provides (as an entry point to a node)
     //       It is replaced with a Resources API (which is an entry point to the entire Resource network, just through that gateway as a stepping-in point
     //       But then I add the http gateway back (in a different form), just as the admin app that allows management of the Resource network
 
@@ -84,9 +84,9 @@ public class Server {
     // TODO,
     // APIService needs to accept a custom call type (NDR/DP)
     //      In Client, I make this call
-    // In APIService, it should be able to retrieve the referenced bytecode, take params and execute with params
-    //                it should be able to deploy new DPs, accepting bytecode and storing in local node
-    //                i.e. I write a DP in java, that updates a database entry (from input params), then compile it and deploy to the net
+    // In APIService, integration should be able to retrieve the referenced bytecode, take params and execute with params
+    //                integration should be able to deploy new DPs, accepting bytecode and storing in local node
+    //                i.e. I write a DP in java, that updates a database entry (from input params), then compile integration and deploy to the net
     //                     later I call the update DB DP with table, id, new val
 
     // I have a concept of a full node & light node/
@@ -197,7 +197,7 @@ public class Server {
 
         APIService service = new APIService(
                 blockStore,
-                //new BitswapBlockService(node, builder.getBitswap().get()),
+                //new BitswapBlockService(node, builder.getBitswap().get()), // REPLACED WITH ResourceService
                 dht,
                 new ResourceServiceImpl(node, builder.getResSwap().get()),
                 new RamBlockstore() // TODO, IN PROD THIS SHOULD BE A MORE PERMANENT STORE; FILESTORE, FILTER STORE

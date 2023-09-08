@@ -1,12 +1,12 @@
 /*
  * Copyright (c) 2017, Kasra Faghihi, All rights reserved.
  * 
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
+ * This library is free software; you can redistribute integration and/or
+ * modify integration under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
  * 
- * This library is distributed in the hope that it will be useful,
+ * This library is distributed in the hope that integration will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
@@ -19,7 +19,7 @@ package com.offbynull.kademlia;
 import org.apache.commons.lang3.Validate;
 
 /**
- * Thrown to indicate that the input node was in an incorrect state for the operation to be performed on it.
+ * Thrown to indicate that the input node was in an incorrect state for the operation to be performed on integration.
  * <p>
  * Class is immutable.
  * @author Kasra Faghihi

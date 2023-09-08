@@ -97,12 +97,15 @@ public class Kademlia extends StrictProtocolBinding<KademliaController> implemen
         byte[] hash = new byte[32];
         new Random().nextBytes(hash);
         Multihash randomPeerId = new Multihash(Multihash.Type.sha2_256, hash);
+        LOG.info("Using Random Peer Id: "+randomPeerId.toBase58());
         findClosestPeers(randomPeerId, 20, us);
+        LOG.info("Finished finding peers closest to random Peer");
 
         // lookup our own peer id to keep our nearest neighbours up-to-date,
         // and connect to all of them, so they know about our addresses
+        LOG.info("Start finding peers closest to us");
         List<PeerAddresses> closestToUs = findClosestPeers(Multihash.deserialize(us.getPeerId().getBytes()), 20, us);
-        LOG.info("NODES CLOSEST TO US: "+new Gson().toJson(closestToUs));
+        LOG.info("Peers CLOSEST TO US: "+new Gson().toJson(closestToUs));
         int connectedClosest = 0;
         for (PeerAddresses peer : closestToUs) {
             if (connectTo(us, peer))
@@ -233,7 +236,7 @@ public class Kademlia extends StrictProtocolBinding<KademliaController> implemen
             if (! foundCloser)
                 break;
         }
-
+        LOG.info("Returning providers: "+providers.size());
         return CompletableFuture.completedFuture(providers);
     }
 

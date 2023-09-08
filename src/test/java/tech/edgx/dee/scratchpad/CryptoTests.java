@@ -1,4 +1,4 @@
-package tech.edgx.dee;
+package tech.edgx.dee.scratchpad;
 
 import com.google.gson.Gson;
 import io.libp2p.core.PeerId;
@@ -71,7 +71,7 @@ public class CryptoTests {
     public void generateKeyPair() throws Exception {
         // generate key pair
 
-        // e.g. it should be RSA-2048 keypair
+        // e.g. integration should be RSA-2048 keypair
 //        jsipfs init
 //        initializing ipfs node at /Users/pascalprecht/.jsipfs
 //        generating 2048-bit RSA keypair...done
@@ -120,7 +120,7 @@ public class CryptoTests {
         algparms.init(pbeParamSpec);
         EncryptedPrivateKeyInfo encinfo = new EncryptedPrivateKeyInfo(algparms, ciphertext);
 
-// and here we have it! a DER encoded PKCS#8 encrypted key!
+// and here we have integration! a DER encoded PKCS#8 encrypted key!
         byte[] encryptedPkcs8 = encinfo.getEncoded();
 
         System.out.println("Key: "+ HexUtil.encodeHexString(encryptedPkcs8));

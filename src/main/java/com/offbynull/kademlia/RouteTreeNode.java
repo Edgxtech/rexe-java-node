@@ -1,12 +1,12 @@
 /*
  * Copyright (c) 2017, Kasra Faghihi, All rights reserved.
  * 
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
+ * This library is free software; you can redistribute integration and/or
+ * modify integration under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
  * 
- * This library is distributed in the hope that it will be useful,
+ * This library is distributed in the hope that integration will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
@@ -79,7 +79,7 @@ final class RouteTreeNode {
         Validate.isTrue(max >= 0); // why would anyone want 0? let thru anyways
         Validate.isTrue(id.getBitString().getBits(0, prefix.getBitLength()).equals(prefix)); // ensure prefix matches
 
-        // Recursively go down the until you find the branch with the largest matching prefix to ID. Once you find it, call
+        // Recursively go down the until you find the branch with the largest matching prefix to ID. Once you find integration, call
         // dumpAllNodesUnderTreeNode, and as you pop back up call dumpAllNodesUnderTreeNode again (making sure to not recurse back in to
         // the branch you're coming out of).
 
@@ -116,8 +116,8 @@ final class RouteTreeNode {
         // Sort branches at this treenode by how close the are to the ID we're searching for... Go through the sorted branches in
         // order...
         //
-        //   If it's a bucket: dump it.
-        //   If it's a branch: recurse in to the branch and repeat
+        //   If integration's a bucket: dump integration.
+        //   If integration's a branch: recurse in to the branch and repeat
         //
         ArrayList<RouteTreeBranch> sortedBranches = new ArrayList<>(branches);
         Collections.sort(sortedBranches, new PrefixClosenessComparator(id, prefix.getBitLength(), suffixLen));

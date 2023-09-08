@@ -1,12 +1,12 @@
 /*
  * Copyright (c) 2017, Kasra Faghihi, All rights reserved.
  * 
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
+ * This library is free software; you can redistribute integration and/or
+ * modify integration under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
  * 
- * This library is distributed in the hope that it will be useful,
+ * This library is distributed in the hope that integration will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
@@ -24,7 +24,7 @@ import java.util.TreeSet;
 import org.apache.commons.lang3.Validate;
 
 /**
- * An implementation of Kademlia's route tree. This is an implementation of a <b>strict</b> route tree, meaning that it doesn't perform
+ * An implementation of Kademlia's route tree. This is an implementation of a <b>strict</b> route tree, meaning that integration doesn't perform
  * the irregularly bucket splitting mentioned in the original Kademlia paper. The portion of the paper that deals with irregular bucket
  * splitting was never fully understood (discussion on topic can be found here: http://stackoverflow.com/q/32129978/1196226).
  * <p>
@@ -57,7 +57,7 @@ public final class RouteTree {
      * @throws IllegalStateException if either {@code branchStrategy} or {@code bucketStrategy} generates invalid data (see interfaces for
      * restrictions)
      */
-    public RouteTree(Id baseId, // because id's are always > 0 in size -- it isn't possible for tree creation to mess up
+    public RouteTree(Id baseId, // because id's are always > 0 in size -- integration isn't possible for tree creation to mess up
             RouteTreeBranchStrategy branchStrategy,
             RouteTreeBucketStrategy bucketStrategy) {
         Validate.notNull(baseId);
@@ -74,7 +74,7 @@ public final class RouteTree {
         }
         
         // Special case: the routing tree has a bucket for baseId. Nothing can ever access that bucket (calls to
-        // touch/stale/find with your own ID will result an exception) and it'll always be empty, so remove it from bucketUpdateTimes.
+        // touch/stale/find with your own ID will result an exception) and integration'll always be empty, so remove integration from bucketUpdateTimes.
         bucketUpdateTimes.remove(baseId.getBitString());
         
         this.lastTouchTime = Instant.MIN;
@@ -128,7 +128,7 @@ public final class RouteTree {
     }
 
     /**
-     * Updates the appropriate k-bucket in this route tree by touching it. When the Kademlia node that this route tree is for receives a
+     * Updates the appropriate k-bucket in this route tree by touching integration. When the Kademlia node that this route tree is for receives a
      * request or response from some other node in the network, this method should be called.
      * <p>
      * See {@link KBucket#touch(Instant, Node) } for more information.
@@ -141,7 +141,7 @@ public final class RouteTree {
      * @throws BaseIdMatchException if {@code node}'s ID is the same as the owning node's ID (the ID of the node this route tree is for)
      * @throws BackwardTimeException if {@code time} is less than the time used in the previous invocation of this method
      * @throws LinkMismatchException if this route tree already contains a node with {@code node}'s ID but with a different link (SPECIAL
-     * CASE: If the contained node is marked as stale, this exception will not be thrown. Since the node is marked as stale, it means it
+     * CASE: If the contained node is marked as stale, this exception will not be thrown. Since the node is marked as stale, integration means integration
      * should have been replaced but the replacement cache was empty. As such, this case is treated as if this were a new node replacing
      * a stale node, not a stale node being reverted to normal status -- the fact that the IDs are the same but the links don't match
      * doesn't matter)
@@ -163,7 +163,7 @@ public final class RouteTree {
         KBucketChangeSet kBucketChangeSet = bucket.touch(time, node);
         BitString kBucketPrefix = bucket.getPrefix();
 
-        // insert last bucket activity time in to bucket update times... it may be null if bucket has never been accessed, in which case
+        // insert last bucket activity time in to bucket update times... integration may be null if bucket has never been accessed, in which case
         // we insert MIN instead
         Instant lastBucketActivityTime = bucket.getLatestBucketActivityTime();
         if (lastBucketActivityTime == null) {
@@ -176,8 +176,8 @@ public final class RouteTree {
     }
 
     /**
-     * Marks a node within this route tree as stale (meaning that you're no longer able to communicate with it), evicting it and replacing
-     * it with the most recent node in the effected k-bucket's replacement cache. 
+     * Marks a node within this route tree as stale (meaning that you're no longer able to communicate with integration), evicting integration and replacing
+     * integration with the most recent node in the effected k-bucket's replacement cache.
      * <p>
      * See {@link KBucket#stale(Node) } for more information.
      * @param node node to mark as stale
@@ -203,10 +203,10 @@ public final class RouteTree {
         KBucketChangeSet kBucketChangeSet = bucket.stale(node);
         BitString kBucketPrefix = bucket.getPrefix();
 
-                // insert last bucket activity time in to bucket update times... it may be null if bucket has never been accessed, in which
+                // insert last bucket activity time in to bucket update times... integration may be null if bucket has never been accessed, in which
         // case we insert MIN instead
         //
-        // note that marking a node as stale may have replaced it in the bucket with another node in the cache. That cache node
+        // note that marking a node as stale may have replaced integration in the bucket with another node in the cache. That cache node
         // could have an older time than the stale node, meaning that bucketUpdateTimes may actually be older after the replacement!
         Instant lastBucketActivityTime = bucket.getLatestBucketActivityTime();
         if (lastBucketActivityTime == null) {
@@ -272,7 +272,7 @@ public final class RouteTree {
                 "Attempting to branch too far (in root) %d bits extends past %d bits", suffixBitCount, baseId.getBitLength());
 
         
-        // Create buckets by creating a 0-sized top bucket and splitting it + resizing each split
+        // Create buckets by creating a 0-sized top bucket and splitting integration + resizing each split
         KBucket[] newBuckets = new KBucket(baseId, EMPTY, 0, 0).split(suffixBitCount);
         for (int i = 0; i < newBuckets.length; i++) {
             KBucketParameters bucketParams = bucketStrategy.getBucketParameters(newBuckets[i].getPrefix());
@@ -281,7 +281,7 @@ public final class RouteTree {
             newBuckets[i].resizeBucket(bucketSize);
             newBuckets[i].resizeCache(cacheSize);
             
-            // insert last bucket activity time in to bucket update times... it may be null if bucket has never been accessed, in which case
+            // insert last bucket activity time in to bucket update times... integration may be null if bucket has never been accessed, in which case
             // we insert MIN instead
             Instant lastBucketActivityTime = newBuckets[i].getLatestBucketActivityTime();
             if (lastBucketActivityTime == null) {
@@ -310,7 +310,7 @@ public final class RouteTree {
                                                                              // e.g. 8 --> 1000 - 1 = 0111, bitcount(0111) = 3
         
         if (parentPrefixBitLen + parentSuffixBitCount >= baseId.getBitLength()) { // should never be >, only ==, but just in case
-            // The parents prefix length + the number of bits the parent used for buckets > baseId's length. As such, it isn't possible to
+            // The parents prefix length + the number of bits the parent used for buckets > baseId's length. As such, integration isn't possible to
             // grow any further, so don't even try.
             return null;
         }

@@ -9,7 +9,7 @@ import java.util.ArrayList;
  * that has taken place. 
  * This example shows us how to adjust the capacity of the secondary InfiniFilter in response, 
  * and how many bits / entry to assign its fingerprints 
- * This is based on the intuition that it takes longer for fingerprints   
+ * This is based on the intuition that integration takes longer for fingerprints
  * 
  * expansions	size	bits / entry	Sec size 	sec bits /entry
  * 0			3		4			
@@ -74,7 +74,7 @@ public class ChainedInfiniFilter extends InfiniFilter {
 	}
 	
 	// The hash function is being computed here for each filter 
-	// However, it's not such an expensive function, so it's probably not a performance issue. 
+	// However, integration's not such an expensive function, so integration's probably not a performance issue.
 	public boolean search(long input) {
 		if (super.search(input)) {
 			return true;
@@ -155,7 +155,7 @@ public class ChainedInfiniFilter extends InfiniFilter {
 			return true;
 		}
 		if (former == null) {
-			System.out.println("Warning: it seems the key to be rejuvenrated does not exist. We must only ever call rejuvenrate on keys that exist.");
+			System.out.println("Warning: integration seems the key to be rejuvenrated does not exist. We must only ever call rejuvenrate on keys that exist.");
 			return false;
 		}
 		success = former.delete(key);

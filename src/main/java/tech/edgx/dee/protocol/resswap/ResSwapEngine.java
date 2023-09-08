@@ -28,6 +28,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 public class ResSwapEngine {
     private static final Logger LOG = Logger.getLogger(ResSwapEngine.class.getName());
@@ -49,6 +50,7 @@ public class ResSwapEngine {
     private final RuntimeService runtimeService = new RuntimeService();
 
     public ResSwapEngine(Blockstore blockStore, BlockRequestAuthoriser authoriser) {
+        LOG.info("Constructed ResSwapEngine");
         this.blockStore = blockStore;
         this.authoriser = authoriser;
     }
@@ -58,6 +60,7 @@ public class ResSwapEngine {
     }
 
     public synchronized void addConnection(PeerId peer, Multiaddr addr) {
+        LOG.info("Adding connection and address book entry, Peer: "+peer.toString()+", addr: "+addr);
         connections.add(peer);
         addressBook.addAddrs(peer, 0, addr);
     }
@@ -199,18 +202,19 @@ public class ResSwapEngine {
 
                         String functionName = e.getFunctionName().toStringUtf8();
                         // TODO, this should get String[] or Object[]
-                        Optional<Object[]> params = e.getParams().isEmpty() ?
-                                Optional.empty() :
-                                Optional.of(new Object[]{e.getParams().toStringUtf8()});
-                        LOG.fine("Pushing compute result for functionname: "+functionName);
-                        LOG.fine("Pushing compute result for params: "+params);
+//                        Optional<Object[]> params = e.getParams().isEmpty() ?
+//                                Optional.empty() :
+//                                Optional.of(new Object[]{e.getParams().toStringUtf8()});
+                        List<String> paramStrings = e.getParamsList().stream().map(p -> p.toStringUtf8()).collect(Collectors.toList());
+                        Optional<Object[]> params = Optional.of( paramStrings.toArray(new String[0]));
+                        LOG.fine("Pushing compute result for functionname: "+functionName+", params: "+new Gson().toJson(paramStrings));
 
                         try {
-                            DpResult dpResult = runtimeService.runDp(c, dp.get(), "getTestVal", Optional.empty());
+                            DpResult dpResult = runtimeService.runDp(c, dp.get(), functionName, params); //params);
                             LOG.info("DPResult: "+new Gson().toJson(dpResult));
 
                             /* Build response in protobuf */
-                            // Response must contain functionname && params so reciver can lookup
+                            // Response must contain functionname && params so receiver can lookup
                             // responses they are awaiting in localDpWantlist
                             MessageOuterClass.Message.DpResult dpResultP = MessageOuterClass.Message.DpResult.newBuilder()
                                     // Instead of sending the prefix+data IOT get the CID hash, just send the CID hash
@@ -219,7 +223,8 @@ public class ResSwapEngine {
                                     //.setData(ByteString.copyFrom(dp.get())) //dpResult.toString().getBytes()
                                     .setData(ByteString.copyFrom(dpResult.result.getBytes()))
                                     .setFunctionName(e.getFunctionName())
-                                    .setParams(e.getParams())
+                                    //.setParams(params)
+                                    .addAllParams(e.getParamsList())
                                     .setCidHash(ByteString.copyFrom(c.getHash()))
                                     .build();
                             int blockSize = dpResultP.getSerializedSize();
@@ -290,7 +295,7 @@ public class ResSwapEngine {
             }
         }
         if (! localWants.isEmpty())
-            LOG.info("Remaining: " + localWants.size());
+            LOG.info("Remaining localWants: " + localWants.size());
         for (MessageOuterClass.Message.BlockPresence blockPresence : msg.getBlockPresencesList()) {
             Cid c = Cid.cast(blockPresence.getCid().toByteArray());
             Optional<String> auth = blockPresence.getAuth().isEmpty() ? Optional.empty() : Optional.of(blockPresence.getAuth().toStringUtf8());
@@ -335,9 +340,10 @@ public class ResSwapEngine {
                     // TODO, want-provide protocol messaging needs to send the data & function & params????
                     String functionName = dpResult.getFunctionName().toStringUtf8();
                     // TODO, this should get String[] or Object[]
-                    Optional<Object[]> params = dpResult.getParams().isEmpty() ?
-                            Optional.empty() :
-                            Optional.of(new Object[]{dpResult.getParams().toStringUtf8()});
+//                    Optional<Object[]> params = dpResult.getParams().isEmpty() ?
+//                            Optional.empty() :
+//                            Optional.of(new Object[]{dpResult.getParams().toStringUtf8()});
+                    Optional<Object[]> params = Optional.of(new Object[]{dpResult.getParamsList()});
                     LOG.fine("Received compute result for request: "+c+", functionname: "+functionName + ", params: "+params +", auth: "+auth);
 
                     // Just from the CIDHash sent, functionName and Params, I can lookup any localDpWants I had requested and match this receive result

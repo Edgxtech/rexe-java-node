@@ -147,7 +147,7 @@ public class APIService {
 //        return dpStore.bloomAdd(cid).join();
 //    }
 
-    // Instruct the node hosting it to execute DP and return result
+    // Instruct the node hosting integration to execute DP and return result
     // Still uses bitswap-like protocol to send and process Wants
     public List<DpResult> computeDp(List<DpWant> wants, Set<PeerId> peers, boolean addToLocal) {
         LOG.info("Computing DP");
@@ -187,17 +187,17 @@ public class APIService {
     }
 
     //public DpCallResult call(Cid cid, String function, String[] params) {
-        // Once wants are sent to network, it uses protocol buffers onMsg to listen for msgs, then send to bitswapengine
+        // Once wants are sent to network, integration uses protocol buffers onMsg to listen for msgs, then send to bitswapengine
         // to process the message, which may have any of the prev requested wants/blocks:: MessageOuterClass.Message.Block block : msg.getPayloadList()
-        // Or it actually might also have a wants list sent from another node
-        //    Bitswap is a mini inner protocol just to exchange blocks in request to wants - perhaps can reuse but it will be DP Requests are the "wants", DP Results are the "blocks"
-        //       perhaps can re-use; DP requests (wants) contain (CID, functionName, Params, est_computation) ; other nodes that see it may decide not to process because computing resource too high
+        // Or integration actually might also have a wants list sent from another node
+        //    Bitswap is a mini inner protocol just to exchange blocks in request to wants - perhaps can reuse but integration will be DP Requests are the "wants", DP Results are the "blocks"
+        //       perhaps can re-use; DP requests (wants) contain (CID, functionName, Params, est_computation) ; other nodes that see integration may decide not to process because computing resource too high
         //                           DP results (~= "blocks" contain serlialised object data according to spec of the DP
         //        @Override
         //        public void onMessage(@NotNull Stream stream, MessageOuterClass.Message msg) {
         //            engine.receiveMessage(msg, stream);
         //        }
-        //    Then it checks local list of wants it is waiting for, and those it wants to persist, and completes the Future<Block> so the data is available in the wantsList
+        //    Then integration checks local list of wants integration is waiting for, and those integration wants to persist, and completes the Future<Block> so the data is available in the wantsList
         //        CompletableFuture<HashedBlock> waiter = localWants.get(w);
         //        if (waiter != null) {
         //            if (persistBlocks.containsKey(w)) {
@@ -219,13 +219,13 @@ public class APIService {
 
 // CONSIDERED SIMPLY FINDING A PROVIDER, THEN EXECUTING ON THE PROVIDER BY RPC
 // I just need to find a host with the DP I need (using the dht), then use an RPC service to make the call
-//     instead of for e.g. data retrieval it uses BitswapBlockService to request remote blocks (if not held locally)
+//     instead of for e.g. data retrieval integration uses BitswapBlockService to request remote blocks (if not held locally)
 // findProviders then RPC the service; I dont think this is the right approach here, findProviders in ipfs is only used as a default API method, probably for admin/mgt use only
 //PeerAddresses peerAddresses = findProviders(cid);
 // TODO, potentially replace findProviders with similar concept of getBlocks (wants, Optional<peers>)
 //       which looks in local node for the CID, otherwise transmits to network as wants sed Bitswap::sendWants()
 //       Bitswap Engine (within Bitswap [controller]) maintains a list of wants, which are sent to the network
-//       On get(List<Want> hash,) it uses Bitswap engine to get indiv wants UNTIL no more wants
+//       On get(List<Want> hash,) integration uses Bitswap engine to get indiv wants UNTIL no more wants
 //            while (engine.hasWants()) {
 //                try {Thread.sleep(5_000);} catch (InterruptedException e) {}
 //                sendWants(us, peers);

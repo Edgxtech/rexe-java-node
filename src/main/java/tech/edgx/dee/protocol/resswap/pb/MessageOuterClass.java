@@ -754,9 +754,25 @@ public final class MessageOuterClass {
          * Only for WantType==2/DP
          * </pre>
          *
-         * <code>bytes params = 8;</code>
+         * <code>repeated bytes params = 8;</code>
          */
-        com.google.protobuf.ByteString getParams();
+        java.util.List<com.google.protobuf.ByteString> getParamsList();
+        /**
+         * <pre>
+         * Only for WantType==2/DP
+         * </pre>
+         *
+         * <code>repeated bytes params = 8;</code>
+         */
+        int getParamsCount();
+        /**
+         * <pre>
+         * Only for WantType==2/DP
+         * </pre>
+         *
+         * <code>repeated bytes params = 8;</code>
+         */
+        com.google.protobuf.ByteString getParams(int index);
       }
       /**
        * Protobuf type {@code tech.edgx.dee.protocol.resswap.pb.Message.Wantlist.Entry}
@@ -778,7 +794,7 @@ public final class MessageOuterClass {
           sendDontHave_ = false;
           auth_ = com.google.protobuf.ByteString.EMPTY;
           functionName_ = com.google.protobuf.ByteString.EMPTY;
-          params_ = com.google.protobuf.ByteString.EMPTY;
+          params_ = java.util.Collections.emptyList();
         }
 
         @Override
@@ -842,8 +858,11 @@ public final class MessageOuterClass {
                   break;
                 }
                 case 66: {
-
-                  params_ = input.readBytes();
+                  if (!((mutable_bitField0_ & 0x00000080) == 0x00000080)) {
+                    params_ = new java.util.ArrayList<com.google.protobuf.ByteString>();
+                    mutable_bitField0_ |= 0x00000080;
+                  }
+                  params_.add(input.readBytes());
                   break;
                 }
                 default: {
@@ -861,6 +880,9 @@ public final class MessageOuterClass {
             throw new com.google.protobuf.InvalidProtocolBufferException(
                 e).setUnfinishedMessage(this);
           } finally {
+            if (((mutable_bitField0_ & 0x00000080) == 0x00000080)) {
+              params_ = java.util.Collections.unmodifiableList(params_);
+            }
             this.unknownFields = unknownFields.build();
             makeExtensionsImmutable();
           }
@@ -878,6 +900,7 @@ public final class MessageOuterClass {
                   Entry.class, Builder.class);
         }
 
+        private int bitField0_;
         public static final int BLOCK_FIELD_NUMBER = 1;
         private com.google.protobuf.ByteString block_;
         /**
@@ -978,16 +1001,37 @@ public final class MessageOuterClass {
         }
 
         public static final int PARAMS_FIELD_NUMBER = 8;
-        private com.google.protobuf.ByteString params_;
+        private java.util.List<com.google.protobuf.ByteString> params_;
         /**
          * <pre>
          * Only for WantType==2/DP
          * </pre>
          *
-         * <code>bytes params = 8;</code>
+         * <code>repeated bytes params = 8;</code>
          */
-        public com.google.protobuf.ByteString getParams() {
+        public java.util.List<com.google.protobuf.ByteString>
+            getParamsList() {
           return params_;
+        }
+        /**
+         * <pre>
+         * Only for WantType==2/DP
+         * </pre>
+         *
+         * <code>repeated bytes params = 8;</code>
+         */
+        public int getParamsCount() {
+          return params_.size();
+        }
+        /**
+         * <pre>
+         * Only for WantType==2/DP
+         * </pre>
+         *
+         * <code>repeated bytes params = 8;</code>
+         */
+        public com.google.protobuf.ByteString getParams(int index) {
+          return params_.get(index);
         }
 
         private byte memoizedIsInitialized = -1;
@@ -1025,8 +1069,8 @@ public final class MessageOuterClass {
           if (!functionName_.isEmpty()) {
             output.writeBytes(7, functionName_);
           }
-          if (!params_.isEmpty()) {
-            output.writeBytes(8, params_);
+          for (int i = 0; i < params_.size(); i++) {
+            output.writeBytes(8, params_.get(i));
           }
           unknownFields.writeTo(output);
         }
@@ -1065,9 +1109,14 @@ public final class MessageOuterClass {
             size += com.google.protobuf.CodedOutputStream
               .computeBytesSize(7, functionName_);
           }
-          if (!params_.isEmpty()) {
-            size += com.google.protobuf.CodedOutputStream
-              .computeBytesSize(8, params_);
+          {
+            int dataSize = 0;
+            for (int i = 0; i < params_.size(); i++) {
+              dataSize += com.google.protobuf.CodedOutputStream
+                .computeBytesSizeNoTag(params_.get(i));
+            }
+            size += dataSize;
+            size += 1 * getParamsList().size();
           }
           size += unknownFields.getSerializedSize();
           memoizedSize = size;
@@ -1098,8 +1147,8 @@ public final class MessageOuterClass {
               .equals(other.getAuth());
           result = result && getFunctionName()
               .equals(other.getFunctionName());
-          result = result && getParams()
-              .equals(other.getParams());
+          result = result && getParamsList()
+              .equals(other.getParamsList());
           result = result && unknownFields.equals(other.unknownFields);
           return result;
         }
@@ -1127,8 +1176,10 @@ public final class MessageOuterClass {
           hash = (53 * hash) + getAuth().hashCode();
           hash = (37 * hash) + FUNCTIONNAME_FIELD_NUMBER;
           hash = (53 * hash) + getFunctionName().hashCode();
-          hash = (37 * hash) + PARAMS_FIELD_NUMBER;
-          hash = (53 * hash) + getParams().hashCode();
+          if (getParamsCount() > 0) {
+            hash = (37 * hash) + PARAMS_FIELD_NUMBER;
+            hash = (53 * hash) + getParamsList().hashCode();
+          }
           hash = (29 * hash) + unknownFields.hashCode();
           memoizedHashCode = hash;
           return hash;
@@ -1276,8 +1327,8 @@ public final class MessageOuterClass {
 
             functionName_ = com.google.protobuf.ByteString.EMPTY;
 
-            params_ = com.google.protobuf.ByteString.EMPTY;
-
+            params_ = java.util.Collections.emptyList();
+            bitField0_ = (bitField0_ & ~0x00000080);
             return this;
           }
 
@@ -1304,6 +1355,8 @@ public final class MessageOuterClass {
           @Override
           public Entry buildPartial() {
             Entry result = new Entry(this);
+            int from_bitField0_ = bitField0_;
+            int to_bitField0_ = 0;
             result.block_ = block_;
             result.priority_ = priority_;
             result.cancel_ = cancel_;
@@ -1311,7 +1364,12 @@ public final class MessageOuterClass {
             result.sendDontHave_ = sendDontHave_;
             result.auth_ = auth_;
             result.functionName_ = functionName_;
+            if (((bitField0_ & 0x00000080) == 0x00000080)) {
+              params_ = java.util.Collections.unmodifiableList(params_);
+              bitField0_ = (bitField0_ & ~0x00000080);
+            }
             result.params_ = params_;
+            result.bitField0_ = to_bitField0_;
             onBuilt();
             return result;
           }
@@ -1381,8 +1439,15 @@ public final class MessageOuterClass {
             if (other.getFunctionName() != com.google.protobuf.ByteString.EMPTY) {
               setFunctionName(other.getFunctionName());
             }
-            if (other.getParams() != com.google.protobuf.ByteString.EMPTY) {
-              setParams(other.getParams());
+            if (!other.params_.isEmpty()) {
+              if (params_.isEmpty()) {
+                params_ = other.params_;
+                bitField0_ = (bitField0_ & ~0x00000080);
+              } else {
+                ensureParamsIsMutable();
+                params_.addAll(other.params_);
+              }
+              onChanged();
             }
             this.mergeUnknownFields(other.unknownFields);
             onChanged();
@@ -1412,6 +1477,7 @@ public final class MessageOuterClass {
             }
             return this;
           }
+          private int bitField0_;
 
           private com.google.protobuf.ByteString block_ = com.google.protobuf.ByteString.EMPTY;
           /**
@@ -1703,30 +1769,58 @@ public final class MessageOuterClass {
             return this;
           }
 
-          private com.google.protobuf.ByteString params_ = com.google.protobuf.ByteString.EMPTY;
-          /**
-           * <pre>
-           * Only for WantType==2/DP
-           * </pre>
-           *
-           * <code>bytes params = 8;</code>
-           */
-          public com.google.protobuf.ByteString getParams() {
-            return params_;
+          private java.util.List<com.google.protobuf.ByteString> params_ = java.util.Collections.emptyList();
+          private void ensureParamsIsMutable() {
+            if (!((bitField0_ & 0x00000080) == 0x00000080)) {
+              params_ = new java.util.ArrayList<com.google.protobuf.ByteString>(params_);
+              bitField0_ |= 0x00000080;
+             }
           }
           /**
            * <pre>
            * Only for WantType==2/DP
            * </pre>
            *
-           * <code>bytes params = 8;</code>
+           * <code>repeated bytes params = 8;</code>
            */
-          public Builder setParams(com.google.protobuf.ByteString value) {
+          public java.util.List<com.google.protobuf.ByteString>
+              getParamsList() {
+            return java.util.Collections.unmodifiableList(params_);
+          }
+          /**
+           * <pre>
+           * Only for WantType==2/DP
+           * </pre>
+           *
+           * <code>repeated bytes params = 8;</code>
+           */
+          public int getParamsCount() {
+            return params_.size();
+          }
+          /**
+           * <pre>
+           * Only for WantType==2/DP
+           * </pre>
+           *
+           * <code>repeated bytes params = 8;</code>
+           */
+          public com.google.protobuf.ByteString getParams(int index) {
+            return params_.get(index);
+          }
+          /**
+           * <pre>
+           * Only for WantType==2/DP
+           * </pre>
+           *
+           * <code>repeated bytes params = 8;</code>
+           */
+          public Builder setParams(
+              int index, com.google.protobuf.ByteString value) {
             if (value == null) {
     throw new NullPointerException();
   }
-  
-            params_ = value;
+  ensureParamsIsMutable();
+            params_.set(index, value);
             onChanged();
             return this;
           }
@@ -1735,11 +1829,42 @@ public final class MessageOuterClass {
            * Only for WantType==2/DP
            * </pre>
            *
-           * <code>bytes params = 8;</code>
+           * <code>repeated bytes params = 8;</code>
+           */
+          public Builder addParams(com.google.protobuf.ByteString value) {
+            if (value == null) {
+    throw new NullPointerException();
+  }
+  ensureParamsIsMutable();
+            params_.add(value);
+            onChanged();
+            return this;
+          }
+          /**
+           * <pre>
+           * Only for WantType==2/DP
+           * </pre>
+           *
+           * <code>repeated bytes params = 8;</code>
+           */
+          public Builder addAllParams(
+              Iterable<? extends com.google.protobuf.ByteString> values) {
+            ensureParamsIsMutable();
+            com.google.protobuf.AbstractMessageLite.Builder.addAll(
+                values, params_);
+            onChanged();
+            return this;
+          }
+          /**
+           * <pre>
+           * Only for WantType==2/DP
+           * </pre>
+           *
+           * <code>repeated bytes params = 8;</code>
            */
           public Builder clearParams() {
-            
-            params_ = getDefaultInstance().getParams();
+            params_ = java.util.Collections.emptyList();
+            bitField0_ = (bitField0_ & ~0x00000080);
             onChanged();
             return this;
           }
@@ -3294,9 +3419,29 @@ public final class MessageOuterClass {
       com.google.protobuf.ByteString getFunctionName();
 
       /**
-       * <code>bytes params = 5;</code>
+       * <pre>
+       * TODO, can prob just make a hash of params[] since this is just to help match to the original want
+       * </pre>
+       *
+       * <code>repeated bytes params = 5;</code>
        */
-      com.google.protobuf.ByteString getParams();
+      java.util.List<com.google.protobuf.ByteString> getParamsList();
+      /**
+       * <pre>
+       * TODO, can prob just make a hash of params[] since this is just to help match to the original want
+       * </pre>
+       *
+       * <code>repeated bytes params = 5;</code>
+       */
+      int getParamsCount();
+      /**
+       * <pre>
+       * TODO, can prob just make a hash of params[] since this is just to help match to the original want
+       * </pre>
+       *
+       * <code>repeated bytes params = 5;</code>
+       */
+      com.google.protobuf.ByteString getParams(int index);
 
       /**
        * <code>bytes cidHash = 6;</code>
@@ -3320,7 +3465,7 @@ public final class MessageOuterClass {
         data_ = com.google.protobuf.ByteString.EMPTY;
         auth_ = com.google.protobuf.ByteString.EMPTY;
         functionName_ = com.google.protobuf.ByteString.EMPTY;
-        params_ = com.google.protobuf.ByteString.EMPTY;
+        params_ = java.util.Collections.emptyList();
         cidHash_ = com.google.protobuf.ByteString.EMPTY;
       }
 
@@ -3369,8 +3514,11 @@ public final class MessageOuterClass {
                 break;
               }
               case 42: {
-
-                params_ = input.readBytes();
+                if (!((mutable_bitField0_ & 0x00000010) == 0x00000010)) {
+                  params_ = new java.util.ArrayList<com.google.protobuf.ByteString>();
+                  mutable_bitField0_ |= 0x00000010;
+                }
+                params_.add(input.readBytes());
                 break;
               }
               case 50: {
@@ -3393,6 +3541,9 @@ public final class MessageOuterClass {
           throw new com.google.protobuf.InvalidProtocolBufferException(
               e).setUnfinishedMessage(this);
         } finally {
+          if (((mutable_bitField0_ & 0x00000010) == 0x00000010)) {
+            params_ = java.util.Collections.unmodifiableList(params_);
+          }
           this.unknownFields = unknownFields.build();
           makeExtensionsImmutable();
         }
@@ -3410,6 +3561,7 @@ public final class MessageOuterClass {
                 DpResult.class, Builder.class);
       }
 
+      private int bitField0_;
       public static final int PREFIX_FIELD_NUMBER = 1;
       private com.google.protobuf.ByteString prefix_;
       /**
@@ -3455,12 +3607,37 @@ public final class MessageOuterClass {
       }
 
       public static final int PARAMS_FIELD_NUMBER = 5;
-      private com.google.protobuf.ByteString params_;
+      private java.util.List<com.google.protobuf.ByteString> params_;
       /**
-       * <code>bytes params = 5;</code>
+       * <pre>
+       * TODO, can prob just make a hash of params[] since this is just to help match to the original want
+       * </pre>
+       *
+       * <code>repeated bytes params = 5;</code>
        */
-      public com.google.protobuf.ByteString getParams() {
+      public java.util.List<com.google.protobuf.ByteString>
+          getParamsList() {
         return params_;
+      }
+      /**
+       * <pre>
+       * TODO, can prob just make a hash of params[] since this is just to help match to the original want
+       * </pre>
+       *
+       * <code>repeated bytes params = 5;</code>
+       */
+      public int getParamsCount() {
+        return params_.size();
+      }
+      /**
+       * <pre>
+       * TODO, can prob just make a hash of params[] since this is just to help match to the original want
+       * </pre>
+       *
+       * <code>repeated bytes params = 5;</code>
+       */
+      public com.google.protobuf.ByteString getParams(int index) {
+        return params_.get(index);
       }
 
       public static final int CIDHASH_FIELD_NUMBER = 6;
@@ -3498,8 +3675,8 @@ public final class MessageOuterClass {
         if (!functionName_.isEmpty()) {
           output.writeBytes(4, functionName_);
         }
-        if (!params_.isEmpty()) {
-          output.writeBytes(5, params_);
+        for (int i = 0; i < params_.size(); i++) {
+          output.writeBytes(5, params_.get(i));
         }
         if (!cidHash_.isEmpty()) {
           output.writeBytes(6, cidHash_);
@@ -3529,9 +3706,14 @@ public final class MessageOuterClass {
           size += com.google.protobuf.CodedOutputStream
             .computeBytesSize(4, functionName_);
         }
-        if (!params_.isEmpty()) {
-          size += com.google.protobuf.CodedOutputStream
-            .computeBytesSize(5, params_);
+        {
+          int dataSize = 0;
+          for (int i = 0; i < params_.size(); i++) {
+            dataSize += com.google.protobuf.CodedOutputStream
+              .computeBytesSizeNoTag(params_.get(i));
+          }
+          size += dataSize;
+          size += 1 * getParamsList().size();
         }
         if (!cidHash_.isEmpty()) {
           size += com.google.protobuf.CodedOutputStream
@@ -3561,8 +3743,8 @@ public final class MessageOuterClass {
             .equals(other.getAuth());
         result = result && getFunctionName()
             .equals(other.getFunctionName());
-        result = result && getParams()
-            .equals(other.getParams());
+        result = result && getParamsList()
+            .equals(other.getParamsList());
         result = result && getCidHash()
             .equals(other.getCidHash());
         result = result && unknownFields.equals(other.unknownFields);
@@ -3584,8 +3766,10 @@ public final class MessageOuterClass {
         hash = (53 * hash) + getAuth().hashCode();
         hash = (37 * hash) + FUNCTIONNAME_FIELD_NUMBER;
         hash = (53 * hash) + getFunctionName().hashCode();
-        hash = (37 * hash) + PARAMS_FIELD_NUMBER;
-        hash = (53 * hash) + getParams().hashCode();
+        if (getParamsCount() > 0) {
+          hash = (37 * hash) + PARAMS_FIELD_NUMBER;
+          hash = (53 * hash) + getParamsList().hashCode();
+        }
         hash = (37 * hash) + CIDHASH_FIELD_NUMBER;
         hash = (53 * hash) + getCidHash().hashCode();
         hash = (29 * hash) + unknownFields.hashCode();
@@ -3729,8 +3913,8 @@ public final class MessageOuterClass {
 
           functionName_ = com.google.protobuf.ByteString.EMPTY;
 
-          params_ = com.google.protobuf.ByteString.EMPTY;
-
+          params_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00000010);
           cidHash_ = com.google.protobuf.ByteString.EMPTY;
 
           return this;
@@ -3759,12 +3943,19 @@ public final class MessageOuterClass {
         @Override
         public DpResult buildPartial() {
           DpResult result = new DpResult(this);
+          int from_bitField0_ = bitField0_;
+          int to_bitField0_ = 0;
           result.prefix_ = prefix_;
           result.data_ = data_;
           result.auth_ = auth_;
           result.functionName_ = functionName_;
+          if (((bitField0_ & 0x00000010) == 0x00000010)) {
+            params_ = java.util.Collections.unmodifiableList(params_);
+            bitField0_ = (bitField0_ & ~0x00000010);
+          }
           result.params_ = params_;
           result.cidHash_ = cidHash_;
+          result.bitField0_ = to_bitField0_;
           onBuilt();
           return result;
         }
@@ -3825,8 +4016,15 @@ public final class MessageOuterClass {
           if (other.getFunctionName() != com.google.protobuf.ByteString.EMPTY) {
             setFunctionName(other.getFunctionName());
           }
-          if (other.getParams() != com.google.protobuf.ByteString.EMPTY) {
-            setParams(other.getParams());
+          if (!other.params_.isEmpty()) {
+            if (params_.isEmpty()) {
+              params_ = other.params_;
+              bitField0_ = (bitField0_ & ~0x00000010);
+            } else {
+              ensureParamsIsMutable();
+              params_.addAll(other.params_);
+            }
+            onChanged();
           }
           if (other.getCidHash() != com.google.protobuf.ByteString.EMPTY) {
             setCidHash(other.getCidHash());
@@ -3859,6 +4057,7 @@ public final class MessageOuterClass {
           }
           return this;
         }
+        private int bitField0_;
 
         private com.google.protobuf.ByteString prefix_ = com.google.protobuf.ByteString.EMPTY;
         /**
@@ -4000,31 +4199,102 @@ public final class MessageOuterClass {
           return this;
         }
 
-        private com.google.protobuf.ByteString params_ = com.google.protobuf.ByteString.EMPTY;
-        /**
-         * <code>bytes params = 5;</code>
-         */
-        public com.google.protobuf.ByteString getParams() {
-          return params_;
+        private java.util.List<com.google.protobuf.ByteString> params_ = java.util.Collections.emptyList();
+        private void ensureParamsIsMutable() {
+          if (!((bitField0_ & 0x00000010) == 0x00000010)) {
+            params_ = new java.util.ArrayList<com.google.protobuf.ByteString>(params_);
+            bitField0_ |= 0x00000010;
+           }
         }
         /**
-         * <code>bytes params = 5;</code>
+         * <pre>
+         * TODO, can prob just make a hash of params[] since this is just to help match to the original want
+         * </pre>
+         *
+         * <code>repeated bytes params = 5;</code>
          */
-        public Builder setParams(com.google.protobuf.ByteString value) {
+        public java.util.List<com.google.protobuf.ByteString>
+            getParamsList() {
+          return java.util.Collections.unmodifiableList(params_);
+        }
+        /**
+         * <pre>
+         * TODO, can prob just make a hash of params[] since this is just to help match to the original want
+         * </pre>
+         *
+         * <code>repeated bytes params = 5;</code>
+         */
+        public int getParamsCount() {
+          return params_.size();
+        }
+        /**
+         * <pre>
+         * TODO, can prob just make a hash of params[] since this is just to help match to the original want
+         * </pre>
+         *
+         * <code>repeated bytes params = 5;</code>
+         */
+        public com.google.protobuf.ByteString getParams(int index) {
+          return params_.get(index);
+        }
+        /**
+         * <pre>
+         * TODO, can prob just make a hash of params[] since this is just to help match to the original want
+         * </pre>
+         *
+         * <code>repeated bytes params = 5;</code>
+         */
+        public Builder setParams(
+            int index, com.google.protobuf.ByteString value) {
           if (value == null) {
     throw new NullPointerException();
   }
-  
-          params_ = value;
+  ensureParamsIsMutable();
+          params_.set(index, value);
           onChanged();
           return this;
         }
         /**
-         * <code>bytes params = 5;</code>
+         * <pre>
+         * TODO, can prob just make a hash of params[] since this is just to help match to the original want
+         * </pre>
+         *
+         * <code>repeated bytes params = 5;</code>
+         */
+        public Builder addParams(com.google.protobuf.ByteString value) {
+          if (value == null) {
+    throw new NullPointerException();
+  }
+  ensureParamsIsMutable();
+          params_.add(value);
+          onChanged();
+          return this;
+        }
+        /**
+         * <pre>
+         * TODO, can prob just make a hash of params[] since this is just to help match to the original want
+         * </pre>
+         *
+         * <code>repeated bytes params = 5;</code>
+         */
+        public Builder addAllParams(
+            Iterable<? extends com.google.protobuf.ByteString> values) {
+          ensureParamsIsMutable();
+          com.google.protobuf.AbstractMessageLite.Builder.addAll(
+              values, params_);
+          onChanged();
+          return this;
+        }
+        /**
+         * <pre>
+         * TODO, can prob just make a hash of params[] since this is just to help match to the original want
+         * </pre>
+         *
+         * <code>repeated bytes params = 5;</code>
          */
         public Builder clearParams() {
-          
-          params_ = getDefaultInstance().getParams();
+          params_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00000010);
           onChanged();
           return this;
         }
@@ -6779,12 +7049,12 @@ public final class MessageOuterClass {
       "\n\010wantType\030\004 \001(\0162<.tech.edgx.dee.protoco" +
       "l.resswap.pb.Message.Wantlist.WantType\022\024" +
       "\n\014sendDontHave\030\005 \001(\010\022\014\n\004auth\030\006 \001(\014\022\024\n\014fu" +
-      "nctionName\030\007 \001(\014\022\016\n\006params\030\010 \001(\014\"\'\n\010Want" +
+      "nctionName\030\007 \001(\014\022\016\n\006params\030\010 \003(\014\"\'\n\010Want" +
       "Type\022\t\n\005Block\020\000\022\010\n\004Have\020\001\022\006\n\002Dp\020\002\0323\n\005Blo" +
       "ck\022\016\n\006prefix\030\001 \001(\014\022\014\n\004data\030\002 \001(\014\022\014\n\004auth" +
       "\030\003 \001(\014\032m\n\010DpResult\022\016\n\006prefix\030\001 \001(\014\022\014\n\004da" +
       "ta\030\002 \001(\014\022\014\n\004auth\030\003 \001(\014\022\024\n\014functionName\030\004" +
-      " \001(\014\022\016\n\006params\030\005 \001(\014\022\017\n\007cidHash\030\006 \001(\014\032v\n" +
+      " \001(\014\022\016\n\006params\030\005 \003(\014\022\017\n\007cidHash\030\006 \001(\014\032v\n" +
       "\rBlockPresence\022\013\n\003cid\030\001 \001(\014\022J\n\004type\030\002 \001(" +
       "\0162<.tech.edgx.dee.protocol.resswap.pb.Me" +
       "ssage.BlockPresenceType\022\014\n\004auth\030\003 \001(\014\"+\n" +

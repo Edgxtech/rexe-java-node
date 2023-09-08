@@ -24,8 +24,11 @@ import tech.edgx.dee.protocol.resswap.ResSwap;
 import tech.edgx.dee.protocol.resswap.ResSwapEngine;
 
 import java.util.*;
+import java.util.logging.Logger;
 
 public class HostBuilder {
+    private static final Logger LOG = Logger.getLogger(HostBuilder.class.getName());
+
     private PrivKey privKey;
     private PeerId peerId;
     private List<String> listenAddrs = new ArrayList<>();
@@ -123,6 +126,7 @@ public class HostBuilder {
                                     RecordStore records,
                                     Blockstore blocks,
                                     BlockRequestAuthoriser authoriser) {
+        LOG.info("Building host...");
         HostBuilder builder = new HostBuilder().generateIdentity().listenLocalhost(listenPort);
         Multihash ourPeerId = Multihash.deserialize(builder.peerId.getBytes());
         Kademlia dht = new Kademlia(new KademliaEngine(ourPeerId, providers, records), false);
