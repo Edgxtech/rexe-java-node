@@ -45,6 +45,7 @@ public class BootstrapTest {
                 new RamProviderStore(), new RamRecordStore(), new RamBlockstore(), (c, b, p, a) -> CompletableFuture.completedFuture(true));
         Host node1 = builder1.build();
         node1.start().join();
+        //IdentifyBuilder.addIdentifyProtocol(node1);
         Multihash node1Id = Multihash.deserialize(node1.getPeerId().getBytes());
         System.out.println("My node id: "+node1Id.toBase58());
 

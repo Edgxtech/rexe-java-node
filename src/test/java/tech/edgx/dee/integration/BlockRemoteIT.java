@@ -5,7 +5,7 @@ import io.ipfs.multiaddr.MultiAddress;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.peergos.client.NabuClient;
+import tech.edgx.dee.client.DrfClient;
 import tech.edgx.dee.util.Helpers;
 import tech.edgx.dee.util.HexUtil;
 
@@ -17,9 +17,9 @@ import java.util.Optional;
 
 public class BlockRemoteIT {
 
-    static NabuClient client0;
-    static NabuClient client1;
-    static NabuClient client2;
+    static DrfClient client0;
+    static DrfClient client1;
+    static DrfClient client2;
 
     /* Must startup a cluster first,
       use: ./start.sh 0, ./start.sh 1, ./start.sh 2
@@ -33,9 +33,9 @@ public class BlockRemoteIT {
             MultiAddress apiAddress0 = new MultiAddress("/ip4/127.0.0.1/tcp/5000");
             MultiAddress apiAddress1 = new MultiAddress("/ip4/127.0.0.1/tcp/5001");
             MultiAddress apiAddress2 = new MultiAddress("/ip4/127.0.0.1/tcp/5002");
-            client0 = new NabuClient(apiAddress0.getHost(), apiAddress0.getPort(), "/api/v0/", false);
-            client1 = new NabuClient(apiAddress1.getHost(), apiAddress1.getPort(), "/api/v0/", false);
-            client2 = new NabuClient(apiAddress2.getHost(), apiAddress2.getPort(), "/api/v0/", false);
+            client0 = new DrfClient(apiAddress0.getHost(), apiAddress0.getPort(), "/api/v0/", false);
+            client1 = new DrfClient(apiAddress1.getHost(), apiAddress1.getPort(), "/api/v0/", false);
+            client2 = new DrfClient(apiAddress2.getHost(), apiAddress2.getPort(), "/api/v0/", false);
         }
         catch (Exception e) {e.printStackTrace();}
     }
@@ -77,12 +77,16 @@ public class BlockRemoteIT {
             boolean bloomAdd = client1.bloomAdd(addedHash);
             Assert.assertTrue("added to bloom filter", !bloomAdd); //RamBlockstore does not filter
 
+            byte[] data = client1.getBlock(addedHash, Optional.empty());
+            print("Recovered bytecode (from same client): "+HexUtil.encodeHexString(data));
+            Assert.assertTrue("block is as expected", HexUtil.encodeHexString(bytecode).equals(HexUtil.encodeHexString(data)));
+
+
             // TODO, the block request is not routing to the node containing the block
             //       node 2 is connecting to node0 for bootstrapping ok, but the node2 peers is not showing any peers
-
-            byte[] data = client2.getBlock(addedHash, Optional.empty());
-            print("Recovered bytecode: "+HexUtil.encodeHexString(data));
-            Assert.assertTrue("block is as expected", HexUtil.encodeHexString(bytecode).equals(HexUtil.encodeHexString(data)));
+            byte[] data2 = client2.getBlock(addedHash, Optional.empty());
+            print("Recovered bytecode (client2): "+HexUtil.encodeHexString(data2));
+            Assert.assertTrue("block is as expected", HexUtil.encodeHexString(bytecode).equals(HexUtil.encodeHexString(data2)));
 
             List<Cid> localRefs = client1.listBlockstore();
             Assert.assertTrue("local ref size", localRefs.size() == 1);

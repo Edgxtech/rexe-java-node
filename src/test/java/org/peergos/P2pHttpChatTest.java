@@ -54,15 +54,15 @@ public class P2pHttpChatTest {
                 long t2 = System.currentTimeMillis();
                 System.out.println("P2P HTTP request took " + (t2 - t1) + "ms");
 
-//                byte[] msg2 = "G'day node1! I'm node2.".getBytes();
-//                FullHttpRequest httpRequest2 = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.POST, "/", Unpooled.copiedBuffer(msg2));
-//                httpRequest2.headers().set(HttpHeaderNames.CONTENT_LENGTH, msg2.length);
-//                HttpProtocol.HttpController proxier2 = node2Http.dial(node2, address1)
-//                        .getController().join();
-//                long t3 = System.currentTimeMillis();
-//                proxier2.send(httpRequest2.retain()).join();
-//                long t4 = System.currentTimeMillis();
-//                System.out.println("P2P HTTP request took " + (t4 - t3) + "ms");
+                byte[] msg2 = "G'day node1! I'm node2.".getBytes();
+                FullHttpRequest httpRequest2 = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.POST, "/", Unpooled.copiedBuffer(msg2));
+                httpRequest2.headers().set(HttpHeaderNames.CONTENT_LENGTH, msg2.length);
+                HttpProtocol.HttpController proxier2 = node2Http.dial(node2, address1)
+                        .getController().join();
+                long t3 = System.currentTimeMillis();
+                proxier2.send(httpRequest2.retain()).join();
+                long t4 = System.currentTimeMillis();
+                System.out.println("P2P HTTP request took " + (t4 - t3) + "ms");
             }
         } finally {
             node1.stop();

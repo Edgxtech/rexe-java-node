@@ -130,7 +130,6 @@ public class ResSwapTest {
         try {
             // Put into 2
             Multiaddr address2 = node2.listenAddresses().get(0);
-//            byte[] blockData = "G'day from Java resSwap!".getBytes(StandardCharsets.UTF_8);
             String testDpName = "src/main/resources/TestDp.jar";
             File jarFile = new File(testDpName);
             Helpers.printJarInfo(jarFile);
