@@ -1,4 +1,13 @@
 
+##### RESETTING GIT BRANCH
+git log --oneline
+  > find the commit you want
+git checkout burnerbranch  (or 'develop')
+git reset --hard 8a536f4
+git push --force onedrive develop
+
+
+
 ##### BOOTSTRAPPING NODES ON DEV
 on first runs:
 run with -instance_id 0

@@ -115,9 +115,9 @@ public class DpRemoteIT {
 
             if (client0.hasBlock(addedHash, Optional.empty()))
                 client0.removeBlock(addedHash); // Remove since it might have been persisted previously
-            String result0 = client0.compute(addedHash, Optional.empty(), "getTestVal", Optional.empty());
+            String result0 = client0.compute(addedHash, Optional.empty(), "add", Optional.of(new String[]{String.valueOf(val1),String.valueOf(val2)}));
             print("Compute result (client0): "+result0);
-            Assert.assertTrue("result is as expected", result0.equals("MY DP test val"));
+            Assert.assertTrue("result is as expected", result0.equals(String.valueOf(val1 + val2)));
 
         } catch (IOException ioe) {
             ioe.printStackTrace();
