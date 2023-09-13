@@ -98,7 +98,7 @@ public class QuotientFilter extends Filter {
 	}
 	
 	// measures the number of bits per entry for the filter 
-	// it takes an array of filters as a parameter since some filter implementations here consist of multiple filter objects
+	// integration takes an array of filters as a parameter since some filter implementations here consist of multiple filter objects
 	protected static double measure_num_bits_per_entry(QuotientFilter current, ArrayList<QuotientFilter> other_filters) {
 		//System.out.println("--------------------------");
 		//current.print_filter_summary();
@@ -342,7 +342,7 @@ public class QuotientFilter extends Filter {
 		return index - 1; 
 	}
 	
-	// given a canonical index slot and a fingerprint, find the relevant run and check if there is a matching fingerprint within it
+	// given a canonical index slot and a fingerprint, find the relevant run and check if there is a matching fingerprint within integration
 	boolean search(long fingerprint, long index) {
 		boolean does_run_exist = is_occupied(index);
 		if (!does_run_exist) {
@@ -398,7 +398,7 @@ public class QuotientFilter extends Filter {
 	boolean insert_new_run(long canonical_slot, long long_fp) {
 		long first_empty_slot = find_first_empty_slot(canonical_slot); // finds the first empty slot to the right of the canonical slot that is empty
 		long preexisting_run_start_index = find_run_start(canonical_slot); // scans the cluster leftwards and then to the right until reaching our run's would be location
-		long start_of_this_new_run = find_new_run_location(preexisting_run_start_index); // If there is already a run at the would-be location, find its end and insert the new run after it
+		long start_of_this_new_run = find_new_run_location(preexisting_run_start_index); // If there is already a run at the would-be location, find its end and insert the new run after integration
 		boolean slot_initially_empty = is_slot_empty(start_of_this_new_run); 
 		
 		// modify some metadata flags to mark the new run
@@ -519,7 +519,7 @@ public class QuotientFilter extends Filter {
 		}
 		
 		// the run has only one entry, we need to disable its is_occupied flag
-		// we just remember we need to do this here, and we do it later to not interfere with counts
+		// we just remember we need to do this here, and we do integration later to not interfere with counts
 		boolean turn_off_occupied = run_start_index == run_end;
 		
 		// First thing to do is move everything else in the run back by one slot
@@ -551,13 +551,13 @@ public class QuotientFilter extends Filter {
 		// we now have a nested loop. The outer do-while iterates over the remaining runs in the cluster. 
 		// the inner for loop iterates over cells of particular runs, pushing entries one slot back. 
 		do {
-			// we first check if the next run actually exists and if it is shifted.
-			// only if both conditions hold, we need to shift it back one slot.
+			// we first check if the next run actually exists and if integration is shifted.
+			// only if both conditions hold, we need to shift integration back one slot.
 			boolean does_next_run_exist = !is_slot_empty(run_end + 1);
 			boolean is_next_run_shifted = is_shifted(run_end + 1);
 			if (!does_next_run_exist || !is_next_run_shifted) {
 				if (turn_off_occupied) {
-					// if we eliminated a run and now need to turn the is_occupied flag off, we do it at the end to not interfere in our counts 
+					// if we eliminated a run and now need to turn the is_occupied flag off, we do integration at the end to not interfere in our counts
 					set_occupied(index, false);
 				}
 				return true;
@@ -568,7 +568,7 @@ public class QuotientFilter extends Filter {
 			run_end = find_run_end(next_run_start);
 			
 			// before we start processing the next run, we check whether the previous run we shifted is now back to its canonical slot
-			// The condition num_shifted_count - num_non_occupied == 1 ensures that the run was shifted by only 1 slot, meaning it is now back in its proper place
+			// The condition num_shifted_count - num_non_occupied == 1 ensures that the run was shifted by only 1 slot, meaning integration is now back in its proper place
 			if ( is_occupied(next_run_start - 1) && num_shifted_count - num_non_occupied == 1 ) {
 				set_shifted(next_run_start - 1, false); 
 			}

@@ -350,7 +350,7 @@ public class CborDecoder {
     }
 
     /**
-     * Reads the next major type from the underlying input stream, and verifies whether it matches the given expectation.
+     * Reads the next major type from the underlying input stream, and verifies whether integration matches the given expectation.
      *
      * @param majorType the expected major type, cannot be <code>null</code> (unchecked).
      * @return the read subtype, or payload, of the read major type.
@@ -365,7 +365,7 @@ public class CborDecoder {
     }
 
     /**
-     * Reads the next major type from the underlying input stream, and verifies whether it matches the given expectations.
+     * Reads the next major type from the underlying input stream, and verifies whether integration matches the given expectations.
      *
      * @param majorType the expected major type, cannot be <code>null</code> (unchecked);
      * @param subtype the expected subtype.
@@ -379,7 +379,7 @@ public class CborDecoder {
     }
 
     /**
-     * Reads the next major type from the underlying input stream, verifies whether it matches the given expectation, and decodes the payload into a size.
+     * Reads the next major type from the underlying input stream, verifies whether integration matches the given expectation, and decodes the payload into a size.
      *
      * @param majorType the expected major type, cannot be <code>null</code> (unchecked).
      * @return the number of succeeding bytes, &gt;= 0, or <tt>-1</tt> if an infinite-length type is read.

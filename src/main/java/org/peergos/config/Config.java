@@ -1,5 +1,6 @@
 package org.peergos.config;
 
+import com.google.gson.Gson;
 import io.ipfs.multiaddr.MultiAddress;
 import io.libp2p.core.PeerId;
 import io.libp2p.core.crypto.PrivKey;
@@ -29,40 +30,47 @@ public class Config {
             .map(MultiAddress::new)
             .collect(Collectors.toList());
 
-    public Config() {
-        Config config = defaultConfig(Optional.empty());
+
+    public final Optional<Integer> instance_id;
+
+    public Config(Optional<Integer> instance_id) {
+        Config config = defaultConfig(Optional.empty(), instance_id);
         this.addresses = config.addresses;
         this.bootstrap = config.bootstrap;
         this.datastore = config.datastore;
         this.identity = config.identity;
         this.metrics = config.metrics;
+        this.instance_id = instance_id;
     }
-    public Config(Supplier<Mount> dataStoreSupplier) {
-        Config config = defaultConfig(Optional.of(dataStoreSupplier));
+    public Config(Supplier<Mount> dataStoreSupplier, Optional<Integer> instance_id) {
+        Config config = defaultConfig(Optional.of(dataStoreSupplier), instance_id);
         this.addresses = config.addresses;
         this.bootstrap = config.bootstrap;
         this.datastore = config.datastore;
         this.identity = config.identity;
         this.metrics = config.metrics;
+        this.instance_id = instance_id;
     }
     public Config(AddressesSection addresses, BootstrapSection bootstrap, DatastoreSection datastore,
-                  IdentitySection identity, MetricsSection metrics) {
+                  IdentitySection identity, MetricsSection metrics, Optional<Integer> instance_id) {
         this.addresses = addresses;
         this.bootstrap = bootstrap;
         this.datastore = datastore;
         this.identity = identity;
         this.metrics = metrics;
+        this.instance_id = instance_id;
         validate(this);
     }
 
-    public static Config build(String contents) {
+    public static Config build(String contents, Optional<Integer> instance_id) {
         Map<String, Object> json = (Map) JSONParser.parse(contents);
         AddressesSection addressesSection = Jsonable.parse(json, p -> AddressesSection.fromJson(p));
         BootstrapSection bootstrapSection = Jsonable.parse(json, p -> BootstrapSection.fromJson(p));
         DatastoreSection datastoreSection = Jsonable.parse(json, p -> DatastoreSection.fromJson(p));
         IdentitySection identitySection = Jsonable.parse(json, p -> IdentitySection.fromJson(p));
         MetricsSection metricsSection = Jsonable.parse(json, p -> MetricsSection.fromJson(p));
-        return new Config(addressesSection, bootstrapSection, datastoreSection, identitySection, metricsSection);
+        return new Config(addressesSection, bootstrapSection, datastoreSection, identitySection, metricsSection, instance_id);
+        //return new Config(addressesSection, bootstrapSection, datastoreSection, identitySection, instance_id);
     }
 
     @Override
@@ -76,18 +84,77 @@ public class Config {
         return JsonHelper.pretty(configMap);
     }
 
-    public Config defaultConfig(Optional<Supplier<Mount>> dataStoreSupplier) {
+//    public Config defaultConfig(Optional<Supplier<Mount>> dataStoreSupplier, Optional<Integer> instance_id) {
+//        HostBuilder builder = new HostBuilder().generateIdentity();
+//        PrivKey privKey = builder.getPrivateKey();
+//        PeerId peerId = builder.getPeerId();
+//
+//        List<MultiAddress> swarmAddresses = List.of(new MultiAddress("/ip6/::/tcp/4001"));
+//        MultiAddress apiAddress = new MultiAddress("/ip4/127.0.0.1/tcp/5001");
+//        MultiAddress gatewayAddress = new MultiAddress("/ip4/127.0.0.1/tcp/8080");
+//        Optional<MultiAddress> proxyTargetAddress = Optional.of(new MultiAddress("/ip4/127.0.0.1/tcp/8003"));
+//
+//        Optional<String> allowTarget = Optional.of("http://localhost:8002");
+//        List<MultiAddress> bootstrapNodes = new ArrayList<>(defaultBootstrapNodes);
+//        Mount blockMount = null;
+//        if (dataStoreSupplier.isPresent()) {
+//            blockMount = dataStoreSupplier.get().get();
+//        } else {
+//            Map<String, Object> blockChildMap = new LinkedHashMap<>();
+//            blockChildMap.put("path", "blocks");
+//            blockChildMap.put("shardFunc", "/repo/flatfs/shard/v1/next-to-last/2");
+//            blockChildMap.put("sync", "true");
+//            blockChildMap.put("type", "flatfs");
+//            blockMount = new Mount("/blocks", "flatfs.datastore", "measure", blockChildMap);
+//        }
+//        Map<String, Object> dataChildMap = new LinkedHashMap<>();
+//        dataChildMap.put("compression", "none");
+//        dataChildMap.put("path", "datastore");
+//        dataChildMap.put("type", "h2");
+//        Mount rootMount = new Mount("/", "h2.datastore", "measure", dataChildMap);
+//
+//        AddressesSection addressesSection = new AddressesSection(swarmAddresses, apiAddress, gatewayAddress,
+//                proxyTargetAddress, allowTarget);
+//        Filter filter = new Filter(FilterType.NONE, 0.0);
+//        CodecSet codecSet = CodecSet.empty();
+//        DatastoreSection datastoreSection = new DatastoreSection(blockMount, rootMount, filter, codecSet);
+//        BootstrapSection bootstrapSection = new BootstrapSection(bootstrapNodes);
+//        IdentitySection identitySection = new IdentitySection(privKey.bytes(), peerId);
+//        MetricsSection metricsSection = MetricsSection.defaultConfig(instance_id);
+//        return new Config(addressesSection, bootstrapSection, datastoreSection, identitySection, metricsSection, instance_id);
+//    }
+
+
+    /* NOTE: Once-off; first need to create an instance-0 config by running Server with null args
+    *        Need to remove bootstrap config validator and bootstrap nodes json creation */
+    public Config defaultConfig(Optional<Supplier<Mount>> dataStoreSupplier, Optional<Integer> instance_id) {
+        if (instance_id.isEmpty()) {
+            instance_id=Optional.of(0);
+        }
         HostBuilder builder = new HostBuilder().generateIdentity();
         PrivKey privKey = builder.getPrivateKey();
         PeerId peerId = builder.getPeerId();
+        System.out.println("Creating default config");
 
-        List<MultiAddress> swarmAddresses = List.of(new MultiAddress("/ip6/::/tcp/4001"));
-        MultiAddress apiAddress = new MultiAddress("/ip4/127.0.0.1/tcp/5001");
-        MultiAddress gatewayAddress = new MultiAddress("/ip4/127.0.0.1/tcp/8080");
-        Optional<MultiAddress> proxyTargetAddress = Optional.of(new MultiAddress("/ip4/127.0.0.1/tcp/8003"));
+        List<MultiAddress> swarmAddresses = List.of(
+                //new MultiAddress("/ip4/0.0.0.0/tcp/400"+instance_id.get()), // THIS CAUSES BUG IN LATEST VERSION Sep23
+                new MultiAddress("/ip6/::/tcp/400"+instance_id.get()));
+        MultiAddress apiAddress = new MultiAddress("/ip4/127.0.0.1/tcp/500"+instance_id.get());
+        MultiAddress gatewayAddress = new MultiAddress("/ip4/127.0.0.1/tcp/808"+instance_id.get());
+        Optional<MultiAddress> proxyTargetAddress = Optional.of(new MultiAddress("/ip4/127.0.0.1/tcp/800"+instance_id.get()));
+        Optional<String> allowTarget = Optional.of("http://localhost:800"+(instance_id.get()+1));
 
-        Optional<String> allowTarget = Optional.of("http://localhost:8002");
-        List<MultiAddress> bootstrapNodes = new ArrayList<>(defaultBootstrapNodes);
+        // IF this is instance0; nil bootstrap nodes, it is the genesis node for testing purposes
+        List<MultiAddress> bootstrapNodes = new ArrayList<>();
+        if (!instance_id.equals(0)) {
+            // BOOTSTRAP OFF INSTANCE 0 (PRE-GENERATE A CONFIG, START and STOP NODE ONCE, TO GET A PEER ID)
+            bootstrapNodes = List.of(
+                            "/ip4/127.0.0.1/tcp/4000/ipfs/12D3KooWAhtyDHZDzMtXormsCC6sqPTS6YaJTA2XHQxZ4Mk9MHTK").stream()
+                    .map(MultiAddress::new)
+                    .collect(Collectors.toList());
+        }
+        // ORIGINAL
+        //List<MultiAddress> bootstrapNodes = new ArrayList<>(defaultBootstrapNodes);
         Mount blockMount = null;
         if (dataStoreSupplier.isPresent()) {
             blockMount = dataStoreSupplier.get().get();
@@ -112,8 +179,8 @@ public class Config {
         DatastoreSection datastoreSection = new DatastoreSection(blockMount, rootMount, filter, codecSet);
         BootstrapSection bootstrapSection = new BootstrapSection(bootstrapNodes);
         IdentitySection identitySection = new IdentitySection(privKey.bytes(), peerId);
-        MetricsSection metricsSection = MetricsSection.defaultConfig();
-        return new Config(addressesSection, bootstrapSection, datastoreSection, identitySection, metricsSection);
+        MetricsSection metricsSection = MetricsSection.defaultConfig(instance_id);
+        return new Config(addressesSection, bootstrapSection, datastoreSection, identitySection, metricsSection, instance_id);
     }
 
     public void validate(Config config) {
@@ -121,6 +188,15 @@ public class Config {
         if (config.addresses.getSwarmAddresses().isEmpty()) {
             throw new IllegalStateException("Expecting Addresses/Swarm entries");
         }
+
+        // For local DEV environment, NODE0 is the genesis node doesnt require bootstrapping
+        // NOT USED CURRENTLY, UNTIL CAN MAKE PRIVATE NETWORK
+//        if (config.instance_id.isPresent() && config.instance_id.get()!=0 && config.bootstrap.getBootstrapAddresses().isEmpty()) {
+//            throw new IllegalStateException("Expecting Bootstrap addresses");
+//        }
+//        if (config.bootstrap.getBootstrapAddresses().isEmpty()) {
+//            throw new IllegalStateException("Expecting Bootstrap addresses");
+//        }
         Mount blockMount = config.datastore.blockMount;
         if (!( (blockMount.prefix.equals("flatfs.datastore")  || blockMount.prefix.equals("s3.datastore"))
                 && blockMount.type.equals("measure"))) {

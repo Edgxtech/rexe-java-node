@@ -53,6 +53,7 @@ public class IpnsTest {
                             .orTimeout(2, TimeUnit.SECONDS).join();
                     break;
                 } catch (Exception timeout) {
+                    timeout.printStackTrace();
                 }
             }
             if (! success)

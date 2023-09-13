@@ -75,7 +75,7 @@ public final class Ipns {
     /**
      * <pre>
      * in order for nodes to properly validate a record upon receipt, they need the public
-     * key associated with it. For old RSA keys, its easiest if we just send this as part of
+     * key associated with integration. For old RSA keys, its easiest if we just send this as part of
      * the record itself. For newer ed25519 keys, the public key can be embedded in the
      * peerID, making this field unnecessary.
      * </pre>
@@ -86,7 +86,7 @@ public final class Ipns {
     /**
      * <pre>
      * in order for nodes to properly validate a record upon receipt, they need the public
-     * key associated with it. For old RSA keys, its easiest if we just send this as part of
+     * key associated with integration. For old RSA keys, its easiest if we just send this as part of
      * the record itself. For newer ed25519 keys, the public key can be embedded in the
      * peerID, making this field unnecessary.
      * </pre>
@@ -432,7 +432,7 @@ public final class Ipns {
     /**
      * <pre>
      * in order for nodes to properly validate a record upon receipt, they need the public
-     * key associated with it. For old RSA keys, its easiest if we just send this as part of
+     * key associated with integration. For old RSA keys, its easiest if we just send this as part of
      * the record itself. For newer ed25519 keys, the public key can be embedded in the
      * peerID, making this field unnecessary.
      * </pre>
@@ -445,7 +445,7 @@ public final class Ipns {
     /**
      * <pre>
      * in order for nodes to properly validate a record upon receipt, they need the public
-     * key associated with it. For old RSA keys, its easiest if we just send this as part of
+     * key associated with integration. For old RSA keys, its easiest if we just send this as part of
      * the record itself. For newer ed25519 keys, the public key can be embedded in the
      * peerID, making this field unnecessary.
      * </pre>
@@ -1212,7 +1212,7 @@ public final class Ipns {
       /**
        * <pre>
        * in order for nodes to properly validate a record upon receipt, they need the public
-       * key associated with it. For old RSA keys, its easiest if we just send this as part of
+       * key associated with integration. For old RSA keys, its easiest if we just send this as part of
        * the record itself. For newer ed25519 keys, the public key can be embedded in the
        * peerID, making this field unnecessary.
        * </pre>
@@ -1225,7 +1225,7 @@ public final class Ipns {
       /**
        * <pre>
        * in order for nodes to properly validate a record upon receipt, they need the public
-       * key associated with it. For old RSA keys, its easiest if we just send this as part of
+       * key associated with integration. For old RSA keys, its easiest if we just send this as part of
        * the record itself. For newer ed25519 keys, the public key can be embedded in the
        * peerID, making this field unnecessary.
        * </pre>
@@ -1238,7 +1238,7 @@ public final class Ipns {
       /**
        * <pre>
        * in order for nodes to properly validate a record upon receipt, they need the public
-       * key associated with it. For old RSA keys, its easiest if we just send this as part of
+       * key associated with integration. For old RSA keys, its easiest if we just send this as part of
        * the record itself. For newer ed25519 keys, the public key can be embedded in the
        * peerID, making this field unnecessary.
        * </pre>
@@ -1257,7 +1257,7 @@ public final class Ipns {
       /**
        * <pre>
        * in order for nodes to properly validate a record upon receipt, they need the public
-       * key associated with it. For old RSA keys, its easiest if we just send this as part of
+       * key associated with integration. For old RSA keys, its easiest if we just send this as part of
        * the record itself. For newer ed25519 keys, the public key can be embedded in the
        * peerID, making this field unnecessary.
        * </pre>

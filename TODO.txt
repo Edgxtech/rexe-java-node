@@ -1,0 +1,28 @@
+Tests for more types of DPs:
+    - mysql generic database CRUD
+    - chat server
+        - join, leave, post, DM
+        - implement XMPP??
+    - weather data service, calls various other data and non-data resources/DPs
+        - mysql location db
+        - mysql realtime weather
+        ** combine and allow lookup weather at a specific location
+
+TODO, the block request is not routing to the node containing the block
+    - unless I specify peerslist in the get request, afterwhich the swap engine adds the peer connection
+    - Note: the kademlia dht manages to connect all peers ok (this is where I pull the peer list from for the resswap protocol)
+    - Not sure if this is how it is supposed to work (i.e. expect the client to pass a peer list with get request)
+        Thus perhaps they need to FIND_PROVIDERS before requesting??
+    - I have implemented a workaround which looks up the dht for peers and adds those to the get request
+
+Need a concept for best practices how to deploy different DPs accross the net
+    - assume I might know the peer providing, or might not (thus need to rely on content routing)
+    - I can e.g. know a DP provides what and it at a particular PEER ID, then include the peer instead of relying on content routing
+
+Consider OPTION TO TRACK WHAT IS A DP AND WHAT ISNT BY USING A DP-dedicated BlockStore?
+// DIFFERENCE: Uses ResSWAP which is like Bitswap but handles computations
+//             Uses dedicated blockstore, not the same as used in the API calls above, that one
+//                 is isolated in intended to remain compat with IPFS, whereas compute calls may need
+//                 heavy customisations/difference network limits, encoding, etc...
+  Vs alternative which might be; if you need a pure IPFS implementation; you just run a seperate node for that and
+  a seperate node for DRF / resource networking

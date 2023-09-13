@@ -1,14 +1,12 @@
 package org.peergos;
 
+import com.google.gson.Gson;
 import com.sun.net.httpserver.HttpServer;
 import io.ipfs.multiaddr.MultiAddress;
-import io.netty.handler.codec.http.*;
-import org.peergos.client.*;
 import org.peergos.config.*;
 import org.peergos.net.APIHandler;
 import org.peergos.net.HttpProxyHandler;
 import org.peergos.protocol.http.*;
-import org.peergos.util.HttpUtil;
 import org.peergos.util.JSONParser;
 import org.peergos.util.JsonHelper;
 import org.peergos.util.Logging;
@@ -35,9 +33,13 @@ public class Nabu {
     }
 
     public Nabu(Args args) throws Exception {
-        Path ipfsPath = getIPFSPath(args);
+        Optional<Integer> instance_id = args.hasArg("instance_id") ? Optional.of(args.getInt("instance_id")) : Optional.empty();
+        LOG.info("Booting up with instanceid: "+instance_id);
+        Path ipfsPath = getIPFSPath(args, instance_id);
+        LOG.info("Booting up with ipfs path: "+ipfsPath);
+
         Logging.init(ipfsPath, args.getBoolean("logToConsole", false));
-        Config config = readConfig(ipfsPath, args);
+        Config config = readConfig(ipfsPath, args, instance_id);
         if (config.metrics.enabled) {
             AggregatedMetrics.startExporter(config.metrics.address, config.metrics.port);
         }
@@ -55,6 +57,7 @@ public class Nabu {
         ipfs.start();
         String apiAddressArg = "Addresses.API";
         MultiAddress apiAddress = args.hasArg(apiAddressArg) ? new MultiAddress(args.getArg(apiAddressArg)) :  config.addresses.apiAddress;
+        LOG.info("Api address: "+apiAddress);
         InetSocketAddress localAPIAddress = new InetSocketAddress(apiAddress.getHost(), apiAddress.getPort());
 
         int maxConnectionQueue = 500;
@@ -80,18 +83,25 @@ public class Nabu {
         Runtime.getRuntime().addShutdownHook(shutdownHook);
     }
 
-    private Path getIPFSPath(Args args) {
+    private Path getIPFSPath(Args args, Optional<Integer> instance_id) {
         Optional<String> ipfsPath = args.getOptionalArg("IPFS_PATH");
         if (ipfsPath.isEmpty()) {
             String home = args.getArg("HOME");
-            return Path.of(home, ".ipfs");
+            Path defaultIpfsPath;
+            if (instance_id.isPresent()) {
+                defaultIpfsPath = Path.of(home, ".ipfs" + instance_id.get());
+            } else {
+                defaultIpfsPath = Path.of(home, ".ipfs");
+            }
+            return defaultIpfsPath;
         }
         return Path.of(ipfsPath.get());
     }
 
-    private Config readConfig(Path configPath, Args args) throws IOException {
+    private Config readConfig(Path configPath, Args args, Optional<Integer> instance_id) throws IOException {
         Path configFilePath = configPath.resolve("config");
         File configFile = configFilePath.toFile();
+        LOG.info("Config exists: "+configFile.exists());
         if (!configFile.exists()) {
             LOG.info("Unable to find config file. Creating default config");
             Optional<String> s3datastoreArgs = args.getOptionalArg("s3.datastore");
@@ -111,18 +121,19 @@ public class Nabu {
                 }
                 blockChildMap.put("type", "s3ds");
                 Mount s3BlockMount = new Mount("/blocks", "s3.datastore", "measure", blockChildMap);
-                config = new Config(() -> s3BlockMount);
+                config = new Config(() -> s3BlockMount, instance_id);
             } else {
-                config = new Config();
+                config = new Config(instance_id);
             }
             Files.write(configFilePath, config.toString().getBytes(), StandardOpenOption.CREATE);
             return config;
         }
-        return Config.build(Files.readString(configFilePath));
+        return Config.build(Files.readString(configFilePath), instance_id);
     }
 
     public static void main(String[] args) {
         try {
+            System.out.println("Args: "+new Gson().toJson(args));
             new Nabu(Args.parse(args));
         } catch (Exception e) {
             LOG.log(Level.SEVERE, "SHUTDOWN", e);

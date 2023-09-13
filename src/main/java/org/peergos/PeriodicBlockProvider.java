@@ -47,6 +47,7 @@ public class PeriodicBlockProvider {
     public void run() {
         while (running.get()) {
             try {
+                System.out.println("Providing blocks periodic");
                 publish(getBlocks.get());
                 Thread.sleep(reprovideIntervalMillis);
             } catch (Throwable e) {

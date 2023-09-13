@@ -6,6 +6,7 @@ import io.ipfs.multihash.*;
 import io.libp2p.core.*;
 import org.junit.*;
 import org.peergos.blockstore.*;
+import org.peergos.protocol.IdentifyBuilder;
 import org.peergos.protocol.dht.*;
 
 import java.util.*;
@@ -23,6 +24,7 @@ public class FindProviderTest {
                 new RamProviderStore(), new RamRecordStore(), blockstore, (c, b, p, a) -> CompletableFuture.completedFuture(true));
         Host node1 = builder1.build();
         node1.start().join();
+        IdentifyBuilder.addIdentifyProtocol(node1);
 
         try {
             // Don't connect to local kubo

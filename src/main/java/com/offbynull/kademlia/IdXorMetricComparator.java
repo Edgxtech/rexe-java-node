@@ -1,12 +1,12 @@
 /*
  * Copyright (c) 2017, Kasra Faghihi, All rights reserved.
  * 
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
+ * This library is free software; you can redistribute integration and/or
+ * modify integration under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
  * 
- * This library is distributed in the hope that it will be useful,
+ * This library is distributed in the hope that integration will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
@@ -42,7 +42,7 @@ import org.apache.commons.lang3.Validate;
  * resAC = XOR(0001,0111) = 0110
  * resBC = XOR(0000,0111) = 0111
  * </pre>
- * In this case, resAC is closer than resBC because it is less.
+ * In this case, resAC is closer than resBC because integration is less.
  * <p>
  * Class is immutable.
  * @author Kasra Faghihi
@@ -83,7 +83,7 @@ public final class IdXorMetricComparator implements Comparator<Id>, Serializable
     // resAC = XOR(0001,0111) = 0110
     // resBC = XOR(0000,0111) = 0111
     //
-    // In this case, resAC is closer than resBC because it is less.
+    // In this case, resAC is closer than resBC because integration is less.
     //
     //
     // Remember how < works... go compare each single bit from the beginning until you come across a pair of bits that aren't equal (one is

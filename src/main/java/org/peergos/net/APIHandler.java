@@ -1,10 +1,13 @@
 package org.peergos.net;
 
+import com.google.gson.Gson;
 import io.ipfs.cid.Cid;
 import io.libp2p.core.PeerId;
 import org.peergos.*;
 import org.peergos.util.*;
 import com.sun.net.httpserver.HttpExchange;
+import tech.edgx.drf.model.dp.DpResult;
+import tech.edgx.drf.model.dp.DpWant;
 
 import java.io.IOException;
 import java.util.*;
@@ -27,14 +30,30 @@ public class APIHandler extends Handler {
     public static final String REFS_LOCAL = "refs/local";
     public static final String BLOOM_ADD = "bloom/add";
     public static final String HAS = "block/has";
+    // ADDED
+    /// ACTUALLY DOES IT BELONG HERE?, SHOULD BE MORE OF AN IPNS LAYER API I NEED TO PROVIDE FOR EXECUTING DPs
+    public static final String GET_DP = "dp/get";
+    public static final String PUT_DP = "dp/put";
+    public static final String COMPUTE = "dp/compute"; // Execute/compute the DP
+    public static final String RM_DP = "dp/rm";
+    public static final String STAT_DP = "dp/stat";
+    public static final String REFS_LOCAL_DP = "dp/refs/local";
+    public static final String BLOOM_ADD_DP = "dp/bloom/add";
+    public static final String HAS_DP = "dp/has";
 
     public static final String FIND_PROVS = "dht/findprovs";
 
-    private final EmbeddedIpfs ipfs;
+    private final EmbeddedIpfs ipfs; // In latest update they added ability to start/stop, but removed the ApiService abstraction
+
+    //private final APIService apiService;
 
     public APIHandler(EmbeddedIpfs ipfs) {
         this.ipfs = ipfs;
     }
+
+//    public APIHandler(APIService apiService) {
+//        this.apiService = apiService;
+//    }
 
     public void handleCallToAPI(HttpExchange httpExchange) {
 
@@ -72,9 +91,16 @@ public class APIHandler extends Handler {
                     Optional<String> auth = Optional.ofNullable(params.get("auth"))
                             .map(a -> a.get(0))
                             .flatMap(a -> a.isEmpty() ? Optional.empty() : Optional.of(a));
-                    Set<PeerId> peers = Optional.ofNullable(params.get("peers"))
-                            .map(p -> p.stream().map(PeerId::fromBase58).collect(Collectors.toSet()))
-                            .orElse(Collections.emptySet());
+                    // ORIG PEERS
+//                    Set<PeerId> peers = Optional.ofNullable(params.get("peers"))
+//                            .map(p -> p.stream().map(PeerId::fromBase58).collect(Collectors.toSet()))
+//                            .orElse(Collections.emptySet());
+                    // MODIFIED PEERS: WORKS NICELY - IS THIS A BUG IN NABU? OTHERWISE IS A TEMPORARY FIX FOR MY INTEGRATION TESTING
+                    // NOTE: IT SEEMS TO ONLY ADD ENGINE CONNECTIONS AFTER I HAVE FIRST PROVIDED PEERS LIKE THIS
+                    RamAddressBook addressBook = (RamAddressBook) ipfs.dht.getAddressBook();
+                    Set<PeerId> peers = addressBook != null ? addressBook.addresses.keySet().stream().collect(Collectors.toSet()) : new HashSet<>();
+
+                    System.out.println("Peers provided directly: "+new Gson().toJson(peers.stream().map(p -> p.toBase58()).collect(Collectors.toList())));
                     boolean addToBlockstore = Optional.ofNullable(params.get("persist"))
                             .map(a -> Boolean.parseBoolean(a.get(0)))
                             .orElse(true);
@@ -90,7 +116,11 @@ public class APIHandler extends Handler {
                     }
                     break;
                 }
+                // I THINK I HAVE WRONGLY ASSUMED 'PUT' ADDS IT TO THE DHT, INSTEAD IT HAS A SCHEDULED PROVIDER
                 case PUT: { // https://docs.ipfs.tech/reference/kubo/rpc/#api-v0-block-put
+                    System.out.println("PUTTING");
+                    LOG.info("PUTTING");
+
                     AggregatedMetrics.API_BLOCK_PUT.inc();
                     List<String> format = params.get("format");
                     Optional<String> formatOpt = format !=null && format.size() == 1 ? Optional.of(format.get(0)) : Optional.empty();
@@ -115,6 +145,14 @@ public class APIHandler extends Handler {
                     Cid cid = ipfs.blockstore.put(block, Cid.Codec.lookupIPLDName(reqFormat)).join();
                     Map res = new HashMap<>();
                     res.put("Hash", cid.toString());
+
+                    /// TEMP, FORCE PROVIDE to dht
+//                    System.out.println("On Put, also providing to WAN DHT");
+//                    PeerAddresses ourAddresses = new PeerAddresses(Multihash.deserialize(ipfs.node.getPeerId().getBytes()), ipfs.node.listenAddresses().stream()
+//                            .map(m -> new MultiAddress(m.toString()))
+//                            .collect(Collectors.toList()));
+//                    ipfs.dht.provideBlock(cid, ipfs.node, ourAddresses).join();
+
                     replyJson(httpExchange, JSONParser.toString(res));
                     break;
                 }
@@ -125,6 +163,7 @@ public class APIHandler extends Handler {
                     }
                     Cid cid = Cid.decode(args.get(0));
                     boolean deleted = ipfs.blockstore.rm(cid).join();
+                    //boolean deleted = apiService.rmBlock(cid); //.join();
                     if (deleted) {
                         Map res = new HashMap<>();
                         res.put("Error", "");
@@ -146,6 +185,7 @@ public class APIHandler extends Handler {
                     }
                     Optional<String> auth = Optional.ofNullable(params.get("auth")).map(a -> a.get(0));
                     List<HashedBlock> block = ipfs.getBlocks(List.of(new Want(Cid.decode(args.get(0)), auth)), Collections.emptySet(), false);
+                    //List<HashedBlock> block = apiService.getBlocks(List.of(new Want(Cid.decode(args.get(0)), auth)), Collections.emptySet(), false);
                     if (! block.isEmpty()) {
                         Map res = new HashMap<>();
                         res.put("Size", block.get(0).block.length);
@@ -211,6 +251,58 @@ public class APIHandler extends Handler {
                     replyBytes(httpExchange, sb.toString().getBytes());
                     break;
                 }
+
+                /////////////////////////////////////
+                // START OF DP SPECIFIC
+                /////////////////////////////////////
+                case COMPUTE: {
+                    LOG.info("COMPUTE, params: "+new Gson().toJson(params));
+                    List<String> fn = params.get("fn");
+                    if (args == null || args.size() != 1) {
+                        throw new APIException("arguments \"cid\" required\n");
+                    }
+                    if (fn == null || fn.size() != 1) {
+                        throw new APIException("\"functionName\" required\n");
+                    }
+                    Optional<String> auth = Optional.ofNullable(params.get("auth")).map(a -> a.get(0));
+                    Optional<Object[]> fnParamsOpt = Optional.empty();
+                    if (params.get("params")!=null) {
+                        List<String> fnParams = params.get("params").stream()
+                                .flatMap(p -> Arrays.stream(p.split(",")))
+                                .collect(Collectors.toList());
+                        LOG.info("Function PARAMS Rx: "+new Gson().toJson(fnParams));
+                        if (fnParams != null && !fnParams.isEmpty()) {
+                            fnParamsOpt = Optional.ofNullable(fnParams.toArray());
+                        }
+                    }
+//                    Set<PeerId> peers = Optional.ofNullable(params.get("peers"))
+//                            .map(p -> p.stream().map(PeerId::fromBase58).collect(Collectors.toSet()))
+//                            .orElse(Collections.emptySet());
+                    RamAddressBook addressBook = (RamAddressBook) ipfs.dht.getAddressBook();
+                    Set<PeerId> peers = addressBook != null ? addressBook.addresses.keySet().stream().collect(Collectors.toSet()) : new HashSet<>();
+                    boolean addToBlockstore = Optional.ofNullable(params.get("persist"))
+                            .map(a -> Boolean.parseBoolean(a.get(0)))
+                            .orElse(true);
+                    LOG.info("COMPUTE, params2: "+new Gson().toJson(params));
+                    List<DpResult> dpResults = ipfs.computeDp(
+                            List.of(new DpWant(Cid.decode(args.get(0)), auth, fn.get(0), fnParamsOpt)),
+                            peers,
+                            addToBlockstore);
+                    LOG.info("Retrieved result: "+new Gson().toJson(dpResults));
+                    if (dpResults != null && !dpResults.isEmpty()) {
+                        Map res = new HashMap<>();
+                        res.put("Result", dpResults.get(0).result);
+                        replyJson(httpExchange, JSONParser.toString(res));
+                    } else {
+                        try {
+                            httpExchange.sendResponseHeaders(400, 0);
+                        } catch (IOException ioe) {
+                            HttpUtil.replyError(httpExchange, ioe);
+                        }
+                    }
+                    break;
+                }
+
                 default: {
                     httpExchange.sendResponseHeaders(404, 0);
                     break;

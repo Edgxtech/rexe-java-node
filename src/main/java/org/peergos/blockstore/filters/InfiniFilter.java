@@ -28,7 +28,7 @@ public class InfiniFilter extends QuotientFilter {
 	}
 		
 	// this is the newer version of parsing the unary encoding. 
-	// it is done using just binary operations and no loop. 
+	// integration is done using just binary operations and no loop.
 	// however, this optimization didn't yield much performance benefit 
 	long parse_unary(long slot_index) {
 		long f = get_fingerprint(slot_index);

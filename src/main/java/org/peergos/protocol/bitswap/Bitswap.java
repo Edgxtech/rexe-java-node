@@ -1,5 +1,6 @@
 package org.peergos.protocol.bitswap;
 
+import com.google.gson.Gson;
 import com.google.protobuf.*;
 import io.ipfs.multihash.Multihash;
 import io.libp2p.core.*;
@@ -7,7 +8,11 @@ import io.libp2p.core.multiformats.*;
 import io.libp2p.core.multistream.*;
 import org.peergos.*;
 import org.peergos.protocol.bitswap.pb.*;
+//<<<<<<< HEAD
 import org.peergos.util.*;
+//=======
+//import tech.edgx.drf.util.SwapType;
+//>>>>>>> develop
 
 import java.util.*;
 import java.util.concurrent.*;
@@ -35,14 +40,16 @@ public class Bitswap extends StrictProtocolBinding<BitswapController> implements
     public CompletableFuture<HashedBlock> get(Want hash,
                                               Host us,
                                               Set<PeerId> peers,
-                                              boolean addToBlockstore) {
+                                              boolean addToBlockstore
+                                              ) { //SwapType swapType
         return get(List.of(hash), us, peers, addToBlockstore).get(0);
     }
 
     public List<CompletableFuture<HashedBlock>> get(List<Want> wants,
                                                     Host us,
                                                     Set<PeerId> peers,
-                                                    boolean addToBlockstore) {
+                                                    boolean addToBlockstore
+                                                    ) { //SwapType swapType
         if (wants.isEmpty())
             return Collections.emptyList();
         List<CompletableFuture<HashedBlock>> results = new ArrayList<>();
@@ -70,13 +77,25 @@ public class Bitswap extends StrictProtocolBinding<BitswapController> implements
         Set<PeerId> audience = peers.isEmpty() ? engine.getConnected() : peers;
         List<MessageOuterClass.Message.Wantlist.Entry> wantsProto = wants.stream()
                 .map(want -> MessageOuterClass.Message.Wantlist.Entry.newBuilder()
+//<<<<<<< HEAD
                         .setWantType(audience.size() <= 2 || haves.containsKey(want) ?
+//=======
+//                        //.setWantType(
+//                        .setWantType(haves.containsKey(want) ?
+//>>>>>>> develop
                                 MessageOuterClass.Message.Wantlist.WantType.Block :
                                 MessageOuterClass.Message.Wantlist.WantType.Have)
                         .setBlock(ByteString.copyFrom(want.cid.toBytes()))
                         .setAuth(ByteString.copyFrom(ArrayOps.hexToBytes(want.authHex.orElse(""))))
                         .build())
                 .collect(Collectors.toList());
+
+        // broadcast to all connected peers if none are supplied
+        Set<PeerId> connected = peers.isEmpty() ? engine.getConnected() : peers;
+
+        LOG.info("Engine connected peers: "+new Gson().toJson(engine.getConnected()));
+        LOG.info("Broad casting to peers: "+new Gson().toJson(peers));
+
         engine.buildAndSendMessages(wantsProto, Collections.emptyList(), Collections.emptyList(),
                 msg -> audience.forEach(peer -> dialPeer(us, peer, c -> {
                     c.send(msg);

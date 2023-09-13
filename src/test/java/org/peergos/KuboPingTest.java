@@ -25,6 +25,8 @@ public class KuboPingTest {
                 .addProtocols(List.of(new Ping(), new Bitswap(new BitswapEngine(new RamBlockstore(), (c, b, p, a) -> CompletableFuture.completedFuture(true)))))
                 .addMuxers(List.of(StreamMuxerProtocol.getYamux()))
                 .build();
+        System.out.println("Priv key: "+ io.ipfs.multibase.binary.Base64.encodeBase64String(node1.getPrivKey().bytes()));
+
         node1.start().join();
         IdentifyBuilder.addIdentifyProtocol(node1);
         try {

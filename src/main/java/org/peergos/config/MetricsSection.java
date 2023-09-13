@@ -18,8 +18,13 @@ public class MetricsSection implements Jsonable {
         this.port = port;
     }
 
-    public static MetricsSection defaultConfig() {
-        return new MetricsSection(true, "localhost", 9100);
+    public static MetricsSection defaultConfig(Optional<Integer> instance_id) {
+        System.out.println("Creating default metrics config, for instance_id: "+instance_id);
+        if (instance_id.isPresent()) {
+            return new MetricsSection(true, "localhost", Integer.parseInt("910" + instance_id.get()));
+        } else {
+            return new MetricsSection(true, "localhost", Integer.parseInt("9100"));
+        }
     }
 
     public Map<String, Object> toJson() {
@@ -37,7 +42,7 @@ public class MetricsSection implements Jsonable {
              new MetricsSection(JsonHelper.getBooleanProperty(f, "Enabled"),
                 JsonHelper.getStringProperty(f, "Address"),
                 JsonHelper.getIntProperty(f, "Port"))
-        ).orElse(MetricsSection.defaultConfig());
+        ).get(); //.orElse(MetricsSection.defaultConfig());
         return metrics;
     }
 }

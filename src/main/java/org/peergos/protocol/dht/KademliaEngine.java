@@ -1,5 +1,6 @@
 package org.peergos.protocol.dht;
 
+import com.google.gson.Gson;
 import com.google.protobuf.*;
 import com.offbynull.kademlia.*;
 import io.ipfs.cid.*;
@@ -26,12 +27,19 @@ public class KademliaEngine {
     private final Multihash ourPeerId;
     private final Blockstore blocks;
 
+    // temp to facil private bootstrapping
+    List<Node> nodes;
+
     public KademliaEngine(Multihash ourPeerId, ProviderStore providersStore, RecordStore ipnsStore, Blockstore blocks) {
         this.providersStore = providersStore;
         this.ipnsStore = ipnsStore;
         this.ourPeerId = ourPeerId;
         this.router = new Router(Id.create(ourPeerId.bareMultihash().toBytes(), 256), 2, 2, 2);
         this.blocks = blocks;
+    }
+
+    public List<Node> getNodes() {
+        return this.nodes;
     }
 
     public void setAddressBook(AddressBook addrs) {
@@ -52,10 +60,17 @@ public class KademliaEngine {
 
     public List<PeerAddresses> getKClosestPeers(byte[] key) {
         int k = 20;
+//<<<<<<< HEAD
         List<Node> nodes;
         synchronized (this) {
             nodes = router.find(Id.create(Hash.sha256(key), 256), k, false);
         }
+//=======
+//        List<Node> nodes = router.find(Id.create(Hash.sha256(key), 256), k, false);
+        this.nodes = nodes;
+        System.out.println("Kademlia Engine, Nodes: " + nodes.size());
+        System.out.println("Kademlia Engine, AddressBook: " + new Gson().toJson(addressBook));
+//>>>>>>> develop
         return nodes.stream()
                 .map(n -> {
                     List<MultiAddress> addrs = addressBook.getAddrs(PeerId.fromBase58(n.getLink())).join()

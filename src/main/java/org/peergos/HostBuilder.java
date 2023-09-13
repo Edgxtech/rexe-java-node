@@ -1,6 +1,5 @@
 package org.peergos;
 
-import identify.pb.*;
 import io.ipfs.multiaddr.*;
 import io.ipfs.multihash.Multihash;
 import io.libp2p.core.*;
@@ -10,7 +9,6 @@ import io.libp2p.core.multiformats.*;
 import io.libp2p.core.multistream.*;
 import io.libp2p.core.mux.*;
 import io.libp2p.crypto.keys.*;
-import io.libp2p.etc.types.*;
 import io.libp2p.protocol.*;
 import io.libp2p.security.noise.*;
 import io.libp2p.security.tls.*;
@@ -21,12 +19,16 @@ import org.peergos.protocol.autonat.*;
 import org.peergos.protocol.bitswap.*;
 import org.peergos.protocol.circuit.*;
 import org.peergos.protocol.dht.*;
+import tech.edgx.drf.protocol.resswap.ResSwap;
+import tech.edgx.drf.protocol.resswap.ResSwapEngine;
+
 import java.util.*;
-import java.util.concurrent.*;
-import java.util.concurrent.atomic.*;
 import java.util.stream.*;
+import java.util.logging.Logger;
 
 public class HostBuilder {
+    private static final Logger LOG = Logger.getLogger(HostBuilder.class.getName());
+
     private PrivKey privKey;
     private PeerId peerId;
     private List<String> listenAddrs = new ArrayList<>();
@@ -55,10 +57,18 @@ public class HostBuilder {
                 .findFirst();
     }
 
+    // DEPRECATE THIS, SWITCH TO COMPUTESWAP
     public Optional<Bitswap> getBitswap() {
         return protocols.stream()
                 .filter(p -> p instanceof Bitswap)
                 .map(p -> (Bitswap)p)
+                .findFirst();
+    }
+
+    public Optional<ResSwap> getResSwap() {
+        return protocols.stream()
+                .filter(p -> p instanceof ResSwap)
+                .map(p -> (ResSwap)p)
                 .findFirst();
     }
 
@@ -121,7 +131,10 @@ public class HostBuilder {
                 new Ping(),
                 new AutonatProtocol.Binding(),
                 new CircuitHopProtocol.Binding(relayManager, stop),
-                new Bitswap(new BitswapEngine(blocks, authoriser)),
+                // REPLACE Bitswap protocol with ResSwap which is bitswap extended with distributed computation capy
+                // FOR NOW USING THE SAME BLOCK STORE TO STORE DPs as if they are blocks
+                //new Bitswap(new BitswapEngine(blocks, authoriser)),
+                new ResSwap(new ResSwapEngine(blocks, authoriser)),
                 dht));
     }
 

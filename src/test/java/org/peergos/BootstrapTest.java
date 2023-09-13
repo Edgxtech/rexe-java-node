@@ -1,19 +1,25 @@
 package org.peergos;
 
+import com.google.gson.*;
+import io.ipfs.cid.Cid;
 import io.ipfs.multiaddr.*;
 import io.ipfs.multihash.Multihash;
 import io.libp2p.core.*;
+import io.libp2p.core.multiformats.Multiaddr;
 import org.junit.*;
 import org.peergos.blockstore.*;
 import org.peergos.protocol.*;
 import org.peergos.protocol.dht.*;
 
+import java.lang.reflect.Type;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.function.*;
 import java.util.stream.*;
 
 public class BootstrapTest {
+
+    final Gson gson = new GsonBuilder().registerTypeAdapter(String[].class, new MyDeserializer()).create();
 
     public static List<MultiAddress> BOOTSTRAP_NODES = List.of(
                     "/dnsaddr/bootstrap.libp2p.io/p2p/QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN",
@@ -42,22 +48,81 @@ public class BootstrapTest {
         node1.start().join();
         IdentifyBuilder.addIdentifyProtocol(node1);
         Multihash node1Id = Multihash.deserialize(node1.getPeerId().getBytes());
+        System.out.println("My node id: "+node1Id.toBase58());
 
         try {
             Kademlia dht = builder1.getWanDht().get();
+            //System.out.println("DHT (init): "+gson.toJson(dht));
+            System.out.println("DHT: "+dht.getProtocolDescriptor().toString() + dht.getProtocol().toString());
+
             Predicate<String> bootstrapAddrFilter = addr -> !addr.contains("/wss/"); // jvm-libp2p can't parse /wss addrs
+            System.out.println("Starting bootstrap routing table");
             int connections = dht.bootstrapRoutingTable(node1, BOOTSTRAP_NODES, bootstrapAddrFilter);
+            System.out.println("Finshed bootstrap routing table, # connections: "+connections);
             if (connections == 0)
                 throw new IllegalStateException("No connected peers!");
+            System.out.println("Starting bootstrapping..");
             dht.bootstrap(node1);
+            System.out.println("Finished bootstrapping");
+
+            // INVESTIGATIONS BY TIM
+            //System.out.println("DHT: "+new Gson().toJson(dht));
+            Multihash block = Cid.decode("bafybeigdyrzt5sfp7udm7hu76uh7y26nf3efuylqabf3oclgtqy55fbzdi");
+            System.out.println("Finding providers");
+            List<PeerAddresses> providers = dht.findProviders(block, node1, 10).join();
+            if (providers.isEmpty())
+                throw new IllegalStateException("Couldn't find provider of block!");
+            System.out.println("# Providers with test block: "+providers.size());
+            System.out.println("Providers with test block: "+new Gson().toJson(providers));
+            System.out.println("ResSwap Engine connected peers: "+new Gson().toJson(builder1.getResSwap().get().getResSwapEngine().getConnected()));
+
+            // TEMPORARY, TEST RETRIEVING BLOCK
+            // Add to local address book nodes known to have the block,
+            // then when requesting, request from these nodes rather than whats in the engine.connections
+            //node2.listenAddresses().get(0);
+            //Multiaddr.fromString("/ip4/127.0.0.1/tcp/4001/p2p/" + kubo.id().get("ID"));
+            //Multiaddr.fromString()
+            //Multiaddress[] adresses = providers.toArray(new Multiaddress[providers.size()]);
+            //Multiaddr[] addr = addrs.get(peer).join().toArray(new Multiaddr[0]);
+            //providers.stream().forEach(p -> node1.getAddressBook().addAddrs(new io.libp2p.core.PeerId(p.peerId.toBytes()), 0L, p.addresses.toArray(new Multiaddr[0])));
+            //Set<PeerId> providerIds = providers.stream().map(p -> new PeerId(p.peerId.toBytes())).collect(Collectors.toSet());
+
+            // NFT: c31ZqsTr0OcmYtjRiAYJKSqDwE6sOdpFyGQxJe4Y_qo
+
+            // ?tk=evxyDpkgvwB2XVnpFF4F0UXdJohJsOmIjd_YBLJxb5w
+            // QmVkkR8CNFCTAKQYGeMJ2Az2cJ6FcX7yVN3tcBFrnSEQ8L   - is this an IPNS NAME??
+            //    b/c nftstorage.link/ipfs/QmVkkR8CNFCTAKQYGeMJ2Az2cJ6FcX7yVN3tcBFrnSEQ8L
+            //           > returns: https://bafybeidofyzxsfzslib5gyjt4piuwd4r3j5yepasraqdhzyo6elx2ena3u.ipfs.dweb.link/
+            // bafybeidofyzxsfzslib5gyjt4piuwd4r3j5yepasraqdhzyo6elx2ena3u
+            List<HashedBlock> receivedBlock = builder1.getResSwap().get().get(List.of(new Want(Cid.decode("bafybeidofyzxsfzslib5gyjt4piuwd4r3j5yepasraqdhzyo6elx2ena3u"))), node1, new HashSet<>(), false)
+                    .stream()
+                    .map(f -> f.join())
+                    .collect(Collectors.toList());
+            System.out.println("Received block: "+new String(receivedBlock.get(0).block));
 
             // lookup ourselves in DHT to find our nearest nodes
             List<PeerAddresses> closestPeers = dht.findClosestPeers(node1Id, 20, node1);
             if (closestPeers.size() < connections/2)
                 throw new IllegalStateException("Didn't find more close peers after bootstrap: " +
                         closestPeers.size() + " < " + connections);
+
         } finally {
             node1.stop();
+        }
+    }
+
+    public static class MyDeserializer implements JsonDeserializer<String[]> {
+        @Override
+        public String[] deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
+            System.out.println(json + ", " +typeOfT);
+            String child = context.deserialize(json, String.class);
+            return new String[] { child };
+            //if (typeOfT.equals(Java.time))
+//            if (json instanceof JsonArray) {
+//                return new Gson().fromJson(json, String[].class);
+//            }
+//            String child = context.deserialize(json, String.class);
+//            return new String[] { child };
         }
     }
 }

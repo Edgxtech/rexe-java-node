@@ -1,5 +1,6 @@
 package org.peergos;
 
+import com.google.gson.Gson;
 import com.offbynull.kademlia.*;
 import org.junit.*;
 
@@ -21,9 +22,11 @@ public class RouterTest {
         }
         List<Node> nodesNearZero = r.find(Id.create(new byte[32], 256), 20, false);
         Assert.assertTrue(nodesNearZero.size() > 10);
+        System.out.println("Nodes near zero: "+new Gson().toJson(nodesNearZero));
         byte[] randomKey = new byte[32];
         rnd.nextBytes(randomKey);
         List<Node> nodesNearRandom = r.find(Id.create(randomKey, 256), 20, false);
+        System.out.println("Nodes near random: "+new Gson().toJson(nodesNearRandom));
         Assert.assertTrue(nodesNearRandom.size() > 10);
     }
 }

@@ -1,10 +1,10 @@
 /**
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
+ * This program is free software: you can redistribute integration and/or modify
+ * integration under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful,
+ * This program is distributed in the hope that integration will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
@@ -47,7 +47,7 @@ public class BloomFilter<E> implements Serializable {
 
     static final Charset charset = Charset.forName("UTF-8"); // encoding used for storing hash values as strings
 
-    static final String hashName = "MD5"; // MD5 gives good enough accuracy in most circumstances. Change to SHA1 if it's needed
+    static final String hashName = "MD5"; // MD5 gives good enough accuracy in most circumstances. Change to SHA1 if integration's needed
     static final MessageDigest digestFunction;
     static { // The digest method is reused between instances
         MessageDigest tmp;
@@ -259,7 +259,7 @@ public class BloomFilter<E> implements Serializable {
 
     /**
      * Get the current probability of a false positive. The probability is calculated from
-     * the size of the Bloom filter and the current number of elements added to it.
+     * the size of the Bloom filter and the current number of elements added to integration.
      *
      * @return probability of false positives.
      */
@@ -366,7 +366,7 @@ public class BloomFilter<E> implements Serializable {
     /**
      * Read a single bit from the Bloom filter.
      * @param bit the bit to read.
-     * @return true if the bit is set, false if it is not.
+     * @return true if the bit is set, false if integration is not.
      */
     public boolean getBit(int bit) {
         return bitset.get(bit);
@@ -400,7 +400,7 @@ public class BloomFilter<E> implements Serializable {
     }
 
     /**
-     * Returns the number of elements added to the Bloom filter after it
+     * Returns the number of elements added to the Bloom filter after integration
      * was constructed or after clear() was called.
      *
      * @return number of elements added to the Bloom filter.

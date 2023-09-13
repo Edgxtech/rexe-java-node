@@ -1,5 +1,6 @@
 package org.peergos.protocol.dht;
 
+import com.google.gson.Gson;
 import com.offbynull.kademlia.*;
 import io.ipfs.multiaddr.*;
 import io.ipfs.multihash.Multihash;
@@ -27,7 +28,7 @@ public class Kademlia extends StrictProtocolBinding<KademliaController> implemen
     public static final int BOOTSTRAP_PERIOD_MILLIS = 300_000;
     private final KademliaEngine engine;
     private final boolean localDht;
-    private AddressBook addressBook;
+    private AddressBook addressBook = null;
 
     public Kademlia(KademliaEngine dht, boolean localOnly) {
         super("/ipfs/" + (localOnly ? "lan/" : "") + "kad/1.0.0", new KademliaProtocol(dht));
@@ -38,6 +39,14 @@ public class Kademlia extends StrictProtocolBinding<KademliaController> implemen
     public void setAddressBook(AddressBook addrs) {
         engine.setAddressBook(addrs);
         this.addressBook = addrs;
+    }
+
+    // CUSTOM
+    public AddressBook getAddressBook() {
+        return this.addressBook;
+    }
+    public List<Node> getNodes() {
+        return engine.getNodes();
     }
 
     public int bootstrapRoutingTable(Host host, List<MultiAddress> addrs, Predicate<String> filter) {
@@ -56,6 +65,7 @@ public class Kademlia extends StrictProtocolBinding<KademliaController> implemen
                 .parallel()
                 .map(addr -> {
                     Multiaddr addrWithPeer = Multiaddr.fromString(addr);
+                    System.out.println("Setting address book: with: "+addrWithPeer.getPeerId().toBase58());
                     addressBook.setAddrs(addrWithPeer.getPeerId(), 0, addrWithPeer);
                     return dial(host, addrWithPeer).getController();
                 })
@@ -100,11 +110,15 @@ public class Kademlia extends StrictProtocolBinding<KademliaController> implemen
         byte[] hash = new byte[32];
         new Random().nextBytes(hash);
         Multihash randomPeerId = new Multihash(Multihash.Type.sha2_256, hash);
+        LOG.info("Using Random Peer Id: "+randomPeerId.toBase58());
         findClosestPeers(randomPeerId, 20, us);
+        LOG.info("Finished finding peers closest to random Peer");
 
         // lookup our own peer id to keep our nearest neighbours up-to-date,
         // and connect to all of them, so they know about our addresses
+        LOG.info("Start finding peers closest to us");
         List<PeerAddresses> closestToUs = findClosestPeers(Multihash.deserialize(us.getPeerId().getBytes()), 20, us);
+        LOG.info("Peers CLOSEST TO US: "+new Gson().toJson(closestToUs));
         int connectedClosest = 0;
         for (PeerAddresses peer : closestToUs) {
             if (connectTo(us, peer))
@@ -241,7 +255,7 @@ public class Kademlia extends StrictProtocolBinding<KademliaController> implemen
             if (! foundCloser)
                 break;
         }
-
+        LOG.info("Returning providers: "+providers.size());
         return CompletableFuture.completedFuture(providers);
     }
 
@@ -279,6 +293,7 @@ public class Kademlia extends StrictProtocolBinding<KademliaController> implemen
 
     public CompletableFuture<Void> provideBlock(Multihash block, Host us, PeerAddresses ourAddrs) {
         List<PeerAddresses> closestPeers = findClosestPeers(block, 20, us);
+        LOG.info("Providing block, dialing closes peers: "+closestPeers.size());
         List<CompletableFuture<Boolean>> provides = closestPeers.stream()
                 .parallel()
                 .map(p -> dialPeer(p, us)

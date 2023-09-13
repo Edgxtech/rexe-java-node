@@ -1,5 +1,7 @@
 package org.peergos;
 
+import com.google.gson.Gson;
+
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -80,15 +82,17 @@ public class Args {
     public static Args parse(String[] args) {
         Map<String, String> map = paramMap();
         map.putAll(System.getenv());
+        System.out.println("Args: "+new Gson().toJson(args));
         for (int i = 0; i < args.length; i++) {
+            System.out.println("Arg: "+args[i]);
             String argName = args[i];
             if (argName.startsWith("-"))
                 argName = argName.substring(1);
 
-            if ((i == args.length - 1) || args[i + 1].startsWith("-"))
-                map.put(argName, "true");
-            else
-                map.put(argName, args[++i]);
+//            if ((i == args.length - 1) || args[i + 1].startsWith("-"))
+//                map.put(argName, "true");
+//            else
+            map.put(argName, args[++i]);
         }
         return new Args(map);
     }

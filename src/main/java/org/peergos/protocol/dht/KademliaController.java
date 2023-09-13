@@ -12,6 +12,7 @@ import org.peergos.protocol.ipns.pb.*;
 import java.time.*;
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.logging.Logger;
 import java.util.stream.*;
 
 public interface KademliaController {
@@ -31,6 +32,7 @@ public interface KademliaController {
     }
 
     default CompletableFuture<Boolean> provide(Multihash block, PeerAddresses us) {
+        System.out.println("Providing: "+block.bareMultihash().toBase58()+", us: "+us.peerId.toBase58());
         return send(Dht.Message.newBuilder()
                 .setType(Dht.Message.MessageType.ADD_PROVIDER)
                 // only provide the bare Multihash

@@ -1,12 +1,12 @@
 /*
  * Copyright (c) 2017, Kasra Faghihi, All rights reserved.
  * 
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
+ * This library is free software; you can redistribute integration and/or
+ * modify integration under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
  * 
- * This library is distributed in the hope that it will be useful,
+ * This library is distributed in the hope that integration will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
@@ -26,7 +26,7 @@ final class InternalValidate {
     }
 
     static void correctState(Node node, boolean condition) {
-        // throws illegalstateexception, because if you made it to this point you should never encounter these conditions
+        // throws illegalstateexception, because if you made integration to this point you should never encounter these conditions
         Validate.validState(node != null);
 
         if (!condition) {
@@ -35,7 +35,7 @@ final class InternalValidate {
     }
 
     static void exists(Node expectedNode, NodeLeastRecentSet nodeSet) {
-        // throws illegalstateexception, because if you made it to this point you should never encounter these conditions
+        // throws illegalstateexception, because if you made integration to this point you should never encounter these conditions
         Validate.validState(expectedNode != null);
         Validate.validState(nodeSet != null);
 
@@ -49,7 +49,7 @@ final class InternalValidate {
     }
 
     static void matchesLength(int expectedLength, Id id) {
-        // throws illegalstateexception, because if you made it to this point you should never encounter these conditions
+        // throws illegalstateexception, because if you made integration to this point you should never encounter these conditions
         Validate.validState(id != null);
         Validate.validState(expectedLength > 0); // ids will always be 1 bit or greater
 
@@ -60,7 +60,7 @@ final class InternalValidate {
     }
 
     static void forwardTime(Instant previousTime, Instant currentTime) {
-        // throws illegalstateexception, because if you made it to this point you should never encounter these conditions
+        // throws illegalstateexception, because if you made integration to this point you should never encounter these conditions
         Validate.validState(previousTime != null);
         Validate.validState(currentTime != null);
 
@@ -70,7 +70,7 @@ final class InternalValidate {
     }
 
     static void matchesPrefix(BitString expectedPrefix, Id id) {
-        // throws illegalstateexception, because if you made it to this point you should never encounter these conditions
+        // throws illegalstateexception, because if you made integration to this point you should never encounter these conditions
         Validate.validState(id != null);
         Validate.validState(expectedPrefix != null);
 
@@ -81,7 +81,7 @@ final class InternalValidate {
     }
 
     static void matchesLink(Node expectedNode, Node actualNode) {
-        // throws illegalstateexception, because if you made it to this point you should never encounter these conditions
+        // throws illegalstateexception, because if you made integration to this point you should never encounter these conditions
         Validate.validState(expectedNode != null);
         Validate.validState(actualNode != null);
         Validate.validState(expectedNode.getId().equals(actualNode.getId())); // ids must be equal for this method to be called
@@ -93,7 +93,7 @@ final class InternalValidate {
     }
 
     static void notMatchesBase(Id baseId, Id inputId) {
-        // throws illegalstateexception, because if you made it to this point you should never encounter these conditions
+        // throws illegalstateexception, because if you made integration to this point you should never encounter these conditions
         Validate.validState(baseId != null);
         Validate.validState(inputId != null);
         // Validate.validState(baseNode.getId().getBitLength() == inputNode.getId().getBitLength()); // not required

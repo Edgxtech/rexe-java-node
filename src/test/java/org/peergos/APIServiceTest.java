@@ -1,6 +1,8 @@
 package org.peergos;
 
+import com.google.gson.Gson;
 import io.ipfs.cid.Cid;
+import org.apache.commons.codec.binary.Hex;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -60,6 +62,34 @@ public class APIServiceTest {
         Assert.assertFalse("cid found", ipfs.blockstore.has(cid).join());
         String text = "Hello world!";
         byte[] block = text.getBytes();
+//=======
+//        APIService service = new APIService(new RamBlockstore(), null, new ResourceServiceImpl(null,null), new RamBlockstore()); //new BitswapBlockService(null, null),
+//        Cid cid1 = service.putBlock("Hello".getBytes(), Cid.Codec.Raw);
+//        Cid cid2= service.putBlock("world!".getBytes(), Cid.Codec.Raw);
+//        Cid cid3= service.putBlock("test".getBytes(), Cid.Codec.DagCbor);
+//        System.out.println("Cid3: "+new Gson().toJson(cid3));
+//        String cidHex=new String(Hex.encodeHex(cid3.getHash()));
+//        System.out.println("Cid3 Hash: "+cidHex); // Not correct CID format
+//        //System.out.println("Cid3 Hash (CID .encode): "+Cid.fromHex(cidHex));
+//
+//
+//        List<Want> wants = new ArrayList<>();
+//        wants.add(new Want(cid1, Optional.of("auth")));
+//        wants.add(new Want(cid2, Optional.of("auth")));
+//        wants.add(new Want(cid3, Optional.of("auth")));
+//        List<HashedBlock> blocks = service.getBlocks(wants, Collections.emptySet(), false);
+//        System.out.println("Blocks: "+new Gson().toJson(blocks));
+//        Assert.assertTrue("blocks retrieved", blocks.size() == 3);
+//    }
+//
+//    public class Tester {
+//        public static void runAPIServiceTest(Blockstore blocks) {
+//            APIService service = new APIService(blocks, null, new ResourceServiceImpl(null,null), new RamBlockstore());  //new BitswapBlockService(null, null),
+//            Cid cid = Cid.decode("zdpuAwfJrGYtiGFDcSV3rDpaUrqCtQZRxMjdC6Eq9PNqLqTGg");
+//            Assert.assertFalse("cid found", service.hasBlock(cid));
+//            String text = "Hello world!";
+//            byte[] block = text.getBytes();
+//>>>>>>> develop
 
         Cid cidAdded = ipfs.blockstore.put(block, Cid.Codec.Raw).join();
         Assert.assertTrue("cid added was found", ipfs.blockstore.has(cidAdded).join());

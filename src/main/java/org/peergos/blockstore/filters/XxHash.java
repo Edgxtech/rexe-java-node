@@ -21,7 +21,7 @@ import java.nio.ByteOrder;
 
 /**
  * Adapted version of xxHash implementation from https://github.com/Cyan4973/xxHash.
- * This implementation provides endian-independant hash values, but it's slower on big-endian platforms.
+ * This implementation provides endian-independant hash values, but integration's slower on big-endian platforms.
  */
 class XxHash {
     // Primes if treated as unsigned

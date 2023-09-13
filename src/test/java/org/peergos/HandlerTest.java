@@ -44,8 +44,13 @@ public class HandlerTest {
 
             apiServer = HttpServer.create(localAPIAddress, 500);
             Blockstore blocks = new TypeLimitedBlockstore(new RamBlockstore(), Set.of(Cid.Codec.Raw));
+//<<<<<<< HEAD
             EmbeddedIpfs ipfs = new EmbeddedIpfs(null, new ProvidingBlockstore(blocks), null, null, null, Optional.empty(), Collections.emptyList());
             apiServer.createContext(APIHandler.API_URL, new APIHandler(ipfs));
+//=======
+//            APIService service = new APIService(blocks, null, new ResourceServiceImpl(null,null), new RamBlockstore()); //new BitswapBlockService(null, null),
+//            apiServer.createContext(APIService.API_URL, new APIHandler(service, null));
+//>>>>>>> develop
             apiServer.setExecutor(Executors.newFixedThreadPool(50));
             apiServer.start();
 
@@ -97,8 +102,13 @@ public class HandlerTest {
             InetSocketAddress localAPIAddress = new InetSocketAddress(apiAddress.getHost(), apiAddress.getPort());
 
             apiServer = HttpServer.create(localAPIAddress, 500);
+//<<<<<<< HEAD
             EmbeddedIpfs ipfs = new EmbeddedIpfs(node1, new ProvidingBlockstore(new RamBlockstore()), null, dht, null, Optional.empty(), Collections.emptyList());
             apiServer.createContext(APIHandler.API_URL, new APIHandler(ipfs));
+//=======
+//            APIService service = new APIService(new RamBlockstore(), dht, new ResourceServiceImpl(null,null), new RamBlockstore()); //new BitswapBlockService(null, null),
+//            apiServer.createContext(APIService.API_URL, new APIHandler(service, node1));
+//>>>>>>> develop
             apiServer.setExecutor(Executors.newFixedThreadPool(50));
             apiServer.start();
 
@@ -122,8 +132,13 @@ public class HandlerTest {
             InetSocketAddress localAPIAddress = new InetSocketAddress(apiAddress.getHost(), apiAddress.getPort());
 
             apiServer = HttpServer.create(localAPIAddress, 500);
+//<<<<<<< HEAD
             EmbeddedIpfs ipfs = new EmbeddedIpfs(null, new ProvidingBlockstore(new RamBlockstore()), null, null, null, Optional.empty(), Collections.emptyList());
             apiServer.createContext(APIHandler.API_URL, new APIHandler(ipfs));
+//=======
+//            APIService service = new APIService(new RamBlockstore(),null, new ResourceServiceImpl(null,null), new RamBlockstore()); // new BitswapBlockService(null, null),
+//            apiServer.createContext(APIService.API_URL, new APIHandler(service, null));
+//>>>>>>> develop
             apiServer.setExecutor(Executors.newFixedThreadPool(50));
             apiServer.start();
 

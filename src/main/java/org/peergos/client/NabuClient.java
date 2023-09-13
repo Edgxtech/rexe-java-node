@@ -77,6 +77,27 @@ public class NabuClient {
         return PeerId.fromBase58(res.get("ID"));
     }
 
+    //////////////////  DP SPECIFIC  //////////////////
+// MOVED TO SEPERATE CLIENT CLASS
+//    public Cid putDp(byte[] data, Optional<String> format) throws IOException {
+//        String fmt = format.map(f -> "&format=" + f).orElse("");
+//        Multipart m = new Multipart(protocol +"://" + host + ":" + port + apiVersion+"dp/put?stream-channels=true" + fmt, "UTF-8");
+//        try {
+//            m.addFilePart("file", Paths.get(""), new NamedStreamable.ByteArrayWrapper(data));
+//            String res = m.finish();
+//            LinkedHashMap<String, String> obj = (LinkedHashMap<String, String>)JSONParser.parse(res);
+//            return Cid.decode(obj.get("Hash"));
+//        } catch (IOException e) {
+//            throw new RuntimeException(e.getMessage(), e);
+//        }
+//    }
+//
+//    public byte[] computeDp(Multihash hash, Optional<String> auth, String functionName, Object[] params) throws IOException {
+//        String authArg = auth.isPresent() ? "&auth=" + auth.get() : "";
+//        // TODO, convert params to comma seperated
+//        return retrieve("block/get?arg=" + hash + "&fn="+functionName+"&params=1,3"+ authArg);
+//    }
+
     public List<Cid> listBlockstore() throws IOException {
         String jsonStream = new String(retrieve("refs/local"));
         return JSONParser.parseStream(jsonStream).stream()
@@ -175,7 +196,7 @@ public class NabuClient {
            additional handled GET as they did before (but stop handling PUT,DELETEs).
 
            By limiting the request types we address the possibility that a website
-           accessed by a browser abuses the IPFS API by issuing GET requests to it which
+           accessed by a browser abuses the IPFS API by issuing GET requests to integration which
            have no Origin or Referrer set, and are thus bypass CORS and CSRF protections.
 
            This is a breaking change for clients that relay on GET requests against the
