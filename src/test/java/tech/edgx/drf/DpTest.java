@@ -1,5 +1,6 @@
 package tech.edgx.drf;
 
+import com.google.gson.Gson;
 import com.sun.net.httpserver.HttpServer;
 import io.ipfs.cid.Cid;
 import io.ipfs.multiaddr.MultiAddress;
@@ -12,6 +13,7 @@ import org.peergos.blockstore.RamBlockstore;
 import org.peergos.net.APIHandler;
 import org.peergos.protocol.dht.Kademlia;
 import tech.edgx.drf.client.DrfClient;
+import tech.edgx.drf.model.User;
 import tech.edgx.drf.util.Helpers;
 import tech.edgx.drf.util.HexUtil;
 
@@ -60,7 +62,7 @@ public class DpTest {
             boolean has = drfClient.hasBlock(addedHash, Optional.empty());
             Assert.assertTrue("has block as expected", has);
 
-            String result = drfClient.compute(addedHash, Optional.empty(), "add", Optional.of(new String[]{"1.12312","3.232432"}));
+            Object result = drfClient.compute(addedHash, Optional.empty(), "add", Optional.of(new String[]{"1.12312","3.232432"}));
             print("DP compute result: "+result);
 
         } catch (IOException ioe) {
@@ -81,8 +83,51 @@ public class DpTest {
             boolean has = drfClient.hasBlock(addedHash, Optional.empty());
             Assert.assertTrue("has block as expected", has);
 
-            String result = drfClient.compute(addedHash, Optional.empty(), "getTestVal", Optional.empty());
+            Object result = drfClient.compute(addedHash, Optional.empty(), "getTestVal", Optional.empty());
             print("DP compute result: "+result);
+
+        } catch (IOException ioe) {
+            ioe.printStackTrace();
+            Assert.assertTrue("IOException", false);
+        }
+    }
+
+    @Test
+    public void computeDpMysqlConnector() {
+        String TEST_USERNAME = "drftestuser";
+        String TEST_EMAIL = "drftestuser@test.com";
+        String TEST_NEW_EMAIL = "drftestuser.new@test.com";
+        try {
+            String testDpName = "src/main/resources/TestMysqlDp.jar";
+            File jarFile = new File(testDpName);
+            Helpers.printJarInfo(jarFile);
+            byte[] bytecode = Files.readAllBytes(jarFile.toPath());
+            Cid addedHash = drfClient.put(bytecode, Optional.of("raw"));
+
+            boolean has = drfClient.hasBlock(addedHash, Optional.empty());
+            Assert.assertTrue("has block as expected", has);
+
+            Object result1 = drfClient.compute(addedHash, Optional.empty(), "insert", Optional.of(new String[]{"drftestuser"}));
+            print("DP compute result (insert): "+result1);
+            Assert.assertTrue("Insert ok", result1.toString().equals("insert: ok"));
+
+            // Perhaps need to provide an objectrepresentation to faciliate decoding at the other end
+            //    Or just rely on the spec, I.e. the app implementing this client knows if I call retrieve on that DP it will return a User.class object of certain props
+            Object result2 = drfClient.compute(addedHash, Optional.empty(), "retrieve", Optional.of(new String[]{"drftestuser"}));
+            print("DP compute result (retrieve): "+result2);
+            User user = User.fromJson((Map) result2);
+            print("Recovered user obj: "+new Gson().toJson(user));
+            Assert.assertTrue("User retrieved is correct", (user.getUsername().equals(TEST_USERNAME) && user.getEmail().equals(TEST_EMAIL)));
+
+            Object result3 = drfClient.compute(addedHash, Optional.empty(), "update", Optional.of(new String[]{"drftestuser", TEST_NEW_EMAIL}));
+            print("DP compute result (on update): "+result3);
+            Assert.assertTrue("Update ok", result3.toString().equals("update: ok"));
+
+            Object result31 = drfClient.compute(addedHash, Optional.empty(), "retrieve", Optional.of(new String[]{"drftestuser"}));
+            print("DP compute result (after update): "+result31);
+            User user2 = User.fromJson((Map) result31);
+            print("Recovered user obj2: "+new Gson().toJson(user2));
+            Assert.assertTrue("Email was updated", TEST_NEW_EMAIL.equals(user2.getEmail()));
 
         } catch (IOException ioe) {
             ioe.printStackTrace();

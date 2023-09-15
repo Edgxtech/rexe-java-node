@@ -64,20 +64,20 @@ public class DpRemoteIT {
             boolean has0 = client1.hasBlock(addedHash, Optional.empty());
             Assert.assertTrue("has block as expected", has0);
 
-            String result = client1.compute(addedHash, Optional.empty(), "getTestVal", Optional.empty());
+            Object result = client1.compute(addedHash, Optional.empty(), "getTestVal", Optional.empty());
             print("Compute result (from same client): "+result);
             Assert.assertTrue("result is as expected", result.equals("MY DP test val"));
 
             // Pull from other nodes, testing content routing ability
             if (client2.hasBlock(addedHash, Optional.empty()))
                 client2.removeBlock(addedHash); // Remove since it might have been persisted previously
-            String result2 = client2.compute(addedHash, Optional.empty(), "getTestVal", Optional.empty());
+            Object result2 = client2.compute(addedHash, Optional.empty(), "getTestVal", Optional.empty());
             print("Compute result (client2): "+result2);
             Assert.assertTrue("result is as expected", result2.equals("MY DP test val"));
 
             if (client0.hasBlock(addedHash, Optional.empty()))
                 client0.removeBlock(addedHash); // Remove since it might have been persisted previously
-            String result0 = client0.compute(addedHash, Optional.empty(), "getTestVal", Optional.empty());
+            Object result0 = client0.compute(addedHash, Optional.empty(), "getTestVal", Optional.empty());
             print("Compute result (client0): "+result0);
             Assert.assertTrue("result is as expected", result0.equals("MY DP test val"));
 
@@ -102,20 +102,20 @@ public class DpRemoteIT {
 
             double val1 = 99932;
             double val2 = 143.432423;
-            String result = client1.compute(addedHash, Optional.empty(), "add", Optional.of(new String[]{String.valueOf(val1),String.valueOf(val2)}));
+            Object result = client1.compute(addedHash, Optional.empty(), "add", Optional.of(new String[]{String.valueOf(val1),String.valueOf(val2)}));
             print("Compute result (from same client): "+result);
             Assert.assertTrue("result is as expected", result.equals(String.valueOf(val1 + val2)));
 
             // Pull from other nodes, testing content routing ability
             if (client2.hasBlock(addedHash, Optional.empty()))
                 client2.removeBlock(addedHash); // Remove since it might have been persisted previously
-            String result2 = client2.compute(addedHash, Optional.empty(), "add", Optional.of(new String[]{String.valueOf(val1),String.valueOf(val2)}));
+            Object result2 = client2.compute(addedHash, Optional.empty(), "add", Optional.of(new String[]{String.valueOf(val1),String.valueOf(val2)}));
             print("Compute result (client2): "+result2);
             Assert.assertTrue("result is as expected", result2.equals(String.valueOf(val1 + val2)));
 
             if (client0.hasBlock(addedHash, Optional.empty()))
                 client0.removeBlock(addedHash); // Remove since it might have been persisted previously
-            String result0 = client0.compute(addedHash, Optional.empty(), "add", Optional.of(new String[]{String.valueOf(val1),String.valueOf(val2)}));
+            Object result0 = client0.compute(addedHash, Optional.empty(), "add", Optional.of(new String[]{String.valueOf(val1),String.valueOf(val2)}));
             print("Compute result (client0): "+result0);
             Assert.assertTrue("result is as expected", result0.equals(String.valueOf(val1 + val2)));
 

@@ -31,29 +31,16 @@ public class APIHandler extends Handler {
     public static final String BLOOM_ADD = "bloom/add";
     public static final String HAS = "block/has";
     // ADDED
-    /// ACTUALLY DOES IT BELONG HERE?, SHOULD BE MORE OF AN IPNS LAYER API I NEED TO PROVIDE FOR EXECUTING DPs
-    public static final String GET_DP = "dp/get";
-    public static final String PUT_DP = "dp/put";
+    /// ACTUALLY DOES IT BELONG HERE?, SHOULD IT BE MORE OF AN IPNS LAYER API I NEED TO PROVIDE FOR EXECUTING DPs
     public static final String COMPUTE = "dp/compute"; // Execute/compute the DP
-    public static final String RM_DP = "dp/rm";
-    public static final String STAT_DP = "dp/stat";
-    public static final String REFS_LOCAL_DP = "dp/refs/local";
-    public static final String BLOOM_ADD_DP = "dp/bloom/add";
-    public static final String HAS_DP = "dp/has";
 
     public static final String FIND_PROVS = "dht/findprovs";
 
     private final EmbeddedIpfs ipfs; // In latest update they added ability to start/stop, but removed the ApiService abstraction
 
-    //private final APIService apiService;
-
     public APIHandler(EmbeddedIpfs ipfs) {
         this.ipfs = ipfs;
     }
-
-//    public APIHandler(APIService apiService) {
-//        this.apiService = apiService;
-//    }
 
     public void handleCallToAPI(HttpExchange httpExchange) {
 
@@ -139,7 +126,7 @@ public class APIHandler extends Handler {
                         throw new APIException("Multiple input not supported");
                     }
                     byte[] block = data.get(0);
-                    if (block.length >  1024 * 1024 * 2) { //todo what should the limit be?
+                    if (block.length >  10e6) { //10 Mb
                         throw new APIException("Block too large");
                     }
                     Cid cid = ipfs.blockstore.put(block, Cid.Codec.lookupIPLDName(reqFormat)).join();
@@ -292,6 +279,7 @@ public class APIHandler extends Handler {
                     if (dpResults != null && !dpResults.isEmpty()) {
                         Map res = new HashMap<>();
                         res.put("Result", dpResults.get(0).result);
+                        LOG.info("Result map: "+new Gson().toJson(res));
                         replyJson(httpExchange, JSONParser.toString(res));
                     } else {
                         try {

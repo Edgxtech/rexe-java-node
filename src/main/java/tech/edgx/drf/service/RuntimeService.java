@@ -40,12 +40,11 @@ public class RuntimeService {
         LOG.info("Running DP, function: "+functionName+", Params: "+(optParams.isPresent() ? new Gson().toJson(optParams.get()) : "Nil"));
         File jarFile = Files.write(Paths.get("tmp.dp"), data).toFile();
         Helpers.printJarInfo(jarFile);
-        /* JVM must be running with arg: -Djava.system.class.loader=util.tech.edgx.drf.DynamicClassLoader - config in surefire plugin */
+        /* JVM must be running with arg: -Djava.system.class.loader=util.tech.edgx.drf.DynamicClassLoader or config in surefire plugin */
         // Based on: https://github.com/update4j/update4j/blob/master/src/main/java/org/update4j/DynamicClassLoader.java
         URL url = jarFile.toURI().toURL();
         dcl.add(url);
         Class dpClass = Class.forName(DP_CLASS_NAME, true, dcl);
-
 
         Object instance = dpClass.newInstance();
         Object result = null;
@@ -64,9 +63,9 @@ public class RuntimeService {
                 Object newObj = parseObjectFromString(paramsIterator.next().toString(), paramTypesIterator.next());
                 __params.add(newObj);
             }
-            LOG.info("Prams: "+__params.size());
+            LOG.info("Params: "+__params.size());
             Object[] myparams = __params.toArray(new Object[__params.size()]);
-            LOG.info("Prams: "+myparams.length);
+            LOG.info("Params: "+myparams.length);
             Method method = dpClass.getDeclaredMethod(functionName, parameterTypes.toArray(new Class[parameterTypes.size()]));
             result = method.invoke(instance, myparams);
             // Can throw java.lang.IllegalArgumentException: wrong number of arguments
@@ -74,42 +73,13 @@ public class RuntimeService {
             Method method = dpClass.getDeclaredMethod(functionName);
             result = method.invoke(instance);
         }
-        return new DpResult(cid, result.toString());
+        LOG.info("Result: "+result);
+//        return new DpResult(cid, result.toString());
+        return new DpResult(cid, result);
     }
 
     public static <T> T parseObjectFromString(String s, Class<T> clazz) throws Exception {
         return clazz.getConstructor(new Class[] {String.class }).newInstance(s);
-    }
-
-
-
-//    public DpResult runDp(Cid cid, byte[] dp, String functionName, String[] params) throws Exception {
-//        //String cmd = System.getProperty("user.dir")+System.getProperty("file.separator") + (!address.contains("service") ? EXTRACT_STAKE_ADDR_SCRIPT : EXTRACT_STAKE_ADDR_SCRIPT_TEST) + " " + address + " " + addressConversionBinary;
-//        //String cmd = System.getProperty("user.dir")+System.getProperty("file.separator") + ;
-//
-//        Path dpPath = Path.of(System.getenv("HOME"), ".ipfs").resolve("dp").resolve("temp.jar");
-//        LOG.fine("Writing file: "+new Gson().toJson(dpPath));
-//        Files.write(dpPath, dp);
-//
-//        String[] cmd = { "/bin/sh", "-c", "java -jar temp.jar" };
-//        LOG.fine("Running Command: "+cmd[2]);
-//        Runtime rt = Runtime.getRuntime();
-//        Process proc = rt.exec(cmd);
-//        BufferedReader stdInput = new BufferedReader(new InputStreamReader(proc.getInputStream()));
-//        String output = stdInput.readLine().trim();
-//        LOG.fine("Dp execution result: "+output);
-//        //return output;
-//        return new DpResult(cid, output);
-//    }
-
-    public void runCommand(String cmd) throws Exception {
-        Runtime run = Runtime.getRuntime();
-        Process pr = run.exec(cmd);
-        try {
-            pr.waitFor();
-        } catch (InterruptedException ex) {
-            LOG.severe("Error executing cmd: "+cmd);
-        }
     }
 }
 

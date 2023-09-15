@@ -221,7 +221,7 @@ public class ResSwapEngine {
                                     .setPrefix(ByteString.copyFrom(prefixBytes(c)))
                                     // Should be the result - not the block data
                                     //.setData(ByteString.copyFrom(dp.get())) //dpResult.toString().getBytes()
-                                    .setData(ByteString.copyFrom(dpResult.result.getBytes()))
+                                    .setData(ByteString.copyFrom(dpResult.result.toString().getBytes()))
                                     .setFunctionName(e.getFunctionName())
                                     //.setParams(params)
                                     .addAllParams(e.getParamsList())

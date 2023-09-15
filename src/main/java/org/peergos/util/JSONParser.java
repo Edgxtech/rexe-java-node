@@ -1,6 +1,9 @@
 package org.peergos.util;
 
+import com.google.gson.Gson;
+
 import java.util.*;
+import java.lang.reflect.Method;
 
 public class JSONParser
 {
@@ -249,7 +252,7 @@ public class JSONParser
             return null;
         }
 
-        throw new IllegalStateException("json object at at "+startPos+"  '"+json+"'");
+        throw new IllegalStateException("json object at "+startPos+" '"+json+"'");
     }
 
     public static Object parse(Object json)
@@ -356,18 +359,21 @@ public class JSONParser
             escapeString(obj.toString(), buf);
         else
         {
-        	/* todo-fix
-            try
-            {
-                Class cls = obj.getClass();
-                Method m = cls.getDeclaredMethod("toJSON", new Class[0]);
-                Object jsonObj = m.invoke(obj, new Object[0]);
-                buf.append(toString(jsonObj));
-            }
-            catch (Exception e)
-            {
-                escapeString(obj.toString(), buf);
-            }*/
+            /// It is a custom object need to parse
+            buf.append(new Gson().toJson(obj));
+            //escapeString(obj.toString(), buf);
+//        	///* todo-fix
+//            try
+//            {
+//                Class cls = obj.getClass();
+//                Method m = cls.getDeclaredMethod("toJSON", new Class[0]);
+//                Object jsonObj = m.invoke(obj, new Object[0]);
+//                buf.append(toString(jsonObj));
+//            }
+//            catch (Exception e)
+//            {
+//                escapeString(obj.toString(), buf);
+//            }//*/
         }
     }
 

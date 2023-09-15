@@ -41,11 +41,16 @@ public class DrfClient extends ClientCommon {
         }
     }
 
-    public String compute(Multihash hash, Optional<String> auth, String functionName, Optional<Object[]> params) throws IOException {
+    // TODO, I think this needs a result object representation provided in the query?
+    //   So can have generalised computation
+    //   The representation
+    public Object compute(Multihash hash, Optional<String> auth, String functionName, Optional<Object[]> params) throws IOException {
         String authArg = auth.isPresent() ? "&auth=" + auth.get() : "";
         String fnParamsArg = params.isPresent() ? "&params=" + StringUtils.join(params.get(),",") : "";
         LOG.info("FunctionPARAMS arg: "+fnParamsArg);
-        Map<String, String> res = retrieveMap("dp/compute?arg=" + hash + "&fn="+functionName + fnParamsArg + authArg);
+        Map<String, Object> res = retrieveMap("dp/compute?arg=" + hash + "&fn="+functionName + fnParamsArg + authArg);
+       // Map result = (Map) res.get("Result");
+        System.out.println("Returning result['Result']: "+res.get("Result"));
         return res.get("Result");
     }
 

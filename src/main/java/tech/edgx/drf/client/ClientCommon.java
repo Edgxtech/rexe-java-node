@@ -80,6 +80,8 @@ public class ClientCommon {
 
     protected Object retrieveAndParse(String path) throws IOException {
         byte[] res = retrieve(path);
+        System.out.println("Parsing request: "+path);
+        System.out.println("Parsing request -result: "+new String(res));
         return JSONParser.parse(new String(res));
     }
 
@@ -128,6 +130,11 @@ public class ClientCommon {
             int r;
             while ((r = in.read(buf)) >= 0)
                 resp.write(buf, 0, r);
+            
+            String output = new String(resp.toByteArray());
+            System.out.println("http result: "+output);
+            System.out.println("http result2: "+resp.toString());
+
             return resp.toByteArray();
         } catch (ConnectException e) {
             throw new RuntimeException("Couldn't connect to IPFS daemon at "+target+"\n Is IPFS running?");
