@@ -1,4 +1,4 @@
-package tech.edgx.drf.integration;
+package tech.edgx.drf.block;
 
 import io.ipfs.cid.Cid;
 import io.ipfs.multiaddr.MultiAddress;
@@ -15,7 +15,7 @@ import java.nio.file.Files;
 import java.util.List;
 import java.util.Optional;
 
-public class BlockRemoteIT {
+public class BlockIT {
 
     static DrfClient client0;
     static DrfClient client1;

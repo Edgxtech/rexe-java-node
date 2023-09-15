@@ -1,4 +1,4 @@
-package tech.edgx.drf;
+package tech.edgx.drf.resswap;
 
 import io.ipfs.cid.Cid;
 import io.libp2p.core.Host;

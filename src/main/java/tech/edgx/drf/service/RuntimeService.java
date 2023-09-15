@@ -67,6 +67,7 @@ public class RuntimeService {
             Object[] myparams = __params.toArray(new Object[__params.size()]);
             LOG.info("Params: "+myparams.length);
             Method method = dpClass.getDeclaredMethod(functionName, parameterTypes.toArray(new Class[parameterTypes.size()]));
+            //Class.forName("com.mysql.jdbc.Driver");
             result = method.invoke(instance, myparams);
             // Can throw java.lang.IllegalArgumentException: wrong number of arguments
         } else {

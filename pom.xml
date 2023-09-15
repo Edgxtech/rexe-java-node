@@ -4,8 +4,8 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>tech.edgx.dee</groupId>
-    <artifactId>dee-java-node-dc1</artifactId>
+    <groupId>tech.edgx.drf</groupId>
+    <artifactId>drf-java-node-dc1</artifactId>
     <version>v0.0.1-SNAPSHOT</version>
 
     <properties>

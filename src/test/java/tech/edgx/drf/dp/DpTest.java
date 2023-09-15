@@ -1,4 +1,4 @@
-package tech.edgx.drf;
+package tech.edgx.drf.dp;
 
 import com.google.gson.Gson;
 import com.sun.net.httpserver.HttpServer;
@@ -36,7 +36,6 @@ public class DpTest {
             InetSocketAddress localAPIAddress = new InetSocketAddress(apiAddress.getHost(), apiAddress.getPort());
 
             apiServer = HttpServer.create(localAPIAddress, 500);
-            // SWAPPED
             EmbeddedIpfs ipfs = new EmbeddedIpfs(null, new ProvidingBlockstore(new RamBlockstore()), null, new Kademlia(null, false), null, Optional.empty(), Collections.emptyList());
             apiServer.createContext(APIHandler.API_URL, new APIHandler(ipfs));
 
@@ -107,27 +106,31 @@ public class DpTest {
             boolean has = drfClient.hasBlock(addedHash, Optional.empty());
             Assert.assertTrue("has block as expected", has);
 
-            Object result1 = drfClient.compute(addedHash, Optional.empty(), "insert", Optional.of(new String[]{"drftestuser"}));
+            Object result1 = drfClient.compute(addedHash, Optional.empty(), "insert", Optional.of(new String[]{TEST_USERNAME}));
             print("DP compute result (insert): "+result1);
             Assert.assertTrue("Insert ok", result1.toString().equals("insert: ok"));
 
             // Perhaps need to provide an objectrepresentation to faciliate decoding at the other end
             //    Or just rely on the spec, I.e. the app implementing this client knows if I call retrieve on that DP it will return a User.class object of certain props
-            Object result2 = drfClient.compute(addedHash, Optional.empty(), "retrieve", Optional.of(new String[]{"drftestuser"}));
+            Object result2 = drfClient.compute(addedHash, Optional.empty(), "retrieve", Optional.of(new String[]{TEST_USERNAME}));
             print("DP compute result (retrieve): "+result2);
             User user = User.fromJson((Map) result2);
             print("Recovered user obj: "+new Gson().toJson(user));
             Assert.assertTrue("User retrieved is correct", (user.getUsername().equals(TEST_USERNAME) && user.getEmail().equals(TEST_EMAIL)));
 
-            Object result3 = drfClient.compute(addedHash, Optional.empty(), "update", Optional.of(new String[]{"drftestuser", TEST_NEW_EMAIL}));
+            Object result3 = drfClient.compute(addedHash, Optional.empty(), "update", Optional.of(new String[]{TEST_USERNAME, TEST_NEW_EMAIL}));
             print("DP compute result (on update): "+result3);
             Assert.assertTrue("Update ok", result3.toString().equals("update: ok"));
 
-            Object result31 = drfClient.compute(addedHash, Optional.empty(), "retrieve", Optional.of(new String[]{"drftestuser"}));
+            Object result31 = drfClient.compute(addedHash, Optional.empty(), "retrieve", Optional.of(new String[]{TEST_USERNAME}));
             print("DP compute result (after update): "+result31);
             User user2 = User.fromJson((Map) result31);
             print("Recovered user obj2: "+new Gson().toJson(user2));
             Assert.assertTrue("Email was updated", TEST_NEW_EMAIL.equals(user2.getEmail()));
+
+            Object result4 = drfClient.compute(addedHash, Optional.empty(), "delete", Optional.of(new String[]{TEST_USERNAME}));
+            print("DP compute result (after delete): "+result4);
+            Assert.assertTrue("User deleted", result4.toString().equals("delete: ok"));
 
         } catch (IOException ioe) {
             ioe.printStackTrace();

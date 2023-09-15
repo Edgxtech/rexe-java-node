@@ -13,6 +13,7 @@ import org.peergos.Hash;
 import org.peergos.HashedBlock;
 import org.peergos.Want;
 import org.peergos.blockstore.Blockstore;
+import org.peergos.util.JSONParser;
 import tech.edgx.drf.model.dp.DpResult;
 import tech.edgx.drf.model.dp.DpWant;
 //import tech.edgx.drf.protocol.resswap.pb.MessageOuterClass;
@@ -212,18 +213,14 @@ public class ResSwapEngine {
                         try {
                             DpResult dpResult = runtimeService.runDp(c, dp.get(), functionName, params); //params);
                             LOG.info("DPResult: "+new Gson().toJson(dpResult));
-
                             /* Build response in protobuf */
                             // Response must contain functionname && params so receiver can lookup
-                            // responses they are awaiting in localDpWantlist
+                            String responseString = JSONParser.toString(dpResult.result);
                             MessageOuterClass.Message.DpResult dpResultP = MessageOuterClass.Message.DpResult.newBuilder()
                                     // Instead of sending the prefix+data IOT get the CID hash, just send the CID hash
                                     .setPrefix(ByteString.copyFrom(prefixBytes(c)))
-                                    // Should be the result - not the block data
-                                    //.setData(ByteString.copyFrom(dp.get())) //dpResult.toString().getBytes()
-                                    .setData(ByteString.copyFrom(dpResult.result.toString().getBytes()))
+                                    .setData(ByteString.copyFrom(responseString.getBytes()))
                                     .setFunctionName(e.getFunctionName())
-                                    //.setParams(params)
                                     .addAllParams(e.getParamsList())
                                     .setCidHash(ByteString.copyFrom(c.getHash()))
                                     .build();
@@ -332,14 +329,12 @@ public class ResSwapEngine {
                     Logger.getGlobal().info("Unsupported hash algorithm " + type.name());
                 } else {
                     // DIFFERENCE HERE IS THE Block/DATA is not sent, only the hash itself
-                    //byte[] hash = Hash.sha256(data);
                     byte[] hash = dpResult.getCidHash().toByteArray();
                     Cid c = new Cid(version, codec, type, hash);
                     LOG.info("received computation for DP: "+ c);
 
-                    // TODO, want-provide protocol messaging needs to send the data & function & params????
+                    // Want-Provide protocol messaging needs to send the data, function & params
                     String functionName = dpResult.getFunctionName().toStringUtf8();
-                    // TODO, this should get String[] or Object[]
 //                    Optional<Object[]> params = dpResult.getParams().isEmpty() ?
 //                            Optional.empty() :
 //                            Optional.of(new Object[]{dpResult.getParams().toStringUtf8()});
@@ -351,9 +346,8 @@ public class ResSwapEngine {
 
                     CompletableFuture<DpResult> waiter = localDpWants.get(w);
                     if (waiter != null) {
-                        LOG.info("Received dpresult for dpwant: " + w.cid+", "+w.functionName+", "+w.params);
-                        String dataString = new String(data);
-                        waiter.complete(new DpResult(c, dataString));
+                        LOG.info("Received dpresult for dpwant: " + w.cid+", "+w.functionName+", "+w.params+": "+new String(data));
+                        waiter.complete(new DpResult(c, JSONParser.parse(new String(data))));
                         localDpWants.remove(w);
                         LOG.info("OK");
                     } else
@@ -363,7 +357,6 @@ public class ResSwapEngine {
                 e.printStackTrace();
             }
         }
-
 
         if (presences.isEmpty() && blocks.isEmpty() && wants.isEmpty() && dpResults.isEmpty())
             return;
