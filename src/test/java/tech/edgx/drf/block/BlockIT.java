@@ -15,16 +15,16 @@ import java.nio.file.Files;
 import java.util.List;
 import java.util.Optional;
 
+/* Must startup a cluster first,
+  use: ./start.sh 0, ./start.sh 1, ./start.sh 2
+  OR// a 'Multirun' config in IDE
+*/
 public class BlockIT {
 
     static DrfClient client0;
     static DrfClient client1;
     static DrfClient client2;
 
-    /* Must startup a cluster first,
-      use: ./start.sh 0, ./start.sh 1, ./start.sh 2
-      OR// Multirun -> '3-node cluster' config from IDE
-    */
     @BeforeClass
     public static void setUp() {
         try {

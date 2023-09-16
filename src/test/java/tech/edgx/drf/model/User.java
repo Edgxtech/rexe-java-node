@@ -2,7 +2,7 @@ package tech.edgx.drf.model;
 
 import java.util.Map;
 
-/* Must match package name and model used by the corresponding DP called */
+/* Must match package name and attributes used by the corresponding DP */
 public class User {
     String username;
     String password;
