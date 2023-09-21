@@ -1,17 +1,27 @@
 package tech.edgx.drf.scratchpad;
 
 import com.google.gson.Gson;
-import org.junit.Assert;
+import io.ipfs.multihash.Multihash;
+import org.junit.Before;
 import org.junit.Test;
-import tech.edgx.drf.model.User;
+import tech.edgx.dp.mysqlcrud.model.User;
+import tech.edgx.dp.chatsvc.model.Message;
+import tech.edgx.drf.client.DrfClient;
 import tech.edgx.drf.util.Helpers;
 import tech.edgx.drf.util.DynamicClassLoader;
+import tech.edgx.util.DpArgsMatcher;
 
 import java.io.File;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
-import java.lang.reflect.TypeVariable;
 import java.net.URL;
+import java.util.List;
+import java.util.Optional;
+
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class ClassloaderTest {
 
@@ -30,6 +40,24 @@ public class ClassloaderTest {
        - JVM must run with arg: -Djava.system.class.loader=util.tech.edgx.drf.DynamicClassLoader - config in surefire plugin
          Based on: https://github.com/update4j/update4j/blob/master/src/main/java/org/update4j/DynamicClassLoader.java
      */
+
+    static String TEST_USERNAME_A = "johno";
+    static String TEST_USERNAME_B = "smithy";
+
+    DrfClient drfClient1;
+
+    @Before
+    public void setUp() throws Exception {
+        //MockitoAnnotations.initMocks(this);
+        drfClient1 = mock(DrfClient.class);
+        when(drfClient1.compute(any(Multihash.class),any(),eq("tech.edgx.dp.chatsvc.DP:retrieve"), argThat(new DpArgsMatcher(Optional.of(new String[]{TEST_USERNAME_A}))))).thenReturn(
+                new tech.edgx.dp.chatsvc.model.User(TEST_USERNAME_A, "secretpass", TEST_USERNAME_A+" Fullname", TEST_USERNAME_A+"@test.com", "305c300d06092a864886f70d0101010500034b0030480241008dcb47244f6bd248744b7863317526d818e5c8a5347fbfc20364dbbf1698359b417813e008e72d2cf21786b366f5ce4145a717427475f625e7ab9b3c3182f6750203010001")
+        );
+        when(drfClient1.compute(any(Multihash.class),any(),eq("tech.edgx.dp.chatsvc.DP:retrieve"), argThat(new DpArgsMatcher(Optional.of(new String[]{TEST_USERNAME_B}))))).thenReturn(
+                new tech.edgx.dp.chatsvc.model.User(TEST_USERNAME_B, "secretpass", TEST_USERNAME_B+" Fullname", TEST_USERNAME_B+"@test.com", "305c300d06092a864886f70d0101010500034b003048024100d4b20b7b0d29023a43baba7a6045aa18363bfbfc992f318038109a1e7beb973440ab702dfb7b746b97a0ee7f3771359edb36c700218c0cd66de51451de1586090203010001")
+        );
+    }
+
     @Test
     public void runJar() throws Exception {
         String jarFileName = "src/main/resources/TestDp.jar";
@@ -45,7 +73,7 @@ public class ClassloaderTest {
         ///////////////////////////////////
         // Run a Util Class method
         ///////////////////////////////////
-        Class dpClass = Class.forName("MyUtil", true, dcl);
+        Class dpClass = Class.forName("tech.edgx.dp.testdp.MyUtil", true, dcl);
         for (Method method : dpClass.getDeclaredMethods()) { // gets new methods programmed
             System.out.println("Declared Method: " + method.toString());
         }
@@ -60,7 +88,7 @@ public class ClassloaderTest {
         ///////////////////////////////////
         // Run Main class main() method
         ///////////////////////////////////
-        Class dpClass2 = Class.forName("Main", true, dcl);
+        Class dpClass2 = Class.forName("tech.edgx.dp.testdp.Main", true, dcl);
         for (Method method2 : dpClass2.getDeclaredMethods()) { // gets new methods programmed
             System.out.println("Declared Method: " + method2.toString());
         }
@@ -81,7 +109,7 @@ public class ClassloaderTest {
         URL url = jarFile.toURI().toURL();
         dcl.add(url);
 
-        Class dpClass = Class.forName("DP", true, dcl);
+        Class dpClass = Class.forName("tech.edgx.dp.mysqlcrud.DP", true, dcl);
         for (Method method : dpClass.getDeclaredMethods()) { // gets new methods programmed
             System.out.println("Declared Method: " + method.toString());
         }
@@ -117,5 +145,37 @@ public class ClassloaderTest {
 
         Method deleteMethod = dpClass.getDeclaredMethod("delete", String.class);
         System.out.println("Result4: " + deleteMethod.invoke(instance, new Object[]{"drftestuser"}));
+    }
+
+    @Test
+    public void runChatSvcDP() throws Exception {
+        String jarFileName = "src/main/resources/TestChatSvcDp.jar";
+        File jarFile = new File(jarFileName);
+        Helpers.printJarInfo(jarFile);
+
+        /* JVM must run with arg: -Djava.system.class.loader=util.tech.edgx.drf.DynamicClassLoader - config in surefire plugin */
+        // Based on: https://github.com/update4j/update4j/blob/master/src/main/java/org/update4j/DynamicClassLoader.java
+        DynamicClassLoader dcl = (DynamicClassLoader) ClassLoader.getSystemClassLoader();
+        URL url = jarFile.toURI().toURL();
+        dcl.add(url);
+
+        Class dpClass = Class.forName("tech.edgx.dp.chatsvc.DP", true, dcl);
+        //Object instance = dpClass.newInstance(drfClient1); // If default constructor
+        Object instance = dpClass.getDeclaredConstructor(String.class).newInstance("/ip4/127.0.0.1/tcp/5001"); //drfClient1
+
+        Method method = dpClass.getDeclaredMethod("queryFeed", Integer.class);
+
+        /// THEN HOW DO I SET THE DRFCLIENT AS MOCKED ONE?
+        Method setDrfClientMethod = dpClass.getDeclaredMethod("overrideDrfClient", DrfClient.class);
+        setDrfClientMethod.invoke(instance, drfClient1);
+
+        Object result = method.invoke(instance, 5);
+        List<Message> messages = (List<Message>) result;
+        System.out.println("Result1: " + new Gson().toJson(messages));
+
+        Method startChatMethod = dpClass.getDeclaredMethod("start", String.class, String.class); //String.class,
+        Object result2 = startChatMethod.invoke(instance, TEST_USERNAME_A, TEST_USERNAME_B); //"bafkreidqsvifumsanj3etycgiluhj6hkiljswxdy73thpqmkwmrla6z24a",
+        Integer chatId = (Integer) result2;
+        System.out.println("Result2: " + chatId);
     }
 }

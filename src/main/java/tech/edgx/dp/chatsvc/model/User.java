@@ -1,19 +1,19 @@
-package tech.edgx.drf.model;
+package tech.edgx.dp.chatsvc.model;
 
-import java.util.Map;
-
-/* Must match package name and attributes used by the corresponding DP */
+/* Must match package name and attributes used by the corresponding client */
 public class User {
     String username;
     String password;
     String fullname;
     String email;
+    String pubkey;
 
-    public User(String username, String password, String fullname, String email) {
+    public User(String username, String password, String fullname, String email, String pubkey) {
         this.username = username;
         this.password = password;
         this.fullname = fullname;
         this.email = email;
+        this.pubkey = pubkey;
     }
 
     public String getUsername() {
@@ -48,11 +48,11 @@ public class User {
         this.email = email;
     }
 
-    public static User fromJson(Map<String,Object> json) {
-        return new User(
-                json.get("username").toString(),
-                json.get("password").toString(),
-                json.get("fullname").toString(),
-                json.get("email").toString());
+    public String getPubkey() {
+        return pubkey;
+    }
+
+    public void setPubkey(String pubkey) {
+        this.pubkey = pubkey;
     }
 }

@@ -2,6 +2,7 @@ package tech.edgx.drf.protocol.resswap;
 
 import com.google.gson.Gson;
 import com.google.protobuf.ByteString;
+import com.google.protobuf.Option;
 import io.ipfs.cid.Cid;
 import io.ipfs.multihash.Multihash;
 import io.libp2p.core.AddressBook;
@@ -211,7 +212,7 @@ public class ResSwapEngine {
                         LOG.fine("Pushing compute result for functionname: "+functionName+", params: "+new Gson().toJson(paramStrings));
 
                         try {
-                            DpResult dpResult = runtimeService.runDp(c, dp.get(), functionName, params); //params);
+                            DpResult dpResult = runtimeService.runDp(c, dp.get(), functionName, params, Optional.empty()); //params);
                             LOG.info("DPResult: "+new Gson().toJson(dpResult));
                             /* Build response in protobuf */
                             // Response must contain functionname && params so receiver can lookup

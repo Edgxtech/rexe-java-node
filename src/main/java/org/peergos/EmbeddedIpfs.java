@@ -113,7 +113,7 @@ public class EmbeddedIpfs {
         for (DpWant w : local) {
             LOG.info("Executing: "+w.cid.toString()+", "+w.functionName);
             try {
-                DpResult dpResult = runtimeService.runDp(w.cid, blockstore.get(w.cid).join().get(), w.functionName, w.params);
+                DpResult dpResult = runtimeService.runDp(w.cid, blockstore.get(w.cid).join().get(), w.functionName, w.params, Optional.empty());
                 resultsComputed.add(dpResult);
             } catch(Exception e) {
                 e.printStackTrace();

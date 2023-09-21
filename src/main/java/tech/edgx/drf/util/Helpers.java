@@ -4,6 +4,7 @@ import org.peergos.util.Logging;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.util.jar.Attributes;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
@@ -16,8 +17,8 @@ public class Helpers {
 
     public static void printJarInfo(File file) throws IOException {
         if (file.exists()){
-            JarFile jarfile = new JarFile(file);
-            Manifest manifest = jarfile.getManifest();
+            JarFile jarFile = new JarFile(file);
+            Manifest manifest = jarFile.getManifest();
             Attributes attrs = (Attributes)manifest.getMainAttributes();
             for (Iterator it=attrs.keySet().iterator(); it.hasNext(); ) {
                 Attributes.Name attrName = (Attributes.Name)it.next();
@@ -28,5 +29,15 @@ public class Helpers {
         else{
             LOG.fine("File not found.");
         }
+    }
+
+    public static boolean isRunningTests() {
+        for (StackTraceElement s : Thread.currentThread().getStackTrace()) {
+            LOG.info("StackEle: "+s.getClassName());
+            if (s.getClassName().contains("org.junit.runners.model")) {
+                return true;
+            }
+        }
+        return false;
     }
 }

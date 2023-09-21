@@ -17,10 +17,14 @@ package tech.edgx.drf.util;
  */
 
 import java.io.IOException;
-import java.net.URL;
-import java.net.URLClassLoader;
+import java.net.*;
 import java.nio.file.Paths;
 
+
+/*  Based on:
+    https://github.com/update4j/update4j/blob/master/src/main/java/org/update4j/DynamicClassLoader.java
+    https://stackoverflow.com/questions/60764/how-to-load-jar-files-dynamically-at-runtime
+    Requires JVM arg: -Djava.system.class.loader=tech.edgx.drf.util.DynamicClassLoader */
 public final class DynamicClassLoader extends URLClassLoader {
 
     static {
@@ -42,13 +46,13 @@ public final class DynamicClassLoader extends URLClassLoader {
         this(Thread.currentThread().getContextClassLoader());
     }
 
+    /* this is why needed to extend URLClassLoader, so get dynamic adding */
     public void add(URL url) {
         addURL(url);
     }
 
     public static DynamicClassLoader findAncestor(ClassLoader cl) {
         do {
-
             if (cl instanceof DynamicClassLoader)
                 return (DynamicClassLoader) cl;
 

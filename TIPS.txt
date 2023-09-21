@@ -1,4 +1,10 @@
 
+### LOADING .sql file for DP datamodel creation
+mysql -u root -p < SQLScript.sql
+CREATE required user:
+    CREATE USER 'dp'@'localhost' IDENTIFIED BY 'dp';
+
+
 NOTE:
 Will get e.g.: java.lang.NoSuchMethodException: DP.insert()
 If the DP you are referencing is incorrect.

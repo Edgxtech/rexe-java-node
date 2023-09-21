@@ -7,6 +7,12 @@ Tests for more types of DPs:
         - mysql realtime weather
         ** combine and allow lookup weather at a specific location
 
+Deploying a DP that has operating system dependencies (i.e. mysql tables)
+    - must install the required node configs.
+
+Wrap this 'Resource eXchange System (RXS)' or (REX) in peergos-forked node which will be the drf-java-node
+    drf-node provides user accounts, pki, authentication, admin-UI, generic user-UI, resource API
+
 Need to think about how large DP blocks can be? upper limit?
     - It will likely be different to IPFS, which is about 2MB limit
     - Does it make sense to have the distributed compute on seperate set of nodes altogether optimised for computing?

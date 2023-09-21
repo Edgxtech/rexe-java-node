@@ -35,6 +35,7 @@ public class DrfClient extends ClientCommon {
             m.addFilePart("file", Paths.get(""), new NamedStreamable.ByteArrayWrapper(data));
             String res = m.finish();
             LinkedHashMap<String, String> obj = (LinkedHashMap<String, String>)JSONParser.parse(res);
+            LOG.fine("Data length: "+data.length+", CID: "+Cid.decode(obj.get("Hash")).toBase58());
             return Cid.decode(obj.get("Hash"));
         } catch (IOException e) {
             throw new RuntimeException(e.getMessage(), e);

@@ -6,7 +6,7 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import tech.edgx.drf.client.DrfClient;
-import tech.edgx.drf.model.User;
+import tech.edgx.dp.mysqlcrud.model.User;
 import tech.edgx.drf.util.Helpers;
 
 import java.io.File;
