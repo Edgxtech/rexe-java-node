@@ -3,6 +3,7 @@ package tech.edgx.drf.resswap;
 import io.ipfs.cid.Cid;
 import io.libp2p.core.Host;
 import io.libp2p.core.multiformats.Multiaddr;
+import org.junit.Assert;
 import org.junit.Test;
 import org.peergos.HashedBlock;
 import org.peergos.HostBuilder;
@@ -15,6 +16,7 @@ import tech.edgx.drf.model.dp.DpWant;
 import tech.edgx.drf.protocol.resswap.ResSwap;
 import tech.edgx.drf.util.Helpers;
 
+import javax.swing.text.html.Option;
 import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -93,17 +95,17 @@ public class ResSwapTest {
 
             // Request from 1 - which should negotiate the swap with 2 after 2 responds integration has integration locally
             ResSwap resSwap1 = builder1.getResSwap().get();
-            DpWant dpWant = new DpWant(hash, Optional.empty(), "getTestVal", Optional.of(new Object[]{""}));
+            DpWant dpWant = new DpWant(hash, Optional.empty(), "tech.edgx.dp.testdp.DP:getTestVal", Optional.of(new Object[]{""}), Optional.empty());
             System.out.println("Sending compute request: "+dpWant.cid+", functionname: "+dpWant.functionName + ", params: "+dpWant.params +", auth: "+dpWant.auth);
             List<DpResult> receivedResults = resSwap1.compute(List.of(dpWant), node1, Set.of(address2.getPeerId()), false) //Set.of(address2.getPeerId())
                     .stream()
                     .map(f -> f.join())
                     .collect(Collectors.toList());
             System.out.println("Received result: "+ receivedResults.get(0).result);
-
-            if (!receivedResults.get(0).result.equals("MY DP test val")) {
-                throw new IllegalStateException("Incorrect result returned!");
-            }
+            Assert.assertEquals("Correct result", receivedResults.get(0).result.toString(),"MY DP test val");
+//            if (!receivedResults.get(0).result.equals("MY DP test val")) {
+//                throw new IllegalStateException("Incorrect result returned!");
+//            }
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -144,17 +146,14 @@ public class ResSwapTest {
             ResSwap resSwap1 = builder1.getResSwap().get();
             double val1 = 99932;
             double val2 = 43.432423;
-            DpWant dpWant = new DpWant(hash, Optional.empty(), "add", Optional.of(new String[]{String.valueOf(val1),String.valueOf(val2)}));
+            DpWant dpWant = new DpWant(hash, Optional.empty(), "tech.edgx.dp.testdp.DP:add", Optional.of(new String[]{String.valueOf(val1),String.valueOf(val2)}), Optional.empty());
             System.out.println("Sending compute request: "+dpWant.cid+", functionname: "+dpWant.functionName + ", params: "+dpWant.params +", auth: "+dpWant.auth);
             List<DpResult> receivedResults = resSwap1.compute(List.of(dpWant), node1, Set.of(address2.getPeerId()), false) //Set.of(address2.getPeerId())
                     .stream()
                     .map(f -> f.join())
                     .collect(Collectors.toList());
-            System.out.println("Received result: "+ receivedResults.get(0).result);
-
-            if (!receivedResults.get(0).result.equals(String.valueOf(val1 + val2))) {
-                throw new IllegalStateException("Incorrect result returned!");
-            }
+            System.out.println("Received result: "+ receivedResults.get(0).result+", vs expected: "+String.valueOf(val1 + val2));
+            Assert.assertEquals("Correct result", receivedResults.get(0).result.toString(),String.valueOf(val1 + val2));
         } catch (Exception e) {
             e.printStackTrace();
         }

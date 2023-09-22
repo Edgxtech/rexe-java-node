@@ -9,17 +9,15 @@ public class DpWant {
     public final Cid cid;
     public final String functionName;
     public final Optional<Object[]> params;
+    public final Optional<Object[]> args;
     public final Optional<String> auth;
-    public DpWant(Cid cid, Optional<String> auth, String functionName, Optional<Object[]> params) {
+    public DpWant(Cid cid, Optional<String> auth, String functionName, Optional<Object[]> params, Optional<Object[]> args) {
         this.cid = cid;
         this.auth = auth;
         this.functionName = functionName;
         this.params = params;
+        this.args = args;
     }
-
-//    public DpWant(Cid h) {
-//        this(h, Optional.empty());
-//    }
 
     @Override
     public boolean equals(Object o) {

@@ -3,10 +3,14 @@ package tech.edgx.drf.chat_dp;
 import com.sun.net.httpserver.HttpServer;
 import io.ipfs.cid.Cid;
 import io.ipfs.multiaddr.MultiAddress;
+import io.ipfs.multihash.Multihash;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.runner.RunWith;
+import org.mockito.MockedConstruction;
+import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.peergos.EmbeddedIpfs;
 import org.peergos.blockstore.ProvidingBlockstore;
@@ -15,7 +19,9 @@ import org.peergos.net.APIHandler;
 import org.peergos.protocol.dht.Kademlia;
 import tech.edgx.drf.client.DrfClient;
 import tech.edgx.drf.util.Helpers;
+import tech.edgx.util.DpArgsMatcher;
 
+import javax.swing.text.html.Option;
 import java.io.File;
 import java.net.InetSocketAddress;
 import java.nio.file.Files;
@@ -23,10 +29,16 @@ import java.util.Collections;
 import java.util.Optional;
 import java.util.concurrent.Executors;
 
-@RunWith(MockitoJUnitRunner.class)
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
+
+//@RunWith(MockitoJUnitRunner.class)
 public class ChatDpTest {
 
     static DrfClient drfClient;
+
+    static String TEST_USERNAME_A = "drftestuserA";
+    static String TEST_USERNAME_B = "drftestuserB";
 
 //    @Mock
 //    public tech.edgx.drf.dp.DP mockDp = new DP();
@@ -39,18 +51,19 @@ public class ChatDpTest {
         HttpServer apiServer = null;
         try {
             MultiAddress apiAddress = new MultiAddress("/ip4/127.0.0.1/tcp/8123");
-            InetSocketAddress localAPIAddress = new InetSocketAddress(apiAddress.getHost(), apiAddress.getPort());
 
-            apiServer = HttpServer.create(localAPIAddress, 500);
-            EmbeddedIpfs ipfs = new EmbeddedIpfs(null, new ProvidingBlockstore(new RamBlockstore()), null, new Kademlia(null, false), null, Optional.empty(), Collections.emptyList());
-            apiServer.createContext(APIHandler.API_URL, new APIHandler(ipfs));
+                InetSocketAddress localAPIAddress = new InetSocketAddress(apiAddress.getHost(), apiAddress.getPort());
 
-            apiServer.setExecutor(Executors.newFixedThreadPool(50));
-            apiServer.start();
+                apiServer = HttpServer.create(localAPIAddress, 500);
+                EmbeddedIpfs ipfs = new EmbeddedIpfs(null, new ProvidingBlockstore(new RamBlockstore()), null, new Kademlia(null, false), null, Optional.empty(), Collections.emptyList());
+                apiServer.createContext(APIHandler.API_URL, new APIHandler(ipfs));
 
-            drfClient = new DrfClient(apiAddress.getHost(), apiAddress.getPort(), "/api/v0/", false);
-            String version = drfClient.version();
-            Assert.assertTrue("version", version != null);
+                apiServer.setExecutor(Executors.newFixedThreadPool(50));
+                apiServer.start();
+
+                drfClient = new DrfClient(apiAddress.getHost(), apiAddress.getPort(), "/api/v0/", false);
+                String version = drfClient.version();
+                Assert.assertTrue("version", version != null);
         }
         catch (Exception e) {e.printStackTrace();}
     }
@@ -62,11 +75,23 @@ public class ChatDpTest {
     //         create two users
     // call ChatSvc: start chat{users[], userDpRef} -> partitions chat record, chat_user records, links users, finds users credentials in chatDP
 
+    //private MockedConstruction<DrfClient> mockAController;
+
+//    @BeforeEach
+//    public void beginTest() {
+//        //create mock controller for all constructors of the given class
+//        mockAController = Mockito.mockConstruction(DrfClient.class,
+//                (mock, context) -> {
+//                    //implement initializer for mock. Set return value for object A mock methods
+//                    //this initializer will be called each time during mock creation
+//                    when(mock.check()).thenReturn(" Constructor Mock A ");
+//                });
+//    }
 
     @Test
     public void testChatSvcDp() {
-        String TEST_USERNAMEA = "drftestuserA";
-        String TEST_USERNAMEB = "drftestuserB";
+        String TEST_USERNAME_A = "drftestuserA";
+        String TEST_USERNAME_B = "drftestuserB";
         try {
             /* PRELOAD the User DP and create two new users */
             String testDpName = "src/main/resources/TestUserDp.jar";
@@ -77,10 +102,10 @@ public class ChatDpTest {
             Cid userDpHash = drfClient.put(bytecode, Optional.of("raw"));
             print("UserDP hash, b58: "+userDpHash.toBase58()+"; "+userDpHash.toString());
 
-            Object result1 = drfClient.compute(userDpHash, Optional.empty(), "tech.edgx.dp.usercrud.DP:create", Optional.of(new String[]{TEST_USERNAMEA}));
+            Object result1 = drfClient.compute(userDpHash, Optional.empty(), "tech.edgx.dp.usercrud.DP:create", Optional.of(new String[]{TEST_USERNAME_A}), Optional.empty());
             print("DP compute result (create) {privkey}: " + result1);
 
-            Object result2 = drfClient.compute(userDpHash, Optional.empty(), "tech.edgx.dp.usercrud.DP:create", Optional.of(new String[]{TEST_USERNAMEB}));
+            Object result2 = drfClient.compute(userDpHash, Optional.empty(), "tech.edgx.dp.usercrud.DP:create", Optional.of(new String[]{TEST_USERNAME_B}),Optional.empty());
             print("DP compute result (create) {privkey}: " + result2);
 
             /* PRELOAD the ChatSvc DP and start a chat */
@@ -92,11 +117,8 @@ public class ChatDpTest {
             Cid chatSvcHash = drfClient.put(bytecode2, Optional.of("raw"));
             print("ChatSvcDp hash: "+chatSvcHash.toBase58());
 
-            // Uses the userDp from above in the start() function IOT lookup the user details
-            // TODO UP TO HERE
-            //  The issue is the DP tries to create a real drf-rex-client but nil nodes running
-            //  Not sure if I can mock a classloader recovered class???
-            Object result3 = drfClient.compute(chatSvcHash, Optional.empty(), "tech.edgx.dp.chatsvc.DP:start", Optional.of(new String[]{TEST_USERNAMEA, TEST_USERNAMEB})); // userDpHash.toString(),
+            // Pass constructor arg if using a custom userDp or DrfClientApi from above in the start() function IOT lookup the user details
+            Object result3 = drfClient.compute(chatSvcHash, Optional.empty(), "tech.edgx.dp.chatsvc.DP:start", Optional.of(new String[]{TEST_USERNAME_A, TEST_USERNAME_B}), Optional.empty()); // Can override which DRF client used by the DP for subsequent calls; Optional.of(new String[]{"/ip4/127.0.0.1/tcp/5004"})
             print("DP compute result (start [chat]): " + result3);
 
         } catch (Exception e) {

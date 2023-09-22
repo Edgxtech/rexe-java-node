@@ -315,13 +315,13 @@ public final class MessageOuterClass {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return MessageOuterClass.internal_static_tech_edgx_dee_protocol_resswap_pb_Message_descriptor;
+      return MessageOuterClass.internal_static_tech_edgx_drf_protocol_resswap_pb_Message_descriptor;
     }
 
     @Override
     protected FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return MessageOuterClass.internal_static_tech_edgx_dee_protocol_resswap_pb_Message_fieldAccessorTable
+      return MessageOuterClass.internal_static_tech_edgx_drf_protocol_resswap_pb_Message_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
               Message.class, Builder.class);
     }
@@ -560,13 +560,13 @@ public final class MessageOuterClass {
       }
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return MessageOuterClass.internal_static_tech_edgx_dee_protocol_resswap_pb_Message_Wantlist_descriptor;
+        return MessageOuterClass.internal_static_tech_edgx_drf_protocol_resswap_pb_Message_Wantlist_descriptor;
       }
 
       @Override
       protected FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return MessageOuterClass.internal_static_tech_edgx_dee_protocol_resswap_pb_Message_Wantlist_fieldAccessorTable
+        return MessageOuterClass.internal_static_tech_edgx_drf_protocol_resswap_pb_Message_Wantlist_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
                 Wantlist.class, Builder.class);
       }
@@ -889,13 +889,13 @@ public final class MessageOuterClass {
         }
         public static final com.google.protobuf.Descriptors.Descriptor
             getDescriptor() {
-          return MessageOuterClass.internal_static_tech_edgx_dee_protocol_resswap_pb_Message_Wantlist_Entry_descriptor;
+          return MessageOuterClass.internal_static_tech_edgx_drf_protocol_resswap_pb_Message_Wantlist_Entry_descriptor;
         }
 
         @Override
         protected FieldAccessorTable
             internalGetFieldAccessorTable() {
-          return MessageOuterClass.internal_static_tech_edgx_dee_protocol_resswap_pb_Message_Wantlist_Entry_fieldAccessorTable
+          return MessageOuterClass.internal_static_tech_edgx_drf_protocol_resswap_pb_Message_Wantlist_Entry_fieldAccessorTable
               .ensureFieldAccessorsInitialized(
                   Entry.class, Builder.class);
         }
@@ -1284,13 +1284,13 @@ public final class MessageOuterClass {
             EntryOrBuilder {
           public static final com.google.protobuf.Descriptors.Descriptor
               getDescriptor() {
-            return MessageOuterClass.internal_static_tech_edgx_dee_protocol_resswap_pb_Message_Wantlist_Entry_descriptor;
+            return MessageOuterClass.internal_static_tech_edgx_drf_protocol_resswap_pb_Message_Wantlist_Entry_descriptor;
           }
 
           @Override
           protected FieldAccessorTable
               internalGetFieldAccessorTable() {
-            return MessageOuterClass.internal_static_tech_edgx_dee_protocol_resswap_pb_Message_Wantlist_Entry_fieldAccessorTable
+            return MessageOuterClass.internal_static_tech_edgx_drf_protocol_resswap_pb_Message_Wantlist_Entry_fieldAccessorTable
                 .ensureFieldAccessorsInitialized(
                     Entry.class, Builder.class);
           }
@@ -1335,7 +1335,7 @@ public final class MessageOuterClass {
           @Override
           public com.google.protobuf.Descriptors.Descriptor
               getDescriptorForType() {
-            return MessageOuterClass.internal_static_tech_edgx_dee_protocol_resswap_pb_Message_Wantlist_Entry_descriptor;
+            return MessageOuterClass.internal_static_tech_edgx_drf_protocol_resswap_pb_Message_Wantlist_Entry_descriptor;
           }
 
           @Override
@@ -2169,13 +2169,13 @@ public final class MessageOuterClass {
           WantlistOrBuilder {
         public static final com.google.protobuf.Descriptors.Descriptor
             getDescriptor() {
-          return MessageOuterClass.internal_static_tech_edgx_dee_protocol_resswap_pb_Message_Wantlist_descriptor;
+          return MessageOuterClass.internal_static_tech_edgx_drf_protocol_resswap_pb_Message_Wantlist_descriptor;
         }
 
         @Override
         protected FieldAccessorTable
             internalGetFieldAccessorTable() {
-          return MessageOuterClass.internal_static_tech_edgx_dee_protocol_resswap_pb_Message_Wantlist_fieldAccessorTable
+          return MessageOuterClass.internal_static_tech_edgx_drf_protocol_resswap_pb_Message_Wantlist_fieldAccessorTable
               .ensureFieldAccessorsInitialized(
                   Wantlist.class, Builder.class);
         }
@@ -2213,7 +2213,7 @@ public final class MessageOuterClass {
         @Override
         public com.google.protobuf.Descriptors.Descriptor
             getDescriptorForType() {
-          return MessageOuterClass.internal_static_tech_edgx_dee_protocol_resswap_pb_Message_Wantlist_descriptor;
+          return MessageOuterClass.internal_static_tech_edgx_drf_protocol_resswap_pb_Message_Wantlist_descriptor;
         }
 
         @Override
@@ -2856,13 +2856,13 @@ public final class MessageOuterClass {
       }
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return MessageOuterClass.internal_static_tech_edgx_dee_protocol_resswap_pb_Message_Block_descriptor;
+        return MessageOuterClass.internal_static_tech_edgx_drf_protocol_resswap_pb_Message_Block_descriptor;
       }
 
       @Override
       protected FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return MessageOuterClass.internal_static_tech_edgx_dee_protocol_resswap_pb_Message_Block_fieldAccessorTable
+        return MessageOuterClass.internal_static_tech_edgx_drf_protocol_resswap_pb_Message_Block_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
                 Block.class, Builder.class);
       }
@@ -3085,13 +3085,13 @@ public final class MessageOuterClass {
           BlockOrBuilder {
         public static final com.google.protobuf.Descriptors.Descriptor
             getDescriptor() {
-          return MessageOuterClass.internal_static_tech_edgx_dee_protocol_resswap_pb_Message_Block_descriptor;
+          return MessageOuterClass.internal_static_tech_edgx_drf_protocol_resswap_pb_Message_Block_descriptor;
         }
 
         @Override
         protected FieldAccessorTable
             internalGetFieldAccessorTable() {
-          return MessageOuterClass.internal_static_tech_edgx_dee_protocol_resswap_pb_Message_Block_fieldAccessorTable
+          return MessageOuterClass.internal_static_tech_edgx_drf_protocol_resswap_pb_Message_Block_fieldAccessorTable
               .ensureFieldAccessorsInitialized(
                   Block.class, Builder.class);
         }
@@ -3126,7 +3126,7 @@ public final class MessageOuterClass {
         @Override
         public com.google.protobuf.Descriptors.Descriptor
             getDescriptorForType() {
-          return MessageOuterClass.internal_static_tech_edgx_dee_protocol_resswap_pb_Message_Block_descriptor;
+          return MessageOuterClass.internal_static_tech_edgx_drf_protocol_resswap_pb_Message_Block_descriptor;
         }
 
         @Override
@@ -3420,7 +3420,7 @@ public final class MessageOuterClass {
 
       /**
        * <pre>
-       * TODO, can prob just make a hash of params[] since this is just to help match to the original want
+       * Function params. TODO, can prob just make a hash of params[] since this is just to help match to the original want
        * </pre>
        *
        * <code>repeated bytes params = 5;</code>
@@ -3428,7 +3428,7 @@ public final class MessageOuterClass {
       java.util.List<com.google.protobuf.ByteString> getParamsList();
       /**
        * <pre>
-       * TODO, can prob just make a hash of params[] since this is just to help match to the original want
+       * Function params. TODO, can prob just make a hash of params[] since this is just to help match to the original want
        * </pre>
        *
        * <code>repeated bytes params = 5;</code>
@@ -3436,7 +3436,7 @@ public final class MessageOuterClass {
       int getParamsCount();
       /**
        * <pre>
-       * TODO, can prob just make a hash of params[] since this is just to help match to the original want
+       * Function params. TODO, can prob just make a hash of params[] since this is just to help match to the original want
        * </pre>
        *
        * <code>repeated bytes params = 5;</code>
@@ -3444,7 +3444,32 @@ public final class MessageOuterClass {
       com.google.protobuf.ByteString getParams(int index);
 
       /**
-       * <code>bytes cidHash = 6;</code>
+       * <pre>
+       * Constructor args. TODO, can prob just make a hash of params[] since this is just to help match to the original want
+       * </pre>
+       *
+       * <code>repeated bytes args = 6;</code>
+       */
+      java.util.List<com.google.protobuf.ByteString> getArgsList();
+      /**
+       * <pre>
+       * Constructor args. TODO, can prob just make a hash of params[] since this is just to help match to the original want
+       * </pre>
+       *
+       * <code>repeated bytes args = 6;</code>
+       */
+      int getArgsCount();
+      /**
+       * <pre>
+       * Constructor args. TODO, can prob just make a hash of params[] since this is just to help match to the original want
+       * </pre>
+       *
+       * <code>repeated bytes args = 6;</code>
+       */
+      com.google.protobuf.ByteString getArgs(int index);
+
+      /**
+       * <code>bytes cidHash = 7;</code>
        */
       com.google.protobuf.ByteString getCidHash();
     }
@@ -3466,6 +3491,7 @@ public final class MessageOuterClass {
         auth_ = com.google.protobuf.ByteString.EMPTY;
         functionName_ = com.google.protobuf.ByteString.EMPTY;
         params_ = java.util.Collections.emptyList();
+        args_ = java.util.Collections.emptyList();
         cidHash_ = com.google.protobuf.ByteString.EMPTY;
       }
 
@@ -3522,6 +3548,14 @@ public final class MessageOuterClass {
                 break;
               }
               case 50: {
+                if (!((mutable_bitField0_ & 0x00000020) == 0x00000020)) {
+                  args_ = new java.util.ArrayList<com.google.protobuf.ByteString>();
+                  mutable_bitField0_ |= 0x00000020;
+                }
+                args_.add(input.readBytes());
+                break;
+              }
+              case 58: {
 
                 cidHash_ = input.readBytes();
                 break;
@@ -3544,19 +3578,22 @@ public final class MessageOuterClass {
           if (((mutable_bitField0_ & 0x00000010) == 0x00000010)) {
             params_ = java.util.Collections.unmodifiableList(params_);
           }
+          if (((mutable_bitField0_ & 0x00000020) == 0x00000020)) {
+            args_ = java.util.Collections.unmodifiableList(args_);
+          }
           this.unknownFields = unknownFields.build();
           makeExtensionsImmutable();
         }
       }
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return MessageOuterClass.internal_static_tech_edgx_dee_protocol_resswap_pb_Message_DpResult_descriptor;
+        return MessageOuterClass.internal_static_tech_edgx_drf_protocol_resswap_pb_Message_DpResult_descriptor;
       }
 
       @Override
       protected FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return MessageOuterClass.internal_static_tech_edgx_dee_protocol_resswap_pb_Message_DpResult_fieldAccessorTable
+        return MessageOuterClass.internal_static_tech_edgx_drf_protocol_resswap_pb_Message_DpResult_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
                 DpResult.class, Builder.class);
       }
@@ -3610,7 +3647,7 @@ public final class MessageOuterClass {
       private java.util.List<com.google.protobuf.ByteString> params_;
       /**
        * <pre>
-       * TODO, can prob just make a hash of params[] since this is just to help match to the original want
+       * Function params. TODO, can prob just make a hash of params[] since this is just to help match to the original want
        * </pre>
        *
        * <code>repeated bytes params = 5;</code>
@@ -3621,7 +3658,7 @@ public final class MessageOuterClass {
       }
       /**
        * <pre>
-       * TODO, can prob just make a hash of params[] since this is just to help match to the original want
+       * Function params. TODO, can prob just make a hash of params[] since this is just to help match to the original want
        * </pre>
        *
        * <code>repeated bytes params = 5;</code>
@@ -3631,7 +3668,7 @@ public final class MessageOuterClass {
       }
       /**
        * <pre>
-       * TODO, can prob just make a hash of params[] since this is just to help match to the original want
+       * Function params. TODO, can prob just make a hash of params[] since this is just to help match to the original want
        * </pre>
        *
        * <code>repeated bytes params = 5;</code>
@@ -3640,10 +3677,44 @@ public final class MessageOuterClass {
         return params_.get(index);
       }
 
-      public static final int CIDHASH_FIELD_NUMBER = 6;
+      public static final int ARGS_FIELD_NUMBER = 6;
+      private java.util.List<com.google.protobuf.ByteString> args_;
+      /**
+       * <pre>
+       * Constructor args. TODO, can prob just make a hash of params[] since this is just to help match to the original want
+       * </pre>
+       *
+       * <code>repeated bytes args = 6;</code>
+       */
+      public java.util.List<com.google.protobuf.ByteString>
+          getArgsList() {
+        return args_;
+      }
+      /**
+       * <pre>
+       * Constructor args. TODO, can prob just make a hash of params[] since this is just to help match to the original want
+       * </pre>
+       *
+       * <code>repeated bytes args = 6;</code>
+       */
+      public int getArgsCount() {
+        return args_.size();
+      }
+      /**
+       * <pre>
+       * Constructor args. TODO, can prob just make a hash of params[] since this is just to help match to the original want
+       * </pre>
+       *
+       * <code>repeated bytes args = 6;</code>
+       */
+      public com.google.protobuf.ByteString getArgs(int index) {
+        return args_.get(index);
+      }
+
+      public static final int CIDHASH_FIELD_NUMBER = 7;
       private com.google.protobuf.ByteString cidHash_;
       /**
-       * <code>bytes cidHash = 6;</code>
+       * <code>bytes cidHash = 7;</code>
        */
       public com.google.protobuf.ByteString getCidHash() {
         return cidHash_;
@@ -3678,8 +3749,11 @@ public final class MessageOuterClass {
         for (int i = 0; i < params_.size(); i++) {
           output.writeBytes(5, params_.get(i));
         }
+        for (int i = 0; i < args_.size(); i++) {
+          output.writeBytes(6, args_.get(i));
+        }
         if (!cidHash_.isEmpty()) {
-          output.writeBytes(6, cidHash_);
+          output.writeBytes(7, cidHash_);
         }
         unknownFields.writeTo(output);
       }
@@ -3715,9 +3789,18 @@ public final class MessageOuterClass {
           size += dataSize;
           size += 1 * getParamsList().size();
         }
+        {
+          int dataSize = 0;
+          for (int i = 0; i < args_.size(); i++) {
+            dataSize += com.google.protobuf.CodedOutputStream
+              .computeBytesSizeNoTag(args_.get(i));
+          }
+          size += dataSize;
+          size += 1 * getArgsList().size();
+        }
         if (!cidHash_.isEmpty()) {
           size += com.google.protobuf.CodedOutputStream
-            .computeBytesSize(6, cidHash_);
+            .computeBytesSize(7, cidHash_);
         }
         size += unknownFields.getSerializedSize();
         memoizedSize = size;
@@ -3745,6 +3828,8 @@ public final class MessageOuterClass {
             .equals(other.getFunctionName());
         result = result && getParamsList()
             .equals(other.getParamsList());
+        result = result && getArgsList()
+            .equals(other.getArgsList());
         result = result && getCidHash()
             .equals(other.getCidHash());
         result = result && unknownFields.equals(other.unknownFields);
@@ -3769,6 +3854,10 @@ public final class MessageOuterClass {
         if (getParamsCount() > 0) {
           hash = (37 * hash) + PARAMS_FIELD_NUMBER;
           hash = (53 * hash) + getParamsList().hashCode();
+        }
+        if (getArgsCount() > 0) {
+          hash = (37 * hash) + ARGS_FIELD_NUMBER;
+          hash = (53 * hash) + getArgsList().hashCode();
         }
         hash = (37 * hash) + CIDHASH_FIELD_NUMBER;
         hash = (53 * hash) + getCidHash().hashCode();
@@ -3876,13 +3965,13 @@ public final class MessageOuterClass {
           DpResultOrBuilder {
         public static final com.google.protobuf.Descriptors.Descriptor
             getDescriptor() {
-          return MessageOuterClass.internal_static_tech_edgx_dee_protocol_resswap_pb_Message_DpResult_descriptor;
+          return MessageOuterClass.internal_static_tech_edgx_drf_protocol_resswap_pb_Message_DpResult_descriptor;
         }
 
         @Override
         protected FieldAccessorTable
             internalGetFieldAccessorTable() {
-          return MessageOuterClass.internal_static_tech_edgx_dee_protocol_resswap_pb_Message_DpResult_fieldAccessorTable
+          return MessageOuterClass.internal_static_tech_edgx_drf_protocol_resswap_pb_Message_DpResult_fieldAccessorTable
               .ensureFieldAccessorsInitialized(
                   DpResult.class, Builder.class);
         }
@@ -3915,6 +4004,8 @@ public final class MessageOuterClass {
 
           params_ = java.util.Collections.emptyList();
           bitField0_ = (bitField0_ & ~0x00000010);
+          args_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00000020);
           cidHash_ = com.google.protobuf.ByteString.EMPTY;
 
           return this;
@@ -3923,7 +4014,7 @@ public final class MessageOuterClass {
         @Override
         public com.google.protobuf.Descriptors.Descriptor
             getDescriptorForType() {
-          return MessageOuterClass.internal_static_tech_edgx_dee_protocol_resswap_pb_Message_DpResult_descriptor;
+          return MessageOuterClass.internal_static_tech_edgx_drf_protocol_resswap_pb_Message_DpResult_descriptor;
         }
 
         @Override
@@ -3954,6 +4045,11 @@ public final class MessageOuterClass {
             bitField0_ = (bitField0_ & ~0x00000010);
           }
           result.params_ = params_;
+          if (((bitField0_ & 0x00000020) == 0x00000020)) {
+            args_ = java.util.Collections.unmodifiableList(args_);
+            bitField0_ = (bitField0_ & ~0x00000020);
+          }
+          result.args_ = args_;
           result.cidHash_ = cidHash_;
           result.bitField0_ = to_bitField0_;
           onBuilt();
@@ -4023,6 +4119,16 @@ public final class MessageOuterClass {
             } else {
               ensureParamsIsMutable();
               params_.addAll(other.params_);
+            }
+            onChanged();
+          }
+          if (!other.args_.isEmpty()) {
+            if (args_.isEmpty()) {
+              args_ = other.args_;
+              bitField0_ = (bitField0_ & ~0x00000020);
+            } else {
+              ensureArgsIsMutable();
+              args_.addAll(other.args_);
             }
             onChanged();
           }
@@ -4208,7 +4314,7 @@ public final class MessageOuterClass {
         }
         /**
          * <pre>
-         * TODO, can prob just make a hash of params[] since this is just to help match to the original want
+         * Function params. TODO, can prob just make a hash of params[] since this is just to help match to the original want
          * </pre>
          *
          * <code>repeated bytes params = 5;</code>
@@ -4219,7 +4325,7 @@ public final class MessageOuterClass {
         }
         /**
          * <pre>
-         * TODO, can prob just make a hash of params[] since this is just to help match to the original want
+         * Function params. TODO, can prob just make a hash of params[] since this is just to help match to the original want
          * </pre>
          *
          * <code>repeated bytes params = 5;</code>
@@ -4229,7 +4335,7 @@ public final class MessageOuterClass {
         }
         /**
          * <pre>
-         * TODO, can prob just make a hash of params[] since this is just to help match to the original want
+         * Function params. TODO, can prob just make a hash of params[] since this is just to help match to the original want
          * </pre>
          *
          * <code>repeated bytes params = 5;</code>
@@ -4239,7 +4345,7 @@ public final class MessageOuterClass {
         }
         /**
          * <pre>
-         * TODO, can prob just make a hash of params[] since this is just to help match to the original want
+         * Function params. TODO, can prob just make a hash of params[] since this is just to help match to the original want
          * </pre>
          *
          * <code>repeated bytes params = 5;</code>
@@ -4256,7 +4362,7 @@ public final class MessageOuterClass {
         }
         /**
          * <pre>
-         * TODO, can prob just make a hash of params[] since this is just to help match to the original want
+         * Function params. TODO, can prob just make a hash of params[] since this is just to help match to the original want
          * </pre>
          *
          * <code>repeated bytes params = 5;</code>
@@ -4272,7 +4378,7 @@ public final class MessageOuterClass {
         }
         /**
          * <pre>
-         * TODO, can prob just make a hash of params[] since this is just to help match to the original want
+         * Function params. TODO, can prob just make a hash of params[] since this is just to help match to the original want
          * </pre>
          *
          * <code>repeated bytes params = 5;</code>
@@ -4287,7 +4393,7 @@ public final class MessageOuterClass {
         }
         /**
          * <pre>
-         * TODO, can prob just make a hash of params[] since this is just to help match to the original want
+         * Function params. TODO, can prob just make a hash of params[] since this is just to help match to the original want
          * </pre>
          *
          * <code>repeated bytes params = 5;</code>
@@ -4299,15 +4405,115 @@ public final class MessageOuterClass {
           return this;
         }
 
+        private java.util.List<com.google.protobuf.ByteString> args_ = java.util.Collections.emptyList();
+        private void ensureArgsIsMutable() {
+          if (!((bitField0_ & 0x00000020) == 0x00000020)) {
+            args_ = new java.util.ArrayList<com.google.protobuf.ByteString>(args_);
+            bitField0_ |= 0x00000020;
+           }
+        }
+        /**
+         * <pre>
+         * Constructor args. TODO, can prob just make a hash of params[] since this is just to help match to the original want
+         * </pre>
+         *
+         * <code>repeated bytes args = 6;</code>
+         */
+        public java.util.List<com.google.protobuf.ByteString>
+            getArgsList() {
+          return java.util.Collections.unmodifiableList(args_);
+        }
+        /**
+         * <pre>
+         * Constructor args. TODO, can prob just make a hash of params[] since this is just to help match to the original want
+         * </pre>
+         *
+         * <code>repeated bytes args = 6;</code>
+         */
+        public int getArgsCount() {
+          return args_.size();
+        }
+        /**
+         * <pre>
+         * Constructor args. TODO, can prob just make a hash of params[] since this is just to help match to the original want
+         * </pre>
+         *
+         * <code>repeated bytes args = 6;</code>
+         */
+        public com.google.protobuf.ByteString getArgs(int index) {
+          return args_.get(index);
+        }
+        /**
+         * <pre>
+         * Constructor args. TODO, can prob just make a hash of params[] since this is just to help match to the original want
+         * </pre>
+         *
+         * <code>repeated bytes args = 6;</code>
+         */
+        public Builder setArgs(
+            int index, com.google.protobuf.ByteString value) {
+          if (value == null) {
+    throw new NullPointerException();
+  }
+  ensureArgsIsMutable();
+          args_.set(index, value);
+          onChanged();
+          return this;
+        }
+        /**
+         * <pre>
+         * Constructor args. TODO, can prob just make a hash of params[] since this is just to help match to the original want
+         * </pre>
+         *
+         * <code>repeated bytes args = 6;</code>
+         */
+        public Builder addArgs(com.google.protobuf.ByteString value) {
+          if (value == null) {
+    throw new NullPointerException();
+  }
+  ensureArgsIsMutable();
+          args_.add(value);
+          onChanged();
+          return this;
+        }
+        /**
+         * <pre>
+         * Constructor args. TODO, can prob just make a hash of params[] since this is just to help match to the original want
+         * </pre>
+         *
+         * <code>repeated bytes args = 6;</code>
+         */
+        public Builder addAllArgs(
+            Iterable<? extends com.google.protobuf.ByteString> values) {
+          ensureArgsIsMutable();
+          com.google.protobuf.AbstractMessageLite.Builder.addAll(
+              values, args_);
+          onChanged();
+          return this;
+        }
+        /**
+         * <pre>
+         * Constructor args. TODO, can prob just make a hash of params[] since this is just to help match to the original want
+         * </pre>
+         *
+         * <code>repeated bytes args = 6;</code>
+         */
+        public Builder clearArgs() {
+          args_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00000020);
+          onChanged();
+          return this;
+        }
+
         private com.google.protobuf.ByteString cidHash_ = com.google.protobuf.ByteString.EMPTY;
         /**
-         * <code>bytes cidHash = 6;</code>
+         * <code>bytes cidHash = 7;</code>
          */
         public com.google.protobuf.ByteString getCidHash() {
           return cidHash_;
         }
         /**
-         * <code>bytes cidHash = 6;</code>
+         * <code>bytes cidHash = 7;</code>
          */
         public Builder setCidHash(com.google.protobuf.ByteString value) {
           if (value == null) {
@@ -4319,7 +4525,7 @@ public final class MessageOuterClass {
           return this;
         }
         /**
-         * <code>bytes cidHash = 6;</code>
+         * <code>bytes cidHash = 7;</code>
          */
         public Builder clearCidHash() {
           
@@ -4486,13 +4692,13 @@ public final class MessageOuterClass {
       }
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return MessageOuterClass.internal_static_tech_edgx_dee_protocol_resswap_pb_Message_BlockPresence_descriptor;
+        return MessageOuterClass.internal_static_tech_edgx_drf_protocol_resswap_pb_Message_BlockPresence_descriptor;
       }
 
       @Override
       protected FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return MessageOuterClass.internal_static_tech_edgx_dee_protocol_resswap_pb_Message_BlockPresence_fieldAccessorTable
+        return MessageOuterClass.internal_static_tech_edgx_drf_protocol_resswap_pb_Message_BlockPresence_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
                 BlockPresence.class, Builder.class);
       }
@@ -4722,13 +4928,13 @@ public final class MessageOuterClass {
           BlockPresenceOrBuilder {
         public static final com.google.protobuf.Descriptors.Descriptor
             getDescriptor() {
-          return MessageOuterClass.internal_static_tech_edgx_dee_protocol_resswap_pb_Message_BlockPresence_descriptor;
+          return MessageOuterClass.internal_static_tech_edgx_drf_protocol_resswap_pb_Message_BlockPresence_descriptor;
         }
 
         @Override
         protected FieldAccessorTable
             internalGetFieldAccessorTable() {
-          return MessageOuterClass.internal_static_tech_edgx_dee_protocol_resswap_pb_Message_BlockPresence_fieldAccessorTable
+          return MessageOuterClass.internal_static_tech_edgx_drf_protocol_resswap_pb_Message_BlockPresence_fieldAccessorTable
               .ensureFieldAccessorsInitialized(
                   BlockPresence.class, Builder.class);
         }
@@ -4763,7 +4969,7 @@ public final class MessageOuterClass {
         @Override
         public com.google.protobuf.Descriptors.Descriptor
             getDescriptorForType() {
-          return MessageOuterClass.internal_static_tech_edgx_dee_protocol_resswap_pb_Message_BlockPresence_descriptor;
+          return MessageOuterClass.internal_static_tech_edgx_drf_protocol_resswap_pb_Message_BlockPresence_descriptor;
         }
 
         @Override
@@ -5499,13 +5705,13 @@ public final class MessageOuterClass {
         MessageOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return MessageOuterClass.internal_static_tech_edgx_dee_protocol_resswap_pb_Message_descriptor;
+        return MessageOuterClass.internal_static_tech_edgx_drf_protocol_resswap_pb_Message_descriptor;
       }
 
       @Override
       protected FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return MessageOuterClass.internal_static_tech_edgx_dee_protocol_resswap_pb_Message_fieldAccessorTable
+        return MessageOuterClass.internal_static_tech_edgx_drf_protocol_resswap_pb_Message_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
                 Message.class, Builder.class);
       }
@@ -5565,7 +5771,7 @@ public final class MessageOuterClass {
       @Override
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return MessageOuterClass.internal_static_tech_edgx_dee_protocol_resswap_pb_Message_descriptor;
+        return MessageOuterClass.internal_static_tech_edgx_drf_protocol_resswap_pb_Message_descriptor;
       }
 
       @Override
@@ -6994,35 +7200,35 @@ public final class MessageOuterClass {
   }
 
   private static final com.google.protobuf.Descriptors.Descriptor
-    internal_static_tech_edgx_dee_protocol_resswap_pb_Message_descriptor;
+    internal_static_tech_edgx_drf_protocol_resswap_pb_Message_descriptor;
   private static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
-      internal_static_tech_edgx_dee_protocol_resswap_pb_Message_fieldAccessorTable;
+      internal_static_tech_edgx_drf_protocol_resswap_pb_Message_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
-    internal_static_tech_edgx_dee_protocol_resswap_pb_Message_Wantlist_descriptor;
+    internal_static_tech_edgx_drf_protocol_resswap_pb_Message_Wantlist_descriptor;
   private static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
-      internal_static_tech_edgx_dee_protocol_resswap_pb_Message_Wantlist_fieldAccessorTable;
+      internal_static_tech_edgx_drf_protocol_resswap_pb_Message_Wantlist_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
-    internal_static_tech_edgx_dee_protocol_resswap_pb_Message_Wantlist_Entry_descriptor;
+    internal_static_tech_edgx_drf_protocol_resswap_pb_Message_Wantlist_Entry_descriptor;
   private static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
-      internal_static_tech_edgx_dee_protocol_resswap_pb_Message_Wantlist_Entry_fieldAccessorTable;
+      internal_static_tech_edgx_drf_protocol_resswap_pb_Message_Wantlist_Entry_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
-    internal_static_tech_edgx_dee_protocol_resswap_pb_Message_Block_descriptor;
+    internal_static_tech_edgx_drf_protocol_resswap_pb_Message_Block_descriptor;
   private static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
-      internal_static_tech_edgx_dee_protocol_resswap_pb_Message_Block_fieldAccessorTable;
+      internal_static_tech_edgx_drf_protocol_resswap_pb_Message_Block_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
-    internal_static_tech_edgx_dee_protocol_resswap_pb_Message_DpResult_descriptor;
+    internal_static_tech_edgx_drf_protocol_resswap_pb_Message_DpResult_descriptor;
   private static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
-      internal_static_tech_edgx_dee_protocol_resswap_pb_Message_DpResult_fieldAccessorTable;
+      internal_static_tech_edgx_drf_protocol_resswap_pb_Message_DpResult_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
-    internal_static_tech_edgx_dee_protocol_resswap_pb_Message_BlockPresence_descriptor;
+    internal_static_tech_edgx_drf_protocol_resswap_pb_Message_BlockPresence_descriptor;
   private static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
-      internal_static_tech_edgx_dee_protocol_resswap_pb_Message_BlockPresence_fieldAccessorTable;
+      internal_static_tech_edgx_drf_protocol_resswap_pb_Message_BlockPresence_fieldAccessorTable;
 
   public static com.google.protobuf.Descriptors.FileDescriptor
       getDescriptor() {
@@ -7033,7 +7239,7 @@ public final class MessageOuterClass {
   static {
     String[] descriptorData = {
       "\n\rmessage.proto\022!tech.edgx.drf.protocol." +
-      "resswap.pb\"\205\010\n\007Message\022E\n\010wantlist\030\001 \001(\013" +
+      "resswap.pb\"\223\010\n\007Message\022E\n\010wantlist\030\001 \001(\013" +
       "23.tech.edgx.drf.protocol.resswap.pb.Mes" +
       "sage.Wantlist\022\016\n\006blocks\030\002 \003(\014\022A\n\007payload" +
       "\030\003 \003(\01320.tech.edgx.drf.protocol.resswap." +
@@ -7043,7 +7249,7 @@ public final class MessageOuterClass {
       "\022J\n\rresultPayload\030\006 \003(\01323.tech.edgx.drf." +
       "protocol.resswap.pb.Message.DpResult\032\342\002\n" +
       "\010Wantlist\022J\n\007entries\030\001 \003(\01329.tech.edgx.d" +
-      "ee.protocol.resswap.pb.Message.Wantlist." +
+      "rf.protocol.resswap.pb.Message.Wantlist." +
       "Entry\022\014\n\004full\030\002 \001(\010\032\322\001\n\005Entry\022\r\n\005block\030\001" +
       " \001(\014\022\020\n\010priority\030\002 \001(\005\022\016\n\006cancel\030\003 \001(\010\022N" +
       "\n\010wantType\030\004 \001(\0162<.tech.edgx.drf.protoco" +
@@ -7052,14 +7258,14 @@ public final class MessageOuterClass {
       "nctionName\030\007 \001(\014\022\016\n\006params\030\010 \003(\014\"\'\n\010Want" +
       "Type\022\t\n\005Block\020\000\022\010\n\004Have\020\001\022\006\n\002Dp\020\002\0323\n\005Blo" +
       "ck\022\016\n\006prefix\030\001 \001(\014\022\014\n\004data\030\002 \001(\014\022\014\n\004auth" +
-      "\030\003 \001(\014\032m\n\010DpResult\022\016\n\006prefix\030\001 \001(\014\022\014\n\004da" +
+      "\030\003 \001(\014\032{\n\010DpResult\022\016\n\006prefix\030\001 \001(\014\022\014\n\004da" +
       "ta\030\002 \001(\014\022\014\n\004auth\030\003 \001(\014\022\024\n\014functionName\030\004" +
-      " \001(\014\022\016\n\006params\030\005 \003(\014\022\017\n\007cidHash\030\006 \001(\014\032v\n" +
-      "\rBlockPresence\022\013\n\003cid\030\001 \001(\014\022J\n\004type\030\002 \001(" +
-      "\0162<.tech.edgx.drf.protocol.resswap.pb.Me" +
-      "ssage.BlockPresenceType\022\014\n\004auth\030\003 \001(\014\"+\n" +
-      "\021BlockPresenceType\022\010\n\004Have\020\000\022\014\n\010DontHave" +
-      "\020\001b\006proto3"
+      " \001(\014\022\016\n\006params\030\005 \003(\014\022\014\n\004args\030\006 \003(\014\022\017\n\007ci" +
+      "dHash\030\007 \001(\014\032v\n\rBlockPresence\022\013\n\003cid\030\001 \001(" +
+      "\014\022J\n\004type\030\002 \001(\0162<.tech.edgx.drf.protocol" +
+      ".resswap.pb.Message.BlockPresenceType\022\014\n" +
+      "\004auth\030\003 \001(\014\"+\n\021BlockPresenceType\022\010\n\004Have" +
+      "\020\000\022\014\n\010DontHave\020\001b\006proto3"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -7073,41 +7279,41 @@ public final class MessageOuterClass {
       .internalBuildGeneratedFileFrom(descriptorData,
         new com.google.protobuf.Descriptors.FileDescriptor[] {
         }, assigner);
-    internal_static_tech_edgx_dee_protocol_resswap_pb_Message_descriptor =
+    internal_static_tech_edgx_drf_protocol_resswap_pb_Message_descriptor =
       getDescriptor().getMessageTypes().get(0);
-    internal_static_tech_edgx_dee_protocol_resswap_pb_Message_fieldAccessorTable = new
+    internal_static_tech_edgx_drf_protocol_resswap_pb_Message_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
-        internal_static_tech_edgx_dee_protocol_resswap_pb_Message_descriptor,
+        internal_static_tech_edgx_drf_protocol_resswap_pb_Message_descriptor,
         new String[] { "Wantlist", "Blocks", "Payload", "BlockPresences", "PendingBytes", "ResultPayload", });
-    internal_static_tech_edgx_dee_protocol_resswap_pb_Message_Wantlist_descriptor =
-      internal_static_tech_edgx_dee_protocol_resswap_pb_Message_descriptor.getNestedTypes().get(0);
-    internal_static_tech_edgx_dee_protocol_resswap_pb_Message_Wantlist_fieldAccessorTable = new
+    internal_static_tech_edgx_drf_protocol_resswap_pb_Message_Wantlist_descriptor =
+      internal_static_tech_edgx_drf_protocol_resswap_pb_Message_descriptor.getNestedTypes().get(0);
+    internal_static_tech_edgx_drf_protocol_resswap_pb_Message_Wantlist_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
-        internal_static_tech_edgx_dee_protocol_resswap_pb_Message_Wantlist_descriptor,
+        internal_static_tech_edgx_drf_protocol_resswap_pb_Message_Wantlist_descriptor,
         new String[] { "Entries", "Full", });
-    internal_static_tech_edgx_dee_protocol_resswap_pb_Message_Wantlist_Entry_descriptor =
-      internal_static_tech_edgx_dee_protocol_resswap_pb_Message_Wantlist_descriptor.getNestedTypes().get(0);
-    internal_static_tech_edgx_dee_protocol_resswap_pb_Message_Wantlist_Entry_fieldAccessorTable = new
+    internal_static_tech_edgx_drf_protocol_resswap_pb_Message_Wantlist_Entry_descriptor =
+      internal_static_tech_edgx_drf_protocol_resswap_pb_Message_Wantlist_descriptor.getNestedTypes().get(0);
+    internal_static_tech_edgx_drf_protocol_resswap_pb_Message_Wantlist_Entry_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
-        internal_static_tech_edgx_dee_protocol_resswap_pb_Message_Wantlist_Entry_descriptor,
+        internal_static_tech_edgx_drf_protocol_resswap_pb_Message_Wantlist_Entry_descriptor,
         new String[] { "Block", "Priority", "Cancel", "WantType", "SendDontHave", "Auth", "FunctionName", "Params", });
-    internal_static_tech_edgx_dee_protocol_resswap_pb_Message_Block_descriptor =
-      internal_static_tech_edgx_dee_protocol_resswap_pb_Message_descriptor.getNestedTypes().get(1);
-    internal_static_tech_edgx_dee_protocol_resswap_pb_Message_Block_fieldAccessorTable = new
+    internal_static_tech_edgx_drf_protocol_resswap_pb_Message_Block_descriptor =
+      internal_static_tech_edgx_drf_protocol_resswap_pb_Message_descriptor.getNestedTypes().get(1);
+    internal_static_tech_edgx_drf_protocol_resswap_pb_Message_Block_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
-        internal_static_tech_edgx_dee_protocol_resswap_pb_Message_Block_descriptor,
+        internal_static_tech_edgx_drf_protocol_resswap_pb_Message_Block_descriptor,
         new String[] { "Prefix", "Data", "Auth", });
-    internal_static_tech_edgx_dee_protocol_resswap_pb_Message_DpResult_descriptor =
-      internal_static_tech_edgx_dee_protocol_resswap_pb_Message_descriptor.getNestedTypes().get(2);
-    internal_static_tech_edgx_dee_protocol_resswap_pb_Message_DpResult_fieldAccessorTable = new
+    internal_static_tech_edgx_drf_protocol_resswap_pb_Message_DpResult_descriptor =
+      internal_static_tech_edgx_drf_protocol_resswap_pb_Message_descriptor.getNestedTypes().get(2);
+    internal_static_tech_edgx_drf_protocol_resswap_pb_Message_DpResult_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
-        internal_static_tech_edgx_dee_protocol_resswap_pb_Message_DpResult_descriptor,
-        new String[] { "Prefix", "Data", "Auth", "FunctionName", "Params", "CidHash", });
-    internal_static_tech_edgx_dee_protocol_resswap_pb_Message_BlockPresence_descriptor =
-      internal_static_tech_edgx_dee_protocol_resswap_pb_Message_descriptor.getNestedTypes().get(3);
-    internal_static_tech_edgx_dee_protocol_resswap_pb_Message_BlockPresence_fieldAccessorTable = new
+        internal_static_tech_edgx_drf_protocol_resswap_pb_Message_DpResult_descriptor,
+        new String[] { "Prefix", "Data", "Auth", "FunctionName", "Params", "Args", "CidHash", });
+    internal_static_tech_edgx_drf_protocol_resswap_pb_Message_BlockPresence_descriptor =
+      internal_static_tech_edgx_drf_protocol_resswap_pb_Message_descriptor.getNestedTypes().get(3);
+    internal_static_tech_edgx_drf_protocol_resswap_pb_Message_BlockPresence_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
-        internal_static_tech_edgx_dee_protocol_resswap_pb_Message_BlockPresence_descriptor,
+        internal_static_tech_edgx_drf_protocol_resswap_pb_Message_BlockPresence_descriptor,
         new String[] { "Cid", "Type", "Auth", });
   }
 

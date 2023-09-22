@@ -17,7 +17,6 @@ import org.peergos.blockstore.Blockstore;
 import org.peergos.util.JSONParser;
 import tech.edgx.drf.model.dp.DpResult;
 import tech.edgx.drf.model.dp.DpWant;
-//import tech.edgx.drf.protocol.resswap.pb.MessageOuterClass;
 import tech.edgx.drf.protocol.resswap.pb.MessageOuterClass;
 import tech.edgx.drf.service.RuntimeService;
 
@@ -211,8 +210,13 @@ public class ResSwapEngine {
                         Optional<Object[]> params = Optional.of( paramStrings.toArray(new String[0]));
                         LOG.fine("Pushing compute result for functionname: "+functionName+", params: "+new Gson().toJson(paramStrings));
 
+                        LOG.warning("NEED TO ADD constructor args from swap dpwant");
+//                        List<String> constructorArgs = e.getArgsList().stream().map(p -> p.toStringUtf8()).collect(Collectors.toList());
+//                        Optional<Object[]> args = Optional.of( constructorArgs.toArray(new String[0]));
+//                        LOG.fine("Pushing compute result for contructor args: "+new Gson().toJson(constructorArgs));
+
                         try {
-                            DpResult dpResult = runtimeService.runDp(c, dp.get(), functionName, params, Optional.empty()); //params);
+                            DpResult dpResult = runtimeService.runDp(c, dp.get(), functionName, params, Optional.empty());
                             LOG.info("DPResult: "+new Gson().toJson(dpResult));
                             /* Build response in protobuf */
                             // Response must contain functionname && params so receiver can lookup
@@ -340,10 +344,12 @@ public class ResSwapEngine {
 //                            Optional.empty() :
 //                            Optional.of(new Object[]{dpResult.getParams().toStringUtf8()});
                     Optional<Object[]> params = Optional.of(new Object[]{dpResult.getParamsList()});
+                    Optional<Object[]> args = Optional.of(new Object[]{dpResult.getArgsList()});
+
                     LOG.fine("Received compute result for request: "+c+", functionname: "+functionName + ", params: "+params +", auth: "+auth);
 
                     // Just from the CIDHash sent, functionName and Params, I can lookup any localDpWants I had requested and match this receive result
-                    DpWant w = new DpWant(c, auth, functionName, params);
+                    DpWant w = new DpWant(c, auth, functionName, params, args);
 
                     CompletableFuture<DpResult> waiter = localDpWants.get(w);
                     if (waiter != null) {

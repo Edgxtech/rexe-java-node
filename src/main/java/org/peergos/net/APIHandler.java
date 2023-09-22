@@ -126,7 +126,7 @@ public class APIHandler extends Handler {
                         throw new APIException("Multiple input not supported");
                     }
                     byte[] block = data.get(0);
-                    if (block.length >  100e6) { //10 Mb
+                    if (block.length >  150e6) { //10 Mb
                         throw new APIException("Block too large");
                     }
                     Cid cid = ipfs.blockstore.put(block, Cid.Codec.lookupIPLDName(reqFormat)).join();
@@ -252,6 +252,7 @@ public class APIHandler extends Handler {
                         throw new APIException("\"functionName\" required\n");
                     }
                     Optional<String> auth = Optional.ofNullable(params.get("auth")).map(a -> a.get(0));
+                    /* Function parameters */
                     Optional<Object[]> fnParamsOpt = Optional.empty();
                     if (params.get("params")!=null) {
                         List<String> fnParams = params.get("params").stream()
@@ -260,6 +261,17 @@ public class APIHandler extends Handler {
                         LOG.info("Function PARAMS Rx: "+new Gson().toJson(fnParams));
                         if (fnParams != null && !fnParams.isEmpty()) {
                             fnParamsOpt = Optional.ofNullable(fnParams.toArray());
+                        }
+                    }
+                    /* Constructor Args */
+                    Optional<Object[]> constructorArgsOpt = Optional.empty();
+                    if (params.get("args")!=null) {
+                        List<String> constructorArgs = params.get("args").stream()
+                                .flatMap(p -> Arrays.stream(p.split(",")))
+                                .collect(Collectors.toList());
+                        LOG.info("Constructor Args Rx: "+new Gson().toJson(constructorArgs));
+                        if (constructorArgs != null && !constructorArgs.isEmpty()) {
+                            constructorArgsOpt = Optional.ofNullable(constructorArgs.toArray());
                         }
                     }
 //                    Set<PeerId> peers = Optional.ofNullable(params.get("peers"))
@@ -272,7 +284,7 @@ public class APIHandler extends Handler {
                             .orElse(true);
                     LOG.info("COMPUTE, params2: "+new Gson().toJson(params));
                     List<DpResult> dpResults = ipfs.computeDp(
-                            List.of(new DpWant(Cid.decode(args.get(0)), auth, fn.get(0), fnParamsOpt)),
+                            List.of(new DpWant(Cid.decode(args.get(0)), auth, fn.get(0), fnParamsOpt, constructorArgsOpt)),
                             peers,
                             addToBlockstore);
                     LOG.info("Retrieved result: "+new Gson().toJson(dpResults));

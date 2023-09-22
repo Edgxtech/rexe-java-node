@@ -64,20 +64,20 @@ public class DpIT {
             boolean has0 = client1.hasBlock(addedHash, Optional.empty());
             Assert.assertTrue("has block as expected", has0);
 
-            Object result = client1.compute(addedHash, Optional.empty(), "getTestVal", Optional.empty());
+            Object result = client1.compute(addedHash, Optional.empty(), "tech.edgx.dp.testdp.DP:getTestVal", Optional.empty(), Optional.empty());
             print("Compute result (from same client): "+result);
             Assert.assertTrue("result is as expected", result.equals("MY DP test val"));
 
             // Pull from other nodes, testing content routing ability
             if (client2.hasBlock(addedHash, Optional.empty()))
                 client2.removeBlock(addedHash); // Remove since it might have been persisted previously
-            Object result2 = client2.compute(addedHash, Optional.empty(), "getTestVal", Optional.empty());
+            Object result2 = client2.compute(addedHash, Optional.empty(), "tech.edgx.dp.testdp.DP:getTestVal", Optional.empty(), Optional.empty());
             print("Compute result (client2): "+result2);
             Assert.assertTrue("result is as expected", result2.equals("MY DP test val"));
 
             if (client0.hasBlock(addedHash, Optional.empty()))
                 client0.removeBlock(addedHash); // Remove since it might have been persisted previously
-            Object result0 = client0.compute(addedHash, Optional.empty(), "getTestVal", Optional.empty());
+            Object result0 = client0.compute(addedHash, Optional.empty(), "tech.edgx.dp.testdp.DP:getTestVal", Optional.empty(), Optional.empty());
             print("Compute result (client0): "+result0);
             Assert.assertTrue("result is as expected", result0.equals("MY DP test val"));
 
@@ -102,45 +102,45 @@ public class DpIT {
             boolean has0 = client1.hasBlock(addedHash, Optional.empty());
             Assert.assertTrue("has block as expected", has0);
 
-            Object result1 = client1.compute(addedHash, Optional.empty(), "insert", Optional.of(new String[]{TEST_USERNAME}));
+            Object result1 = client1.compute(addedHash, Optional.empty(), "tech.edgx.dp.mysqlcrud.DP:insert", Optional.of(new String[]{TEST_USERNAME}), Optional.empty());
             Assert.assertTrue("Insert ok", result1.toString().equals("insert: ok"));
 
-            Object result2 = client1.compute(addedHash, Optional.empty(), "retrieve", Optional.of(new String[]{TEST_USERNAME}));
+            Object result2 = client1.compute(addedHash, Optional.empty(), "tech.edgx.dp.mysqlcrud.DP:retrieve", Optional.of(new String[]{TEST_USERNAME}), Optional.empty());
             print("DP compute result (retrieve same-client): "+result2);
             User user = User.fromJson((Map) result2);
             Assert.assertTrue("User retrieved is correct", (user.getUsername().equals(TEST_USERNAME) && user.getEmail().equals(TEST_EMAIL)));
 
-            Object result3 = client0.compute(addedHash, Optional.empty(), "retrieve", Optional.of(new String[]{TEST_USERNAME}));
+            Object result3 = client0.compute(addedHash, Optional.empty(), "tech.edgx.dp.mysqlcrud.DP:retrieve", Optional.of(new String[]{TEST_USERNAME}), Optional.empty());
             print("DP compute result (retrieve client0): "+result3);
             User user0 = User.fromJson((Map) result3);
             Assert.assertTrue("User retrieved is correct", (user0.getUsername().equals(TEST_USERNAME) && user0.getEmail().equals(TEST_EMAIL)));
 
-            Object result4 = client2.compute(addedHash, Optional.empty(), "retrieve", Optional.of(new String[]{TEST_USERNAME}));
+            Object result4 = client2.compute(addedHash, Optional.empty(), "tech.edgx.dp.mysqlcrud.DP:retrieve", Optional.of(new String[]{TEST_USERNAME}), Optional.empty());
             print("DP compute result (retrieve client2): "+result4);
             User user2 = User.fromJson((Map) result4);
             Assert.assertTrue("User retrieved is correct", (user2.getUsername().equals(TEST_USERNAME) && user2.getEmail().equals(TEST_EMAIL)));
 
             //UPDATE-RETRIEVE CLIENT0
-            Object result5 = client0.compute(addedHash, Optional.empty(), "update", Optional.of(new String[]{TEST_USERNAME, TEST_NEW_EMAIL}));
+            Object result5 = client0.compute(addedHash, Optional.empty(), "tech.edgx.dp.mysqlcrud.DP:update", Optional.of(new String[]{TEST_USERNAME, TEST_NEW_EMAIL}), Optional.empty());
             print("DP compute result (update client0): "+result5);
             Assert.assertTrue("Update ok", result5.toString().equals("update: ok"));
 
-            Object result6 = client0.compute(addedHash, Optional.empty(), "retrieve", Optional.of(new String[]{TEST_USERNAME}));
+            Object result6 = client0.compute(addedHash, Optional.empty(), "tech.edgx.dp.mysqlcrud.DP:retrieve", Optional.of(new String[]{TEST_USERNAME}), Optional.empty());
             print("DP compute result (retrieve client0): "+result6);
             User user01 = User.fromJson((Map) result6);
             Assert.assertTrue("User retrieved is correct", (user01.getUsername().equals(TEST_USERNAME) && user01.getEmail().equals(TEST_NEW_EMAIL)));
 
             //UPDATE CLIENT2 - RETRIEVE CLIENT0
-            Object result7 = client2.compute(addedHash, Optional.empty(), "update", Optional.of(new String[]{TEST_USERNAME, TEST_NEW_EMAIL}));
+            Object result7 = client2.compute(addedHash, Optional.empty(), "tech.edgx.dp.mysqlcrud.DP:update", Optional.of(new String[]{TEST_USERNAME, TEST_NEW_EMAIL}), Optional.empty());
             print("DP compute result (update client2): "+result7);
             Assert.assertTrue("Update ok", result7.toString().equals("update: ok"));
 
-            Object result8 = client0.compute(addedHash, Optional.empty(), "retrieve", Optional.of(new String[]{TEST_USERNAME}));
+            Object result8 = client0.compute(addedHash, Optional.empty(), "tech.edgx.dp.mysqlcrud.DP:retrieve", Optional.of(new String[]{TEST_USERNAME}), Optional.empty());
             print("DP compute result (retrieve client0): "+result8);
             User user02 = User.fromJson((Map) result8);
             Assert.assertTrue("User retrieved is correct", (user02.getUsername().equals(TEST_USERNAME) && user02.getEmail().equals(TEST_NEW_EMAIL)));
 
-            Object result9 = client2.compute(addedHash, Optional.empty(), "delete", Optional.of(new String[]{TEST_USERNAME}));
+            Object result9 = client2.compute(addedHash, Optional.empty(), "tech.edgx.dp.mysqlcrud.DP:delete", Optional.of(new String[]{TEST_USERNAME}), Optional.empty());
             print("DP compute result (after delete): "+result9);
             Assert.assertTrue("User deleted", result9.toString().equals("delete: ok"));
 
@@ -165,20 +165,20 @@ public class DpIT {
 
             double val1 = 9932;
             double val2 = 343.432423;
-            Object result = client1.compute(addedHash, Optional.empty(), "add", Optional.of(new String[]{String.valueOf(val1),String.valueOf(val2)}));
+            Object result = client1.compute(addedHash, Optional.empty(), "add", Optional.of(new String[]{String.valueOf(val1),String.valueOf(val2)}), Optional.empty());
             print("Compute result (from same client): "+result);
             Assert.assertTrue("result is as expected", result.toString().equals(String.valueOf(val1 + val2)));
 
             // Pull from other nodes, testing content routing ability
             if (client2.hasBlock(addedHash, Optional.empty()))
                 client2.removeBlock(addedHash); // Remove since it might have been persisted previously
-            Object result2 = client2.compute(addedHash, Optional.empty(), "add", Optional.of(new String[]{String.valueOf(val1),String.valueOf(val2)}));
+            Object result2 = client2.compute(addedHash, Optional.empty(), "add", Optional.of(new String[]{String.valueOf(val1),String.valueOf(val2)}), Optional.empty());
             print("Compute result (client2): "+result2);
             Assert.assertTrue("result is as expected", result2.toString().equals(String.valueOf(val1 + val2)));
 
             if (client0.hasBlock(addedHash, Optional.empty()))
                 client0.removeBlock(addedHash); // Remove since it might have been persisted previously
-            Object result0 = client0.compute(addedHash, Optional.empty(), "add", Optional.of(new String[]{String.valueOf(val1),String.valueOf(val2)}));
+            Object result0 = client0.compute(addedHash, Optional.empty(), "add", Optional.of(new String[]{String.valueOf(val1),String.valueOf(val2)}), Optional.empty());
             print("Compute result (client0): "+result0);
             Assert.assertTrue("result is as expected", result0.toString().equals(String.valueOf(val1 + val2)));
 

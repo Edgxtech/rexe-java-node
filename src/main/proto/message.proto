@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package tech.edgx.dee.protocol.resswap.pb;
+package tech.edgx.drf.protocol.resswap.pb;
 
 message Message {
 
@@ -37,8 +37,9 @@ message Message {
     bytes data = 2; // Contains the output of the DP
     bytes auth = 3;
     bytes functionName = 4;
-    repeated bytes params = 5; // TODO, can prob just make a hash of params[] since this is just to help match to the original want
-    bytes cidHash = 6;
+    repeated bytes params = 5; // Function params. TODO, can prob just make a hash of params[] since this is just to help match to the original want
+    repeated bytes args = 6; // Constructor args. TODO, can prob just make a hash of params[] since this is just to help match to the original want
+    bytes cidHash = 7;
   }
 
   enum BlockPresenceType {

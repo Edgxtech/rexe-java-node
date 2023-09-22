@@ -81,10 +81,10 @@ public class RuntimeService {
 //            dpClass = Class.forName(DP_CLASS_NAME, true, dcl);
 //        }
 
-        /// TEMP Override here
-        if (classFunctionName.equals("tech.edgx.dp.chatsvc.DP:start")) {
-            constructorArgs = Optional.of(new String[]{"aafkreidqsvifumsanj3etycgiluhj6hkiljswxdy73thpqmkwmrla6z24b"});
-        }
+        /// TEMP Override here for testing
+//        if (classFunctionName.equals("tech.edgx.dp.chatsvc.DP:start")) {
+//            constructorArgs = Optional.of(new String[]{"/ip4/127.0.0.1/tcp/5001"});
+//        }
         // TODO, if it has constructor, initialise with constructor
         //   Find the constructor arg types, then match provided args and call via e.g:
         //      Object instance = dpClass.getDeclaredConstructor(DrfClient.class).newInstance(drfClient1);
@@ -97,51 +97,55 @@ public class RuntimeService {
             for (Constructor c : dpClass.getDeclaredConstructors()) {
                 LOG.info("Constructor: "+c.getName()+", # args: "+c.getParameterTypes().length);
             }
+            Object[] args = constructorArgs.get();
             /// UP TO HERE: need to find the declared constructor that matches the # args/type provided
             List<Class> argTypes = Arrays.stream(dpClass.getDeclaredConstructors())
+                    .filter(c -> c.getParameterTypes().length==args.length)
                     .flatMap(c -> Arrays.stream(c.getParameterTypes()))
                     .collect(Collectors.toList());
 
-            Object[] args = constructorArgs.get();
             LOG.info("# args in constructor: "+argTypes.size()+", # args provided: "+args.length);
             LOG.info("Prams: "+new Gson().toJson(args));
             Iterator<Class> argTypesIterator = argTypes.iterator();
             Iterator<Object> argsIterator = Arrays.stream(args).iterator();
             List<Object> __args = new ArrayList<>();
             while (argsIterator.hasNext() && argsIterator.hasNext()) {
-                Object newObj = parseObjectFromString(argTypesIterator.next().toString(), argTypesIterator.next());
+                Class argType = argTypesIterator.next();
+                Object newObj = parseObjectFromString(argsIterator.next().toString(), argType);
                 __args.add(newObj);
+                LOG.info("Argument: type: "+argType.getName()+", val: "+newObj.toString());
             }
             LOG.info("Args: "+__args.size());
             Object[] myargs = __args.toArray(new Object[__args.size()]);
             LOG.info("Args: "+myargs.length);
             instance = dpClass.getDeclaredConstructor(argTypes.toArray(new Class[argTypes.size()])).newInstance(myargs);
+            //instance = dpClass.getDeclaredConstructor(String.class).newInstance("/ip4/127.0.0.1/tcp/5001");
         } else {
             LOG.info("Using default constructor");
             instance = dpClass.newInstance();
         }
 
+//        TODO, TEMPORARILY - WHEN TESTING ONLY - CANT SPY ON CONSTRUCTOR CREATION AFFTER DYNAMIC LOADING CLASSES - DOESNT WORK
         //dpClass.getDeclaredConstructors()
         //Object instance = dpClass.newInstance();
-        for (Method m : dpClass.getDeclaredMethods()) {
-            LOG.info("Method: " + m.toString());
-            if (m.getName().contains("overrideDrfClient")) {
-                //if (Helpers.isRunningTests()) {
-                LOG.info("is Running Tests, will swap out DrfClient for a mock");
-                String TEST_USERNAME_A = "drftestuserA";
-                String TEST_USERNAME_B = "drftestuserB";
-                /// TODO, TEMPORARILY - WHEN TESTING ONLY
-                DrfClient drfClient1 = mock(DrfClient.class);
-                when(drfClient1.compute(any(Multihash.class), any(), eq("tech.edgx.dp.chatsvc.DP:retrieve"), argThat(new DpArgsMatcher(Optional.of(new String[]{TEST_USERNAME_A}))))).thenReturn(
-                        new User(TEST_USERNAME_A, "secretpass", TEST_USERNAME_A + " Fullname", TEST_USERNAME_A + "@test.com", "305c300d06092a864886f70d0101010500034b0030480241008dcb47244f6bd248744b7863317526d818e5c8a5347fbfc20364dbbf1698359b417813e008e72d2cf21786b366f5ce4145a717427475f625e7ab9b3c3182f6750203010001")
-                );
-                when(drfClient1.compute(any(Multihash.class), any(), eq("tech.edgx.dp.chatsvc.DP:retrieve"), argThat(new DpArgsMatcher(Optional.of(new String[]{TEST_USERNAME_B}))))).thenReturn(
-                        new User(TEST_USERNAME_B, "secretpass", TEST_USERNAME_B + " Fullname", TEST_USERNAME_B + "@test.com", "305c300d06092a864886f70d0101010500034b003048024100d4b20b7b0d29023a43baba7a6045aa18363bfbfc992f318038109a1e7beb973440ab702dfb7b746b97a0ee7f3771359edb36c700218c0cd66de51451de1586090203010001")
-                );
-                Method setDrfClientMethod = dpClass.getDeclaredMethod("overrideDrfClient", DrfClient.class);
-                setDrfClientMethod.invoke(instance, drfClient1);
-            }
-        }
+//        for (Method m : dpClass.getDeclaredMethods()) {
+//            LOG.info("Method: " + m.toString());
+//            if (m.getName().contains("overrideDrfClient")) {
+//                //if (Helpers.isRunningTests()) {
+//                LOG.info("is Running Tests, will swap out DrfClient for a mock");
+//                String TEST_USERNAME_A = "drftestuserA";
+//                String TEST_USERNAME_B = "drftestuserB";
+//                DrfClient drfClient1 = mock(DrfClient.class);
+//                when(drfClient1.compute(any(Multihash.class), any(), eq("tech.edgx.dp.usercrud.DP:retrieve"), argThat(new DpArgsMatcher(Optional.of(new String[]{TEST_USERNAME_A}))),any())).thenReturn(
+//                        new User(TEST_USERNAME_A, "secretpass", TEST_USERNAME_A + " Fullname", TEST_USERNAME_A + "@test.com", "305c300d06092a864886f70d0101010500034b0030480241008dcb47244f6bd248744b7863317526d818e5c8a5347fbfc20364dbbf1698359b417813e008e72d2cf21786b366f5ce4145a717427475f625e7ab9b3c3182f6750203010001")
+//                );
+//                when(drfClient1.compute(any(Multihash.class), any(), eq("tech.edgx.dp.usercrud.DP:retrieve"), argThat(new DpArgsMatcher(Optional.of(new String[]{TEST_USERNAME_B}))),any())).thenReturn(
+//                        new User(TEST_USERNAME_B, "secretpass", TEST_USERNAME_B + " Fullname", TEST_USERNAME_B + "@test.com", "305c300d06092a864886f70d0101010500034b003048024100d4b20b7b0d29023a43baba7a6045aa18363bfbfc992f318038109a1e7beb973440ab702dfb7b746b97a0ee7f3771359edb36c700218c0cd66de51451de1586090203010001")
+//                );
+//                Method setDrfClientMethod = dpClass.getDeclaredMethod("overrideDrfClient", DrfClient.class);
+//                setDrfClientMethod.invoke(instance, drfClient1);
+//            }
+//        }
 
         Object result = null;
         if (fnParams.isPresent() ) {

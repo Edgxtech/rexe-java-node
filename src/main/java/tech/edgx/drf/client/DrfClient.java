@@ -45,12 +45,13 @@ public class DrfClient extends ClientCommon {
     // TODO, I think this needs a result object representation provided in the query?
     //   So can have generalised computation
     //   The representation
-    public Object compute(Multihash hash, Optional<String> auth, String functionName, Optional<Object[]> params) throws IOException {
+    public Object compute(Multihash hash, Optional<String> auth, String functionName, Optional<Object[]> params, Optional<Object[]> args) throws IOException {
         String authArg = auth.isPresent() ? "&auth=" + auth.get() : "";
         String fnParamsArg = params.isPresent() ? "&params=" + StringUtils.join(params.get(),",") : "";
         LOG.info("FunctionPARAMS arg: "+fnParamsArg);
-        Map<String, Object> res = retrieveMap("dp/compute?arg=" + hash + "&fn="+functionName + fnParamsArg + authArg);
-       // Map result = (Map) res.get("Result");
+        String constructorArgsArg = args.isPresent() ? "&args=" + StringUtils.join(args.get(),",") : "";
+        LOG.info("ConstructorArgs arg: "+constructorArgsArg);
+        Map<String, Object> res = retrieveMap("dp/compute?arg=" + hash + "&fn="+functionName + fnParamsArg + constructorArgsArg + authArg);
         System.out.println("Returning result['Result']: "+res.get("Result"));
         return res.get("Result");
     }
