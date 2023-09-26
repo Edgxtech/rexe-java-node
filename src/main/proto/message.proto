@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package tech.edgx.drf.protocol.resswap.pb;
+package tech.edgx.rexe.protocol.ebitswap.pb;
 
 message Message {
 
@@ -20,6 +20,7 @@ message Message {
       bytes auth = 6;
       bytes functionName = 7; // Only for WantType==2/DP
       repeated bytes params = 8; // Only for WantType==2/DP
+      repeated bytes args = 9; // Only for WantType==2/DP
 		}
 
     repeated Entry entries = 1; //[(gogoproto.nullable) = false];	// a list of wantlist entries

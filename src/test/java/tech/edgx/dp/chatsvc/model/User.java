@@ -1,5 +1,8 @@
 package tech.edgx.dp.chatsvc.model;
 
+import java.util.LinkedHashMap;
+import java.util.Map;
+
 /* Must match package name and attributes used by the corresponding client */
 public class User {
     String username;
@@ -54,5 +57,24 @@ public class User {
 
     public void setPubkey(String pubkey) {
         this.pubkey = pubkey;
+    }
+
+    public static User fromJson(Map<String,Object> json) {
+        return new User(
+                json.get("username").toString(),
+                json.get("password").toString(),
+                json.get("fullname").toString(),
+                json.get("email").toString(),
+                json.get("pubkey").toString());
+    }
+
+    public Map toJson() {
+        Map<String,Object> map = new LinkedHashMap<>();
+        map.put("username", this.getUsername());
+        map.put("password", this.getPassword());
+        map.put("fullname", this.getFullname());
+        map.put("email", this.getEmail());
+        map.put("pubkey", this.getPubkey());
+        return map;
     }
 }

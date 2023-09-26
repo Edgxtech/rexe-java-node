@@ -1,10 +1,8 @@
 package org.peergos.protocol.bitswap;
 
-import com.google.gson.Gson;
 import io.libp2p.core.*;
 import io.libp2p.protocol.*;
 import org.jetbrains.annotations.*;
-import org.peergos.APIService;
 import org.peergos.protocol.bitswap.pb.*;
 
 import java.util.concurrent.*;

@@ -1,1 +1,2 @@
-##tech.edgx.drf.util.JarURLStreamHandlerProvider
+## Attempting to hack URLClassLoader to dynamically load classes directly from byte[], need to revisit
+##tech.edgx.rexe.util.JarURLStreamHandlerProvider

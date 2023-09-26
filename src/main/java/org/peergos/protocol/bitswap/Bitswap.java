@@ -11,7 +11,7 @@ import org.peergos.protocol.bitswap.pb.*;
 //<<<<<<< HEAD
 import org.peergos.util.*;
 //=======
-//import tech.edgx.drf.util.SwapType;
+//import tech.edgx.rexe.util.SwapType;
 //>>>>>>> develop
 
 import java.util.*;

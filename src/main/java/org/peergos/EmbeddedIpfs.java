@@ -14,13 +14,13 @@ import org.peergos.protocol.autonat.*;
 import org.peergos.protocol.circuit.*;
 import org.peergos.protocol.dht.*;
 import org.peergos.protocol.http.*;
-import tech.edgx.drf.model.dp.DpResult;
-import tech.edgx.drf.model.dp.DpWant;
-import tech.edgx.drf.protocol.resswap.ResSwap;
-import tech.edgx.drf.protocol.resswap.ResSwapEngine;
-import tech.edgx.drf.service.ResourceService;
-import tech.edgx.drf.service.ResourceServiceImpl;
-import tech.edgx.drf.service.RuntimeService;
+import tech.edgx.rexe.model.dp.DpResult;
+import tech.edgx.rexe.model.dp.DpWant;
+import tech.edgx.rexe.protocol.ebitswap.eBitSwap;
+import tech.edgx.rexe.protocol.ebitswap.eBitSwapEngine;
+import tech.edgx.rexe.service.DistributedExecutionService;
+import tech.edgx.rexe.service.ResourceService;
+import tech.edgx.rexe.service.ResourceServiceImpl;
 
 import java.nio.file.*;
 import java.util.*;
@@ -33,41 +33,36 @@ public class EmbeddedIpfs {
 
     public final Host node;
     public final ProvidingBlockstore blockstore;
-    //public final BlockService blocks;
     public final DatabaseRecordStore records;
 
     public final Kademlia dht;
-    //public final Bitswap bitswap;
     public final Optional<HttpProtocol.Binding> p2pHttp;
     private final List<MultiAddress> bootstrap;
     private final PeriodicBlockProvider blockProvider;
 
-    private final RuntimeService runtimeService;
+    private final DistributedExecutionService distributedExecutionService;
     private final ResourceService resourceService;
-    public final ResSwap resSwap;
+    public final eBitSwap eBitSwap;
 
     public EmbeddedIpfs(Host node,
                         ProvidingBlockstore blockstore,
                         DatabaseRecordStore records,
                         Kademlia dht,
-                        //Bitswap bitswap,
-                        ResSwap resSwap,
+                        eBitSwap eBitSwap,
                         Optional<HttpProtocol.Binding> p2pHttp,
                         List<MultiAddress> bootstrap) {
         this.node = node;
         this.blockstore = blockstore;
         this.records = records;
         this.dht = dht;
-        //this.bitswap = bitswap;
-        this.resSwap = resSwap;
+        this.eBitSwap = eBitSwap;
         this.p2pHttp = p2pHttp;
         this.bootstrap = bootstrap;
-        //this.blocks = new BitswapBlockService(node, bitswap, dht);
         this.blockProvider = new PeriodicBlockProvider(22 * 3600_000L,
                 () -> blockstore.refs().join().stream(), node, dht, blockstore.toPublish);
 
-        this.runtimeService = new RuntimeService();
-        this.resourceService = new ResourceServiceImpl(node, resSwap, dht);
+        this.distributedExecutionService = new DistributedExecutionService();
+        this.resourceService = new ResourceServiceImpl(node, eBitSwap, dht);
     }
 
     public List<HashedBlock> getBlocks(List<Want> wants, Set<PeerId> peers, boolean addToLocal) {
@@ -78,7 +73,7 @@ public class EmbeddedIpfs {
 
         for (Want w : wants) {
             if (blockstore.has(w.cid).join()) {
-                LOG.info("Has block locally: " + w.cid.bareMultihash().toBase58());
+                LOG.fine("Has block locally: " + w.cid.bareMultihash().toBase58());
                 local.add(w);
             }
             else
@@ -96,42 +91,33 @@ public class EmbeddedIpfs {
     }
 
     public List<DpResult> computeDp(List<DpWant> wants, Set<PeerId> peers, boolean addToLocal) {
-        LOG.info("Computing DP");
         List<DpResult> resultsComputed = new ArrayList<>();
         List<DpWant> local = new ArrayList<>();
         List<DpWant> remote = new ArrayList<>();
         for (DpWant w : wants) {
             if (blockstore.has(w.cid).join())
-                // compute locally
                 local.add(w);
             else
-                // compute remotely
                 remote.add(w);
         }
-        LOG.info("Computing DPs locally, #: "+local.size());
-        LOG.info("Computing DPs remote, #: "+remote.size());
+        LOG.fine("Computing DPs locally, #: "+local.size()+", Computing DPs remote, #: "+remote.size());
         for (DpWant w : local) {
-            LOG.info("Executing: "+w.cid.toString()+", "+w.functionName);
+            LOG.fine("Executing: "+w.cid.toString()+", "+w.functionName);
             try {
-                DpResult dpResult = runtimeService.runDp(w.cid, blockstore.get(w.cid).join().get(), w.functionName, w.params, w.args);
+                DpResult dpResult = distributedExecutionService.runDp(w.cid, blockstore.get(w.cid).join().get(), w.functionName, w.params, w.args);
                 resultsComputed.add(dpResult);
             } catch(Exception e) {
                 e.printStackTrace();
-                LOG.info("Failed to execute DP: "+w.cid.toString());
+                LOG.fine("Failed to execute DP: "+w.cid.toString());
                 return null;
             }
         }
         if (remote.isEmpty())
             return resultsComputed;
 
-        // return merged list of locally & remote found blocks
-
-        // TODO, Swap BlocksService to ResourceServiceImpl
-        //return resultsComputed;
         return java.util.stream.Stream.concat(
                         resultsComputed.stream(),
-                        // This begins the sendWants, listen for received msgs incl blocks and fulfil the wants when rx'd
-                        resourceService.compute(remote, peers, addToLocal).stream()) // equiv to remoteBlocks[BlocksService].get()
+                        resourceService.compute(remote, peers, addToLocal).stream())
                 .collect(Collectors.toList());
     }
 
@@ -199,24 +185,20 @@ public class EmbeddedIpfs {
         Kademlia dht = new Kademlia(new KademliaEngine(ourPeerId, providers, records, blockstore), false);
         CircuitStopProtocol.Binding stop = new CircuitStopProtocol.Binding();
         CircuitHopProtocol.RelayManager relayManager = CircuitHopProtocol.RelayManager.limitTo(builder.getPrivateKey(), ourPeerId, 5);
-        //Bitswap bitswap = new Bitswap(new BitswapEngine(blockstore, authoriser));
-        ResSwap resSwap = new ResSwap(new ResSwapEngine(blockstore, authoriser));
+        eBitSwap eBitSwap = new eBitSwap(new eBitSwapEngine(blockstore, authoriser));
         Optional<HttpProtocol.Binding> httpHandler = handler.map(HttpProtocol.Binding::new);
 
         List<ProtocolBinding> protocols = new ArrayList<>();
         protocols.add(new Ping());
         protocols.add(new AutonatProtocol.Binding());
         protocols.add(new CircuitHopProtocol.Binding(relayManager, stop));
-        //protocols.add(bitswap);
-        protocols.add(resSwap);
+        protocols.add(eBitSwap);
 
         protocols.add(dht);
         httpHandler.ifPresent(protocols::add);
 
         Host node = builder.addProtocols(protocols).build();
 
-        //ResourceService resourceService = new ResourceServiceImpl(node, resSwap, dht);
-
-        return new EmbeddedIpfs(node, blockstore, records, dht, resSwap, httpHandler, bootstrap);
+        return new EmbeddedIpfs(node, blockstore, records, dht, eBitSwap, httpHandler, bootstrap);
     }
 }

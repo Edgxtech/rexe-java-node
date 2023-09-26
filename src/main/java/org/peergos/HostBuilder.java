@@ -19,8 +19,8 @@ import org.peergos.protocol.autonat.*;
 import org.peergos.protocol.bitswap.*;
 import org.peergos.protocol.circuit.*;
 import org.peergos.protocol.dht.*;
-import tech.edgx.drf.protocol.resswap.ResSwap;
-import tech.edgx.drf.protocol.resswap.ResSwapEngine;
+import tech.edgx.rexe.protocol.ebitswap.eBitSwap;
+import tech.edgx.rexe.protocol.ebitswap.eBitSwapEngine;
 
 import java.util.*;
 import java.util.stream.*;
@@ -65,10 +65,10 @@ public class HostBuilder {
                 .findFirst();
     }
 
-    public Optional<ResSwap> getResSwap() {
+    public Optional<eBitSwap> getResSwap() {
         return protocols.stream()
-                .filter(p -> p instanceof ResSwap)
-                .map(p -> (ResSwap)p)
+                .filter(p -> p instanceof eBitSwap)
+                .map(p -> (eBitSwap)p)
                 .findFirst();
     }
 
@@ -134,7 +134,7 @@ public class HostBuilder {
                 // REPLACE Bitswap protocol with ResSwap which is bitswap extended with distributed computation capy
                 // FOR NOW USING THE SAME BLOCK STORE TO STORE DPs as if they are blocks
                 //new Bitswap(new BitswapEngine(blocks, authoriser)),
-                new ResSwap(new ResSwapEngine(blocks, authoriser)),
+                new eBitSwap(new eBitSwapEngine(blocks, authoriser)),
                 dht));
     }
 

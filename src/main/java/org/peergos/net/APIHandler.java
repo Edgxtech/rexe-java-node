@@ -6,8 +6,8 @@ import io.libp2p.core.PeerId;
 import org.peergos.*;
 import org.peergos.util.*;
 import com.sun.net.httpserver.HttpExchange;
-import tech.edgx.drf.model.dp.DpResult;
-import tech.edgx.drf.model.dp.DpWant;
+import tech.edgx.rexe.model.dp.DpResult;
+import tech.edgx.rexe.model.dp.DpWant;
 
 import java.io.IOException;
 import java.util.*;
@@ -17,7 +17,9 @@ import java.util.stream.*;
 public class APIHandler extends Handler {
     public static final String API_URL = "/api/v0/";
     public static final Version CURRENT_VERSION = Version.parse("0.0.1");
-    private static final Logger LOG = Logging.LOG();
+    //private static final Logger LOG = Logging.LOG();
+    private static final Logger LOG = Logger.getLogger(APIHandler.class.getName());
+
 
     private static final boolean LOGGING = true;
 
@@ -30,8 +32,7 @@ public class APIHandler extends Handler {
     public static final String REFS_LOCAL = "refs/local";
     public static final String BLOOM_ADD = "bloom/add";
     public static final String HAS = "block/has";
-    // ADDED
-    /// ACTUALLY DOES IT BELONG HERE?, SHOULD IT BE MORE OF AN IPNS LAYER API I NEED TO PROVIDE FOR EXECUTING DPs
+    // ADDED, TODO, DETERMINE if DP execution should be more of an IPNS LAYER API
     public static final String COMPUTE = "dp/compute"; // Execute/compute the DP
 
     public static final String FIND_PROVS = "dht/findprovs";
@@ -126,7 +127,7 @@ public class APIHandler extends Handler {
                         throw new APIException("Multiple input not supported");
                     }
                     byte[] block = data.get(0);
-                    if (block.length >  150e6) { //10 Mb
+                    if (block.length >  200e6) { //10 Mb
                         throw new APIException("Block too large");
                     }
                     Cid cid = ipfs.blockstore.put(block, Cid.Codec.lookupIPLDName(reqFormat)).join();
@@ -240,10 +241,11 @@ public class APIHandler extends Handler {
                 }
 
                 /////////////////////////////////////
-                // START OF DP SPECIFIC
+                // DP SPECIFIC
                 /////////////////////////////////////
                 case COMPUTE: {
                     LOG.info("COMPUTE, params: "+new Gson().toJson(params));
+                    System.out.println("COMPUTE, params: "+new Gson().toJson(params));
                     List<String> fn = params.get("fn");
                     if (args == null || args.size() != 1) {
                         throw new APIException("arguments \"cid\" required\n");

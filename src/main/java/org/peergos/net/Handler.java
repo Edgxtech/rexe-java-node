@@ -51,7 +51,7 @@ public abstract class Handler implements HttpHandler {
 
     protected static void replyJson(HttpExchange exchange, String json) {
         try {
-            System.out.println("Replying with: "+json);
+            System.out.println("Replying with (json): "+json);
             byte[] raw = json.getBytes();
             exchange.sendResponseHeaders(200, raw.length);
             DataOutputStream dout = new DataOutputStream(exchange.getResponseBody());

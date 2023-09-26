@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>tech.edgx.drf</groupId>
-    <artifactId>drf-java-node-dc1</artifactId>
+    <artifactId>rexe-java-node</artifactId>
     <version>v0.0.1-SNAPSHOT</version>
 
     <properties>
@@ -19,7 +19,6 @@
         <version.kubo-http>v1.4.4</version.kubo-http>
         <instance.id>0</instance.id>
         <protobuf.version>3.6.1</protobuf.version>
-<!--        <protoc.version>1.37.1</protoc.version> NOT USED-->
     </properties>
 
     <repositories>
@@ -84,7 +83,6 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.10.1</version>
                 <configuration>
-<!--                    <compilerArgument>-proc:none</compilerArgument>-->
                 </configuration>
                 <executions>
                     <execution>
@@ -141,37 +139,13 @@
                         <argument>-classpath</argument>
                         <classpath />
                         <argument>-Djava.util.logging.config.file=src/main/resources/logging.properties</argument>
-                        <argument>-Djava.system.class.loader=tech.edgx.drf.util.DynamicClassLoader</argument>
+                        <argument>-Djava.system.class.loader=tech.edgx.rexe.util.DynamicClassLoader</argument>
                         <argument>org.peergos.Nabu</argument>
                         <argument>-instance_id</argument>
                         <argument>${instance.id}</argument>
                     </arguments>
                 </configuration>
             </plugin>
-<!--            <plugin>-->
-<!--                <groupId>org.apache.maven.plugins</groupId>-->
-<!--                <artifactId>maven-assembly-plugin</artifactId>-->
-<!--                <executions>-->
-<!--                    <execution>-->
-<!--                        <phase>package</phase>-->
-<!--                        <goals>-->
-<!--                            <goal>single</goal>-->
-<!--                        </goals>-->
-<!--                        <configuration>-->
-<!--                            <archive>-->
-<!--                                <manifest>-->
-<!--                                    <mainClass>-->
-<!--                                        org.peergos.Server-->
-<!--                                    </mainClass>-->
-<!--                                </manifest>-->
-<!--                            </archive>-->
-<!--                            <descriptorRefs>-->
-<!--                                <descriptorRef>jar-with-dependencies</descriptorRef>-->
-<!--                            </descriptorRefs>-->
-<!--                        </configuration>-->
-<!--                    </execution>-->
-<!--                </executions>-->
-<!--            </plugin>-->
             <plugin>
                 <groupId>org.xolstice.maven.plugins</groupId>
                 <artifactId>protobuf-maven-plugin</artifactId>
@@ -186,6 +160,7 @@
                 <executions>
                     <execution>
                         <goals>
+                            <!-- for now run manually: mvn protobuf:compile -->
 <!--                            <goal>compile</goal>-->
 <!--                            <goal>test-compile</goal>-->
                         </goals>
@@ -296,7 +271,6 @@
             <artifactId>gson</artifactId>
             <version>2.10.1</version>
         </dependency>
-
         <dependency>
             <groupId>commons-codec</groupId>
             <artifactId>commons-codec</artifactId>
@@ -313,18 +287,11 @@
             <version>5.3.1</version>
             <scope>compile</scope>
         </dependency>
-<!--        <dependency>-->
-<!--            <groupId>org.mockito</groupId>-->
-<!--            <artifactId>mockito-inline</artifactId>-->
-<!--            <version>5.3.1</version>-->
-<!--            <scope>compile</scope>-->
-<!--        </dependency>-->
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-core</artifactId>
             <version>5.2.8.RELEASE</version>
         </dependency>
-
         <dependency>
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>
