@@ -11,10 +11,11 @@ public class DpWant {
     /* Function params */
     public final Optional<Object[]> params;
     /* Constructor args */
-    public final Optional<Object[]> args;
+    //public final Optional<Object[]> args;
+    public final Optional<String> args;
     public final Optional<String> auth;
 
-    public DpWant(Cid cid, Optional<String> auth, String functionName, Optional<Object[]> params, Optional<Object[]> args) {
+    public DpWant(Cid cid, Optional<String> auth, String functionName, Optional<Object[]> params, Optional<String> args) { //Optional<Object[]> args
         this.cid = cid;
         this.auth = auth;
         this.functionName = functionName;

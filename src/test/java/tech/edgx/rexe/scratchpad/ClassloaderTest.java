@@ -2,6 +2,7 @@ package tech.edgx.rexe.scratchpad;
 
 import com.google.gson.Gson;
 import io.ipfs.multihash.Multihash;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import tech.edgx.dp.mysqlcrud.model.User;
@@ -135,7 +136,8 @@ public class ClassloaderTest {
         dcl.add(url);
 
         Class dpClass = Class.forName("tech.edgx.dp.chatsvc.DP", true, dcl);
-        Object instance = dpClass.getDeclaredConstructor(String.class).newInstance("/ip4/127.0.0.1/tcp/5001");
+        Helpers.printClassInfo(dpClass);
+        Object instance = dpClass.getDeclaredConstructor(String.class, String.class).newInstance("/ip4/127.0.0.1/tcp/5001", null);
 
         Method queryFeedMethod = dpClass.getDeclaredMethod("queryFeed", Integer.class);
 
@@ -151,6 +153,7 @@ public class ClassloaderTest {
         Object result2 = startChatMethod.invoke(instance, TEST_USERNAME_A, TEST_USERNAME_B);
         Integer chatId = (Integer) result2;
         print("Result2: " + chatId);
+        Assert.assertTrue("Started chat ok", chatId>0);
     }
 
     public void print(String message) {

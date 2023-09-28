@@ -1,15 +1,20 @@
 package tech.edgx.rexe.chat_dp;
 
+import com.google.gson.Gson;
 import io.ipfs.cid.Cid;
 import io.ipfs.multiaddr.MultiAddress;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import tech.edgx.dp.chatsvc.model.Config;
+import tech.edgx.dp.chatsvc.model.User;
 import tech.edgx.rexe.client.RexeClient;
 import tech.edgx.rexe.util.Helpers;
+import tech.edgx.util.TestHelpers;
 
 import java.io.File;
 import java.nio.file.Files;
+import java.util.Map;
 import java.util.Optional;
 
 /*
@@ -49,10 +54,15 @@ public class ChatDpIT {
             boolean has0 = client0.hasBlock(addedHash, Optional.empty());
             Assert.assertTrue("block as expected", has0);
 
-            Object result3 = client0.compute(addedHash, Optional.empty(), "tech.edgx.dp.chatsvc.DP:retrieveUser", Optional.of(new String[]{TEST_USERNAME_A}), Optional.of(new String[]{"/ip4/127.0.0.1/tcp/5002", "bafkreieurqkv5zmnokhsczemdnnj7c27qcrc6ce4lvc6rl2oerhk7a4gw4"}));
+            String chatSvcConfig = TestHelpers.encodeValue(new Gson().toJson(new Config("/ip4/127.0.0.1/tcp/5002", "bafkreieurqkv5zmnokhsczemdnnj7c27qcrc6ce4lvc6rl2oerhk7a4gw4")));
+
+            Object result3 = client0.compute(addedHash, Optional.empty(), "tech.edgx.dp.chatsvc.DP:retrieveUser", Optional.of(new String[]{TEST_USERNAME_A}), Optional.of(chatSvcConfig));
             print("DP compute result (proxy retrieve user): " + result3);
+            User user = User.fromJson((Map) result3);
+            Assert.assertEquals("Retrieved correct user", TEST_USERNAME_A, user.getUsername());
         } catch (Exception e) {
             e.printStackTrace();
+            Assert.fail(e.getMessage());
         }
     }
 
@@ -86,11 +96,14 @@ public class ChatDpIT {
             print("ChatSvcDp hash: "+chatSvcHash.toBase58());
 
             // Note: Due to the design "OF THE DP" and to demonstrate composability, Can override DRF client && UserCrudDP used by this DP for subsequent calls
-            Object result3 = client0.compute(chatSvcHash, Optional.empty(), "tech.edgx.dp.chatsvc.DP:start", Optional.of(new String[]{TEST_USERNAME_A, TEST_USERNAME_B}), Optional.of(new String[]{"/ip4/127.0.0.1/tcp/5001", userDpHash.toString()}));
-            print("DP compute result (start [chat]): " + result3);
+            String chatSvcConfig = TestHelpers.encodeValue(new Gson().toJson(new Config("/ip4/127.0.0.1/tcp/5001", userDpHash.toString())));
 
+            Object result3 = client0.compute(chatSvcHash, Optional.empty(), "tech.edgx.dp.chatsvc.DP:start", Optional.of(new String[]{TEST_USERNAME_A, TEST_USERNAME_B}), Optional.of(chatSvcConfig));
+            print("DP compute result (start [chat]): " + result3);
+            Assert.assertTrue("Started chat ok", Integer.parseInt(result3.toString())>0);
         } catch (Exception e) {
             e.printStackTrace();
+            Assert.fail(e.getMessage());
         }
     }
 

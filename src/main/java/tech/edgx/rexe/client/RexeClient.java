@@ -41,10 +41,15 @@ public class RexeClient extends ClientCommon {
         }
     }
 
-    public Object compute(Multihash hash, Optional<String> auth, String functionName, Optional<Object[]> params, Optional<Object[]> args) throws IOException {
+    /**
+        @param functionName DP function name
+        @param params DP parameters array
+        @param args json string of DP constructor args. Arg names must match DP definition. Json string must be url encoded
+     */
+    public Object compute(Multihash hash, Optional<String> auth, String functionName, Optional<Object[]> params, Optional<String> args) throws IOException {
         String authArg = auth.isPresent() ? "&auth=" + auth.get() : "";
         String fnParamsArg = params.isPresent() ? "&params=" + StringUtils.join(params.get(),",") : "";
-        String constructorArgsArg = args.isPresent() ? "&args=" + StringUtils.join(args.get(),",") : "";
+        String constructorArgsArg = args.isPresent() ? "&args=" + args.get() : "";
         LOG.fine("Request: dp/compute?arg=" + hash + "&fn="+functionName + fnParamsArg + constructorArgsArg + authArg);
         Map<String, Object> res = retrieveMap("dp/compute?arg=" + hash + "&fn="+functionName + fnParamsArg + constructorArgsArg + authArg);
         return res.get("Result");

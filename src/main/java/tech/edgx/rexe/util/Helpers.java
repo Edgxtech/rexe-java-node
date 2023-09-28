@@ -1,10 +1,15 @@
 package tech.edgx.rexe.util;
 
+import com.google.gson.Gson;
+import com.thoughtworks.paranamer.AdaptiveParanamer;
+import com.thoughtworks.paranamer.CachingParanamer;
+import com.thoughtworks.paranamer.Paranamer;
 import org.peergos.util.Logging;
 
 import java.io.File;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.jar.Attributes;
 import java.util.jar.JarFile;
@@ -33,6 +38,16 @@ public class Helpers {
     }
 
     public static void printClassInfo(Class theClass) {
+        Paranamer paranamer = new AdaptiveParanamer();
+        for (Constructor constructor : theClass.getDeclaredConstructors()) {
+            LOG.info("Constructor: " + constructor.getName());
+
+            String[] parameterNames = paranamer.lookupParameterNames(constructor);
+            LOG.info("Constructor arg names: "+new Gson().toJson(parameterNames));
+            for (String name : parameterNames) {
+                LOG.info("Name: "+name);
+            }
+        }
         for (Method method : theClass.getDeclaredMethods()) {
             LOG.info("Declared Method: " + method.toString());
         }

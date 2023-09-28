@@ -56,8 +56,7 @@ public class eBitSwapTest {
                     .map(f -> f.join())
                     .collect(Collectors.toList());
             System.out.println("Received block: "+ receivedBlock.get(0).hash);
-            if (! Arrays.equals(receivedBlock.get(0).block, blockData))
-                throw new IllegalStateException("Incorrect block returned!");
+            Assert.assertTrue("Correct result", Arrays.equals(receivedBlock.get(0).block, blockData));
         } finally {
             node1.stop();
             node2.stop();
@@ -101,6 +100,7 @@ public class eBitSwapTest {
             Assert.assertEquals("Correct result", receivedResults.get(0).result.toString(),"Hello World");
         } catch (Exception e) {
             e.printStackTrace();
+            Assert.fail(e.getMessage());
         }
         finally {
             node1.stop();

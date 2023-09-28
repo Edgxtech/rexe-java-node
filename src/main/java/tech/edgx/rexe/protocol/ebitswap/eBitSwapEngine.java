@@ -17,7 +17,7 @@ import org.peergos.util.JSONParser;
 import tech.edgx.rexe.model.dp.DpResult;
 import tech.edgx.rexe.model.dp.DpWant;
 import tech.edgx.rexe.protocol.ebitswap.pb.MessageOuterClass;
-import tech.edgx.rexe.service.DistributedExecutionService;
+import tech.edgx.rexe.service.DPExecutionService;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -44,7 +44,7 @@ public class eBitSwapEngine {
 
     /* dp specific */
     private final ConcurrentHashMap<DpWant, CompletableFuture<DpResult>> localDpWants = new ConcurrentHashMap<>();
-    private final DistributedExecutionService distributedExecutionService = new DistributedExecutionService();
+    private final DPExecutionService DPExecutionService = new DPExecutionService();
 
     public eBitSwapEngine(Blockstore blockStore, BlockRequestAuthoriser authoriser) {
         this.blockStore = blockStore;
@@ -193,12 +193,14 @@ public class eBitSwapEngine {
                         List<String> paramStrings = e.getParamsList().stream().map(p -> p.toStringUtf8()).collect(Collectors.toList());
                         Optional<Object[]> params = Optional.of( paramStrings.toArray(new String[0]));
 
-                        List<String> constructorArgs = e.getArgsList().stream().map(p -> p.toStringUtf8()).collect(Collectors.toList());
-                        Optional<Object[]> args = Optional.of( constructorArgs.toArray(new String[0]));
-                        LOG.fine("Pushing compute result for functionname: "+functionName+", params: "+new Gson().toJson(paramStrings)+", constructor args: "+new Gson().toJson(constructorArgs));
+//                        List<String> constructorArgs = e.getArgsList().stream().map(p -> p.toStringUtf8()).collect(Collectors.toList());
+//                        Optional<Object[]> args = Optional.of( constructorArgs.toArray(new String[0]));
+                        LOG.fine("Args: "+e.getArgs().toStringUtf8());
+                        Optional<String> constructorArgs = !e.getArgs().isEmpty() ? Optional.of(e.getArgs().toStringUtf8()) : Optional.empty();
+                        LOG.fine("Pushing compute result for functionname: "+functionName+", params: "+new Gson().toJson(paramStrings)+", constructor args: "+constructorArgs);
 
                         try {
-                            DpResult dpResult = distributedExecutionService.runDp(c, dp.get(), functionName, params, args);
+                            DpResult dpResult = DPExecutionService.runDp(c, dp.get(), functionName, params, constructorArgs);
                             /* Build response in protobuf */
                             String responseString = JSONParser.toString(dpResult.result);
                             MessageOuterClass.Message.DpResult dpResultP = MessageOuterClass.Message.DpResult.newBuilder()
@@ -207,7 +209,8 @@ public class eBitSwapEngine {
                                     .setData(ByteString.copyFrom(responseString.getBytes()))
                                     .setFunctionName(e.getFunctionName())
                                     .addAllParams(e.getParamsList())
-                                    .addAllArgs(e.getArgsList())
+                                    //.addAllArgs(e.getArgsList())
+                                    .setArgs(e.getArgs())
                                     .setCidHash(ByteString.copyFrom(c.getHash()))
                                     .build();
                             int blockSize = dpResultP.getSerializedSize();
@@ -311,7 +314,8 @@ public class eBitSwapEngine {
                     // Want-Provide protocol messaging needs to send the data, function & params
                     String functionName = dpResult.getFunctionName().toStringUtf8();
                     Optional<Object[]> params = Optional.of(new Object[]{dpResult.getParamsList()});
-                    Optional<Object[]> args = Optional.of(new Object[]{dpResult.getArgsList()});
+                    //Optional<Object[]> args = Optional.of(new Object[]{dpResult.getArgsList()});
+                    Optional<String> args = Optional.of(dpResult.getArgs().toStringUtf8());
 
                     // Match rx result with localDpWants
                     DpWant w = new DpWant(c, auth, functionName, params, args);

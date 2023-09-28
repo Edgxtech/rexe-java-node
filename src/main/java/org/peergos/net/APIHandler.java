@@ -17,7 +17,6 @@ import java.util.stream.*;
 public class APIHandler extends Handler {
     public static final String API_URL = "/api/v0/";
     public static final Version CURRENT_VERSION = Version.parse("0.0.1");
-    //private static final Logger LOG = Logging.LOG();
     private static final Logger LOG = Logger.getLogger(APIHandler.class.getName());
 
 
@@ -32,9 +31,7 @@ public class APIHandler extends Handler {
     public static final String REFS_LOCAL = "refs/local";
     public static final String BLOOM_ADD = "bloom/add";
     public static final String HAS = "block/has";
-    // ADDED, TODO, DETERMINE if DP execution should be more of an IPNS LAYER API
-    public static final String COMPUTE = "dp/compute"; // Execute/compute the DP
-
+    public static final String COMPUTE = "dp/compute";
     public static final String FIND_PROVS = "dht/findprovs";
 
     private final EmbeddedIpfs ipfs; // In latest update they added ability to start/stop, but removed the ApiService abstraction
@@ -133,14 +130,6 @@ public class APIHandler extends Handler {
                     Cid cid = ipfs.blockstore.put(block, Cid.Codec.lookupIPLDName(reqFormat)).join();
                     Map res = new HashMap<>();
                     res.put("Hash", cid.toString());
-
-                    /// TEMP, FORCE PROVIDE to dht
-//                    System.out.println("On Put, also providing to WAN DHT");
-//                    PeerAddresses ourAddresses = new PeerAddresses(Multihash.deserialize(ipfs.node.getPeerId().getBytes()), ipfs.node.listenAddresses().stream()
-//                            .map(m -> new MultiAddress(m.toString()))
-//                            .collect(Collectors.toList()));
-//                    ipfs.dht.provideBlock(cid, ipfs.node, ourAddresses).join();
-
                     replyJson(httpExchange, JSONParser.toString(res));
                     break;
                 }
@@ -240,9 +229,7 @@ public class APIHandler extends Handler {
                     break;
                 }
 
-                /////////////////////////////////////
-                // DP SPECIFIC
-                /////////////////////////////////////
+                /* DP SPECIFIC */
                 case COMPUTE: {
                     LOG.info("COMPUTE, params: "+new Gson().toJson(params));
                     System.out.println("COMPUTE, params: "+new Gson().toJson(params));
@@ -266,15 +253,20 @@ public class APIHandler extends Handler {
                         }
                     }
                     /* Constructor Args */
-                    Optional<Object[]> constructorArgsOpt = Optional.empty();
+//                    Optional<Object[]> constructorArgsOpt = Optional.empty();
+                    Optional<String> constructorArgsOpt = Optional.empty();
                     if (params.get("args")!=null) {
-                        List<String> constructorArgs = params.get("args").stream()
-                                .flatMap(p -> Arrays.stream(p.split(",")))
-                                .collect(Collectors.toList());
-                        LOG.info("Constructor Args Rx: "+new Gson().toJson(constructorArgs));
-                        if (constructorArgs != null && !constructorArgs.isEmpty()) {
-                            constructorArgsOpt = Optional.ofNullable(constructorArgs.toArray());
-                        }
+                        // todo consider making args an encoded json file allowing specifiying each arg by name?
+//                        List<String> constructorArgs = params.get("args").stream()
+//                                .flatMap(p -> Arrays.stream(p.split(",")))
+//                                .collect(Collectors.toList());
+//                        LOG.info("Constructor Args Rx: "+new Gson().toJson(constructorArgs));
+//                        if (constructorArgs != null && !constructorArgs.isEmpty()) {
+//                            constructorArgsOpt = Optional.ofNullable(constructorArgs.toArray());
+//                        }
+
+                        constructorArgsOpt = Optional.of(params.get("args").get(0));
+                        LOG.fine("Constructor args: "+constructorArgsOpt.get());
                     }
 //                    Set<PeerId> peers = Optional.ofNullable(params.get("peers"))
 //                            .map(p -> p.stream().map(PeerId::fromBase58).collect(Collectors.toSet()))

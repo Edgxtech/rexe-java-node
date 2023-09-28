@@ -18,7 +18,7 @@ import tech.edgx.rexe.model.dp.DpResult;
 import tech.edgx.rexe.model.dp.DpWant;
 import tech.edgx.rexe.protocol.ebitswap.eBitSwap;
 import tech.edgx.rexe.protocol.ebitswap.eBitSwapEngine;
-import tech.edgx.rexe.service.DistributedExecutionService;
+import tech.edgx.rexe.service.DPExecutionService;
 import tech.edgx.rexe.service.ResourceService;
 import tech.edgx.rexe.service.ResourceServiceImpl;
 
@@ -40,7 +40,7 @@ public class EmbeddedIpfs {
     private final List<MultiAddress> bootstrap;
     private final PeriodicBlockProvider blockProvider;
 
-    private final DistributedExecutionService distributedExecutionService;
+    private final DPExecutionService DPExecutionService;
     private final ResourceService resourceService;
     public final eBitSwap eBitSwap;
 
@@ -61,7 +61,7 @@ public class EmbeddedIpfs {
         this.blockProvider = new PeriodicBlockProvider(22 * 3600_000L,
                 () -> blockstore.refs().join().stream(), node, dht, blockstore.toPublish);
 
-        this.distributedExecutionService = new DistributedExecutionService();
+        this.DPExecutionService = new DPExecutionService();
         this.resourceService = new ResourceServiceImpl(node, eBitSwap, dht);
     }
 
@@ -104,7 +104,7 @@ public class EmbeddedIpfs {
         for (DpWant w : local) {
             LOG.fine("Executing: "+w.cid.toString()+", "+w.functionName);
             try {
-                DpResult dpResult = distributedExecutionService.runDp(w.cid, blockstore.get(w.cid).join().get(), w.functionName, w.params, w.args);
+                DpResult dpResult = DPExecutionService.runDp(w.cid, blockstore.get(w.cid).join().get(), w.functionName, w.params, w.args);
                 resultsComputed.add(dpResult);
             } catch(Exception e) {
                 e.printStackTrace();

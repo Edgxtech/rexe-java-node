@@ -20,7 +20,8 @@ message Message {
       bytes auth = 6;
       bytes functionName = 7; // Only for WantType==2/DP
       repeated bytes params = 8; // Only for WantType==2/DP
-      repeated bytes args = 9; // Only for WantType==2/DP
+      //repeated bytes args = 9; // Only for WantType==2/DP
+      bytes args = 9;
 		}
 
     repeated Entry entries = 1; //[(gogoproto.nullable) = false];	// a list of wantlist entries
@@ -34,12 +35,13 @@ message Message {
   }
 
   message DpResult {
-    bytes prefix = 1;		// CID prefix (cid version, multicodec and multihash prefix (type + length)
+    bytes prefix = 1;	// CID prefix (cid version, multicodec and multihash prefix (type + length)
     bytes data = 2; // Contains the output of the DP
     bytes auth = 3;
     bytes functionName = 4;
-    repeated bytes params = 5; // Function params. TODO, can prob just make a hash of params[] since this is just to help match to the original want
-    repeated bytes args = 6; // Constructor args. TODO, can prob just make a hash of params[] since this is just to help match to the original want
+    repeated bytes params = 5; // Function params. TODO, can prob just make a hash of cid, fn, params[], args[] since this is just to help match to the original want
+    //repeated bytes args = 6; // Constructor args. TODO, can prob just make a hash of cid, fn, params[], args[] since this is just to help match to the original want
+    bytes args = 6; // New approach as a json string?
     bytes cidHash = 7;
   }
 

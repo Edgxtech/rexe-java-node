@@ -1,8 +1,10 @@
 package tech.edgx.rexe.chat_dp;
 
+import com.google.gson.Gson;
 import com.sun.net.httpserver.HttpServer;
 import io.ipfs.cid.Cid;
 import io.ipfs.multiaddr.MultiAddress;
+import org.checkerframework.checker.units.qual.C;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -12,18 +14,24 @@ import org.peergos.blockstore.ProvidingBlockstore;
 import org.peergos.blockstore.RamBlockstore;
 import org.peergos.net.APIHandler;
 import org.peergos.protocol.dht.Kademlia;
+import tech.edgx.dp.chatsvc.model.Config;
 import tech.edgx.rexe.client.RexeClient;
 import tech.edgx.rexe.util.Helpers;
+import tech.edgx.util.TestHelpers;
 
 import java.io.File;
 import java.net.InetSocketAddress;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.Collections;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.Executors;
 
 /*
-  WARNING: Couldn't yet figure out Class mocking that are dynamically loaded via the DP, thus this test needs running test nodes as per the ITs, e.g. at least 127.0.0.1:5000
+  WARNING: Haven't figured out Class mocking that are dynamically loaded via the DP,
+  thus this test needs running nodes as per the ITs, e.g. at least 127.0.0.1:5000
 */
 public class ChatDpTest {
 
@@ -93,10 +101,18 @@ public class ChatDpTest {
 
             String liveClientUrl = "/ip4/127.0.0.1/tcp/5000";
             print("WARNING, must have node running: "+liveClientUrl);
-            Object result3 = rexeClient.compute(chatSvcHash, Optional.empty(), "tech.edgx.dp.chatsvc.DP:start", Optional.of(new String[]{TEST_USERNAME_A, TEST_USERNAME_B}), Optional.of(new String[]{liveClientUrl, userDpHash.toString()}));
+            String chatSvcConfig = TestHelpers.encodeValue(new Gson().toJson(new Config("/ip4/127.0.0.1/tcp/5001", userDpHash.toString())));
+            print("Chat Svc Config: "+chatSvcConfig);
+
+            Object result3 = rexeClient.compute(chatSvcHash,
+                    Optional.empty(), "tech.edgx.dp.chatsvc.DP:start",
+                    Optional.of(new String[]{TEST_USERNAME_A, TEST_USERNAME_B}),
+                    Optional.of(chatSvcConfig));
             print("DP compute result (start [chat]): " + result3);
+            Assert.assertTrue("Started chat ok", Integer.parseInt(result3.toString())>0);
         } catch (Exception e) {
             e.printStackTrace();
+            Assert.fail(e.getMessage());
         }
     }
 
