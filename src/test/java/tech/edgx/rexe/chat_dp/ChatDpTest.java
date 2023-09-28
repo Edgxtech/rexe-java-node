@@ -85,10 +85,10 @@ public class ChatDpTest {
             print("UserDP hash, b58: "+userDpHash.toBase58()+"; "+userDpHash.toString());
 
             Object result1 = rexeClient.compute(userDpHash, Optional.empty(), "tech.edgx.dp.usercrud.DP:create", Optional.of(new String[]{TEST_USERNAME_A}), Optional.empty());
-            print("DP compute result (create) {privkey}: " + result1);
+            print("DP compute result (create): " + result1);
 
             Object result2 = rexeClient.compute(userDpHash, Optional.empty(), "tech.edgx.dp.usercrud.DP:create", Optional.of(new String[]{TEST_USERNAME_B}),Optional.empty());
-            print("DP compute result (create) {privkey}: " + result2);
+            print("DP compute result (create): " + result2);
 
             /* PRELOAD the ChatSvc DP and start a chat */
             String testChatSvcDpName = "dp/TestChatSvcDp.jar";
