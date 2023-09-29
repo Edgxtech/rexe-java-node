@@ -1,4 +1,4 @@
-package tech.edgx.rexe.chat_dp;
+package tech.edgx.rexe.dp_chatsvc;
 
 import com.google.gson.Gson;
 import io.ipfs.cid.Cid;
@@ -18,9 +18,11 @@ import java.util.Map;
 import java.util.Optional;
 
 /*
-  WARNING: Must startup a cluster first,
-  macos: ./start.sh 0, ./start.sh 1, ./start.sh 2
-  maven: mvn exec:exec -Dinstance.id=0, mvn exec:exec -Dinstance.id=1, mvn exec:exec -Dinstance.id=2
+  PRE-REQS:
+  1. Running cluster
+    - macos: ./start.sh 0, ./start.sh 1, ./start.sh 2
+    - maven: mvn exec:exec -Dinstance.id=0, mvn exec:exec -Dinstance.id=1, mvn exec:exec -Dinstance.id=2
+  2. mysql server with SQL tables; dp_examples/TestUserDp/SQLScript.sql && dp_examples/TestChatSvcDp/SQLScript.sql
 */
 public class ChatDpIT {
 

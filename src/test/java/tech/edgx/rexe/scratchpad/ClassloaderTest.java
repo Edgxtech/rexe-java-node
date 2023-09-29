@@ -24,9 +24,9 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 /*
-   Test demonstrates reading a jar file dynamically and running its methods
+   Test demonstrates reading a jar file dynamically
    - Need to decide if a DPJar should provide all of its capability in self-contained jvm/jar
-     Or can inherit all the classes in the host DRF Node jVM
+     Or can inherit all the classes in the host DRF Node JVM
    - DPs need to import various libraries (sql-connectors, xmpp etc...) and might end up bloated/large
    - Might end up with the NODE imports various standardised libraries into JVM; then the DPs are constrained to which libraries
      they use; thus I might need a custom compiler and standards/specs for building compatible DPs
@@ -92,8 +92,8 @@ public class ClassloaderTest {
     }
 
     @Test
-    public void runUserCrudJar() throws Exception {
-        String jarFileName = "dp/TestUserDp.jar";
+    public void runMysqlCrudJar() throws Exception {
+        String jarFileName = "dp/TestMysqlDp.jar";
         File jarFile = new File(jarFileName);
         Helpers.printJarInfo(jarFile);
 

@@ -16,9 +16,10 @@ import java.util.List;
 import java.util.Optional;
 
 /*
-  WARNING: Must startup a cluster first,
-  macos: ./start.sh 0, ./start.sh 1, ./start.sh 2
-  maven: mvn exec:exec -Dinstance.id=0, mvn exec:exec -Dinstance.id=1, mvn exec:exec -Dinstance.id=2
+  PRE-REQS:
+  1. Running cluster
+    - macos: ./start.sh 0, ./start.sh 1, ./start.sh 2
+    - maven: mvn exec:exec -Dinstance.id=0, mvn exec:exec -Dinstance.id=1, mvn exec:exec -Dinstance.id=2
 */
 public class BlockIT {
 

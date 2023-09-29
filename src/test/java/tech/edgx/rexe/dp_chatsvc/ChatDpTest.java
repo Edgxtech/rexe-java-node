@@ -1,13 +1,14 @@
-package tech.edgx.rexe.chat_dp;
+package tech.edgx.rexe.dp_chatsvc;
 
 import com.google.gson.Gson;
 import com.sun.net.httpserver.HttpServer;
 import io.ipfs.cid.Cid;
 import io.ipfs.multiaddr.MultiAddress;
-import org.checkerframework.checker.units.qual.C;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
 import org.mockito.MockedConstruction;
 import org.peergos.EmbeddedIpfs;
 import org.peergos.blockstore.ProvidingBlockstore;
@@ -21,17 +22,18 @@ import tech.edgx.util.TestHelpers;
 
 import java.io.File;
 import java.net.InetSocketAddress;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.Collections;
-import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.Executors;
 
 /*
-  WARNING: Haven't figured out Class mocking that are dynamically loaded via the DP,
-  thus this test needs running nodes as per the ITs, e.g. at least 127.0.0.1:5000
+  PRE-REQS:
+  ** NOTE: Mocking dynamically loaded classes via the DP not working, thus this test needs running cluster as per ITs
+  1. Running cluster
+    - macos: ./start.sh 0, ./start.sh 1, ./start.sh 2
+    - maven: mvn exec:exec -Dinstance.id=0, mvn exec:exec -Dinstance.id=1, mvn exec:exec -Dinstance.id=2
+  2. mysql server with SQL tables; dp_examples/TestUserDp/SQLScript.sql && dp_examples/TestChatSvcDp/SQLScript.sql
 */
 public class ChatDpTest {
 
@@ -42,11 +44,11 @@ public class ChatDpTest {
 
     private static MockedConstruction<RexeClient> mockAController;
 
-    @BeforeClass
-    public static void setUp() {
+    @Before
+    public void setUp() {
         HttpServer apiServer = null;
         try {
-            MultiAddress apiAddress = new MultiAddress("/ip4/127.0.0.1/tcp/8123");
+            MultiAddress apiAddress = new MultiAddress("/ip4/127.0.0.1/tcp/8124");
 
             InetSocketAddress localAPIAddress = new InetSocketAddress(apiAddress.getHost(), apiAddress.getPort());
 
@@ -65,10 +67,9 @@ public class ChatDpTest {
     }
 
     /*
-       Demonstrates how an app developer composes DPs, as opposed to how a DP developer composes DPs (which also occurs separately)
+       Demonstrates how an app developer composes DPs, as opposed to how a DP developer composes DPs (which also occurs)
         - call UserDP: create user -> create two users
         - call ChatSvc: start chat{users[], userDpRef} -> partitions chat record, chat_user records, links users, finds users credentials in chatDP
-       WARNING: Couldn't yet figure out Class mocking that are dynamically loaded via the DP, thus this test needs running test nodes as per the ITs, e.g. at least 127.0.0.1:5000
      */
     @Test
     public void testChatSvcDp() {

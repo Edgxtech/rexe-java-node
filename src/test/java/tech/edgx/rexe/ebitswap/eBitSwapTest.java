@@ -26,51 +26,11 @@ import java.util.stream.Collectors;
 public class eBitSwapTest {
 
     @Test
-    public void getBlock() {
-        // NODE 1
-        HostBuilder builder1 = HostBuilder.create(10000 + new Random().nextInt(50000),
-                new RamProviderStore(), new RamRecordStore(), new RamBlockstore(), (c, b, p, a) -> CompletableFuture.completedFuture(true));
-        Host node1 = builder1.build();
-
-        // NODE 2
-        RamBlockstore blockstore2 = new RamBlockstore();
-        HostBuilder builder2 = HostBuilder.create(10000 + new Random().nextInt(50000),
-                new RamProviderStore(), new RamRecordStore(), blockstore2, (c, b, p, a) -> CompletableFuture.completedFuture(true));
-        Host node2 = builder2.build();
-        node1.start().join();
-        node2.start().join();
-        try {
-            // Put into 2
-            Multiaddr address2 = node2.listenAddresses().get(0);
-            byte[] blockData = "G'day from Java ebitSwap!".getBytes(StandardCharsets.UTF_8);
-            Cid hash = blockstore2.put(blockData, Cid.Codec.Raw).join();
-
-            // Make 1 aware of 2
-            // I thought if they bootstrap off the same node they should discover each other?
-            node1.getAddressBook().addAddrs(address2.getPeerId(), 0, address2).join();
-
-            // Request from 1 - should negotiate the swap with 2
-            eBitSwap eBitSwap = builder1.getResSwap().get();
-            List<HashedBlock> receivedBlock = eBitSwap.get(List.of(new Want(hash)), node1, Set.of(address2.getPeerId()), false) //Set.of(address2.getPeerId())
-                    .stream()
-                    .map(f -> f.join())
-                    .collect(Collectors.toList());
-            System.out.println("Received block: "+ receivedBlock.get(0).hash);
-            Assert.assertTrue("Correct result", Arrays.equals(receivedBlock.get(0).block, blockData));
-        } finally {
-            node1.stop();
-            node2.stop();
-        }
-    }
-
-    @Test
     public void computeDpHelloWorldFunction() {
-        // NODE 1
         HostBuilder builder1 = HostBuilder.create(10000 + new Random().nextInt(50000),
                 new RamProviderStore(), new RamRecordStore(), new RamBlockstore(), (c, b, p, a) -> CompletableFuture.completedFuture(true));
         Host node1 = builder1.build();
 
-        // NODE 2
         RamBlockstore blockstore2 = new RamBlockstore();
         HostBuilder builder2 = HostBuilder.create(10000 + new Random().nextInt(50000),
                 new RamProviderStore(), new RamRecordStore(), blockstore2, (c, b, p, a) -> CompletableFuture.completedFuture(true));
@@ -78,7 +38,6 @@ public class eBitSwapTest {
         node1.start().join();
         node2.start().join();
         try {
-            // Put into 2
             Multiaddr address2 = node2.listenAddresses().get(0);
             String testDpName = "dp/TestDp.jar";
             File jarFile = new File(testDpName);
@@ -86,10 +45,8 @@ public class eBitSwapTest {
             byte[] bytecode = Files.readAllBytes(jarFile.toPath());
             Cid hash = blockstore2.put(bytecode, Cid.Codec.Raw).join();
 
-            // Make 1 aware of 2
             node1.getAddressBook().addAddrs(address2.getPeerId(), 0, address2).join();
 
-            // Request from 1 - should negotiate the swap with 2
             eBitSwap resSwap1 = builder1.getResSwap().get();
             DpWant dpWant = new DpWant(hash, Optional.empty(), "tech.edgx.dp.testdp.DP:getTestVal", Optional.empty(), Optional.empty());
             System.out.println("Sending compute request: "+dpWant.cid+", functionname: "+dpWant.functionName + ", params: "+dpWant.params +", auth: "+dpWant.auth);
@@ -120,7 +77,6 @@ public class eBitSwapTest {
         node1.start().join();
         node2.start().join();
         try {
-            // Put into 2
             Multiaddr address2 = node2.listenAddresses().get(0);
             String testDpName = "dp/TestDp.jar";
             File jarFile = new File(testDpName);
@@ -143,6 +99,43 @@ public class eBitSwapTest {
             e.printStackTrace();
         }
         finally {
+            node1.stop();
+            node2.stop();
+        }
+    }
+
+    @Test
+    public void getBlock() {
+        // NODE 1
+        HostBuilder builder1 = HostBuilder.create(10000 + new Random().nextInt(50000),
+                new RamProviderStore(), new RamRecordStore(), new RamBlockstore(), (c, b, p, a) -> CompletableFuture.completedFuture(true));
+        Host node1 = builder1.build();
+
+        // NODE 2
+        RamBlockstore blockstore2 = new RamBlockstore();
+        HostBuilder builder2 = HostBuilder.create(10000 + new Random().nextInt(50000),
+                new RamProviderStore(), new RamRecordStore(), blockstore2, (c, b, p, a) -> CompletableFuture.completedFuture(true));
+        Host node2 = builder2.build();
+        node1.start().join();
+        node2.start().join();
+        try {
+            // Put into 2
+            Multiaddr address2 = node2.listenAddresses().get(0);
+            byte[] blockData = "G'day from Java ebitSwap!".getBytes(StandardCharsets.UTF_8);
+            Cid hash = blockstore2.put(blockData, Cid.Codec.Raw).join();
+
+            // Make 1 aware of 2
+            node1.getAddressBook().addAddrs(address2.getPeerId(), 0, address2).join();
+
+            // Request from 1 - should negotiate the swap with 2
+            eBitSwap eBitSwap = builder1.getResSwap().get();
+            List<HashedBlock> receivedBlock = eBitSwap.get(List.of(new Want(hash)), node1, Set.of(address2.getPeerId()), false) //Set.of(address2.getPeerId())
+                    .stream()
+                    .map(f -> f.join())
+                    .collect(Collectors.toList());
+            System.out.println("Received block: "+ receivedBlock.get(0).hash);
+            Assert.assertTrue("Correct result", Arrays.equals(receivedBlock.get(0).block, blockData));
+        } finally {
             node1.stop();
             node2.stop();
         }

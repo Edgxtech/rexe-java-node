@@ -24,7 +24,7 @@ public class CryptoTests {
     @Test
     public void generateKeys() throws Exception {
         PrivKey privKey = Ed25519Kt.generateEd25519KeyPair().getFirst();
-        System.out.println("PrivKey (Base64): "+ io.ipfs.multibase.binary.Base64.encodeBase64String(privKey.bytes()));
+        print("PrivKey (Base64): "+ io.ipfs.multibase.binary.Base64.encodeBase64String(privKey.bytes()));
     }
 
     @Test

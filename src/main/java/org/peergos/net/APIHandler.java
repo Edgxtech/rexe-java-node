@@ -34,7 +34,7 @@ public class APIHandler extends Handler {
     public static final String COMPUTE = "dp/compute";
     public static final String FIND_PROVS = "dht/findprovs";
 
-    private final EmbeddedIpfs ipfs; // In latest update they added ability to start/stop, but removed the ApiService abstraction
+    private final EmbeddedIpfs ipfs;
 
     public APIHandler(EmbeddedIpfs ipfs) {
         this.ipfs = ipfs;
@@ -48,7 +48,6 @@ public class APIHandler extends Handler {
             if (! path.startsWith(API_URL))
                 throw new IllegalStateException("Unsupported api version, required: " + API_URL);
             path = path.substring(API_URL.length());
-            // N.B. URI.getQuery() decodes the query string
             Map<String, List<String>> params = HttpUtil.parseQuery(httpExchange.getRequestURI().getQuery());
             List<String> args = params.get("arg");
 
@@ -76,16 +75,13 @@ public class APIHandler extends Handler {
                     Optional<String> auth = Optional.ofNullable(params.get("auth"))
                             .map(a -> a.get(0))
                             .flatMap(a -> a.isEmpty() ? Optional.empty() : Optional.of(a));
-                    // ORIG PEERS
-//                    Set<PeerId> peers = Optional.ofNullable(params.get("peers"))
-//                            .map(p -> p.stream().map(PeerId::fromBase58).collect(Collectors.toSet()))
-//                            .orElse(Collections.emptySet());
-                    // MODIFIED PEERS: WORKS NICELY - IS THIS A BUG IN NABU? OTHERWISE IS A TEMPORARY FIX FOR MY INTEGRATION TESTING
-                    // NOTE: IT SEEMS TO ONLY ADD ENGINE CONNECTIONS AFTER I HAVE FIRST PROVIDED PEERS LIKE THIS
+                    Set<PeerId> providedPeers = Optional.ofNullable(params.get("peers"))
+                            .map(p -> p.stream().map(PeerId::fromBase58).collect(Collectors.toSet()))
+                            .orElse(Collections.emptySet());
+                    /* modified to use the dht engine peers - rqd for integration testing */
                     RamAddressBook addressBook = (RamAddressBook) ipfs.dht.getAddressBook();
-                    Set<PeerId> peers = addressBook != null ? addressBook.addresses.keySet().stream().collect(Collectors.toSet()) : new HashSet<>();
-
-                    System.out.println("Peers provided directly: "+new Gson().toJson(peers.stream().map(p -> p.toBase58()).collect(Collectors.toList())));
+                    Set<PeerId> peers = !providedPeers.isEmpty() ? providedPeers : addressBook != null ? addressBook.addresses.keySet().stream().collect(Collectors.toSet()) : new HashSet<>();
+                    LOG.fine("Using Peers: "+new Gson().toJson(peers.stream().map(p -> p.toBase58()).collect(Collectors.toList())));
                     boolean addToBlockstore = Optional.ofNullable(params.get("persist"))
                             .map(a -> Boolean.parseBoolean(a.get(0)))
                             .orElse(true);
@@ -101,7 +97,6 @@ public class APIHandler extends Handler {
                     }
                     break;
                 }
-                // I THINK I HAVE WRONGLY ASSUMED 'PUT' ADDS IT TO THE DHT, INSTEAD IT HAS A SCHEDULED PROVIDER
                 case PUT: { // https://docs.ipfs.tech/reference/kubo/rpc/#api-v0-block-put
                     System.out.println("PUTTING");
                     LOG.info("PUTTING");
@@ -140,7 +135,6 @@ public class APIHandler extends Handler {
                     }
                     Cid cid = Cid.decode(args.get(0));
                     boolean deleted = ipfs.blockstore.rm(cid).join();
-                    //boolean deleted = apiService.rmBlock(cid); //.join();
                     if (deleted) {
                         Map res = new HashMap<>();
                         res.put("Error", "");
@@ -231,8 +225,7 @@ public class APIHandler extends Handler {
 
                 /* DP SPECIFIC */
                 case COMPUTE: {
-                    LOG.info("COMPUTE, params: "+new Gson().toJson(params));
-                    System.out.println("COMPUTE, params: "+new Gson().toJson(params));
+                    LOG.info("Requesting compute: "+new Gson().toJson(params));
                     List<String> fn = params.get("fn");
                     if (args == null || args.size() != 1) {
                         throw new APIException("arguments \"cid\" required\n");
@@ -247,32 +240,24 @@ public class APIHandler extends Handler {
                         List<String> fnParams = params.get("params").stream()
                                 .flatMap(p -> Arrays.stream(p.split(",")))
                                 .collect(Collectors.toList());
-                        LOG.info("Function PARAMS Rx: "+new Gson().toJson(fnParams));
                         if (fnParams != null && !fnParams.isEmpty()) {
                             fnParamsOpt = Optional.ofNullable(fnParams.toArray());
                         }
                     }
                     /* Constructor Args */
-//                    Optional<Object[]> constructorArgsOpt = Optional.empty();
                     Optional<String> constructorArgsOpt = Optional.empty();
                     if (params.get("args")!=null) {
-                        // todo consider making args an encoded json file allowing specifiying each arg by name?
-//                        List<String> constructorArgs = params.get("args").stream()
-//                                .flatMap(p -> Arrays.stream(p.split(",")))
-//                                .collect(Collectors.toList());
-//                        LOG.info("Constructor Args Rx: "+new Gson().toJson(constructorArgs));
-//                        if (constructorArgs != null && !constructorArgs.isEmpty()) {
-//                            constructorArgsOpt = Optional.ofNullable(constructorArgs.toArray());
-//                        }
-
                         constructorArgsOpt = Optional.of(params.get("args").get(0));
                         LOG.fine("Constructor args: "+constructorArgsOpt.get());
                     }
-//                    Set<PeerId> peers = Optional.ofNullable(params.get("peers"))
-//                            .map(p -> p.stream().map(PeerId::fromBase58).collect(Collectors.toSet()))
-//                            .orElse(Collections.emptySet());
+                    /* modified to use the dht engine peers - rqd for integration testing */
+                    Set<PeerId> providedPeers = Optional.ofNullable(params.get("peers"))
+                            .map(p -> p.stream().map(PeerId::fromBase58).collect(Collectors.toSet()))
+                            .orElse(Collections.emptySet());
+                    /* modified to use the dht engine peers - rqd for integration testing */
                     RamAddressBook addressBook = (RamAddressBook) ipfs.dht.getAddressBook();
-                    Set<PeerId> peers = addressBook != null ? addressBook.addresses.keySet().stream().collect(Collectors.toSet()) : new HashSet<>();
+                    Set<PeerId> peers = !providedPeers.isEmpty() ? providedPeers : addressBook != null ? addressBook.addresses.keySet().stream().collect(Collectors.toSet()) : new HashSet<>();
+                    LOG.fine("Using Peers: "+new Gson().toJson(peers.stream().map(p -> p.toBase58()).collect(Collectors.toList())));
                     boolean addToBlockstore = Optional.ofNullable(params.get("persist"))
                             .map(a -> Boolean.parseBoolean(a.get(0)))
                             .orElse(true);
