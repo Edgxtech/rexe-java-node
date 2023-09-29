@@ -92,8 +92,8 @@ public class ClassloaderTest {
     }
 
     @Test
-    public void runMysqlJar() throws Exception {
-        String jarFileName = "dp/TestMysqlDp.jar";
+    public void runUserCrudJar() throws Exception {
+        String jarFileName = "dp/TestUserDp.jar";
         File jarFile = new File(jarFileName);
         Helpers.printJarInfo(jarFile);
 

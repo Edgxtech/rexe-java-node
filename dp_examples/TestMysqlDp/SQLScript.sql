@@ -1,0 +1,15 @@
+create database SampleDB;
+
+use SampleDB;
+
+CREATE TABLE `users` (
+	`user_id` int(11) NOT NULL AUTO_INCREMENT,
+	`uname` varchar(45) NOT NULL,
+	`password` varchar(45) NOT NULL,
+	`fullname` varchar(45) NOT NULL,
+	`email` varchar(45) NOT NULL,
+	PRIMARY KEY (`user_id`)
+);
+
+GRANT ALL PRIVILEGES ON sampledb.* TO 'dp'@'localhost' WITH GRANT OPTION;
+FLUSH PRIVILEGES;
