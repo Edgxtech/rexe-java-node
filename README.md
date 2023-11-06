@@ -18,3 +18,5 @@ Together they provide DATA and NON-DATA Uniquely identified Resource Addressing 
 Other components of DRF will provide; PKI, user identity, priorities management and administration application(s).
 
 [Whitepaper](https://edgx.tech/assets/DRF.pdf) - Describing the aim and approach in detail 
+
+This needs a sustainable way to continue research, if you would like to assist please get in [contact](mailto:tim@edgx.tech)
